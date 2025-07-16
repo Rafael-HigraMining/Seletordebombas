@@ -363,12 +363,12 @@ col_vazao, col_pressao = st.columns(2)
 with col_vazao:
     st.markdown(T['flow_header'])
     sub_col_v1, sub_col_v2 = st.columns([2,1])
-    with sub_col_v1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=190.0, step=10.0, label_visibility="collapsed")
+    with sub_col_v1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed")
     with sub_col_v2: unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed")
 with col_pressao:
     st.markdown(T['pressure_header'])
     sub_col_p1, sub_col_p2 = st.columns([2,1])
-    with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=210.0, step=5.0, label_visibility="collapsed")
+    with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed")
     with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed")
 
 vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
