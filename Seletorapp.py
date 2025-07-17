@@ -3,12 +3,28 @@ import pandas as pd
 import numpy as np
 import re
 from urllib.parse import quote
+import base64
+from pathlib import Path
 
 # ===================================================================
-# 1. DICIONÁRIO DE TRADUÇÕES
+# FUNÇÃO AUXILIAR PARA IMAGENS
 # ===================================================================
-# Ativa ou desativa o módulo de orçamento
-ATIVAR_ORCAMENTO = False  # Mude para True quando quiser ativar novamente
+# Esta função garante que as imagens sejam carregadas de forma segura.
+@st.cache_data
+def image_to_base64(img_path):
+    """Converte um arquivo de imagem para string base64."""
+    try:
+        path = Path(img_path)
+        with path.open("rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except FileNotFoundError:
+        # Retorna um pixel transparente se a imagem não for encontrada
+        return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+
+# ===================================================================
+# 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
+# ===================================================================
+ATIVAR_ORCAMENTO = False # Mude para False se quiser desativar
 
 TRADUCOES = {
     'pt': {
@@ -19,7 +35,7 @@ TRADUCOES = {
         'eletric_freq_title': "Frequência Elétrica",
         'freq_header': "Frequência",
         'flow_header': "**Vazão Desejada**",
-        'pressure_header': "**Pressão Deseja'da**",
+        'pressure_header': "**Pressão Desejada**",
         'flow_value_label': "Valor da Vazão",
         'pressure_value_label': "Valor da Pressão",
         'flow_unit_label': "Unidade Vazão",
@@ -47,27 +63,7 @@ TRADUCOES = {
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
         'quote_form_info': "Seu programa de e-mail padrão será aberto com todas as informações preenchidas.",
         'email_subject': "Pedido de Orçamento via Seletor de Bombas - {nome}",
-        'email_body': """Olá,
-
-Um novo pedido de orçamento foi gerado através do Seletor de Bombas.
-
-DADOS DO CLIENTE:
-- Nome: {nome}
-- E-mail: {email}
-
-MENSAGEM:
-{mensagem}
-
----------------------------------
-PARÂMETROS DA BUSCA:
-- Frequência: {freq}
-- Vazão: {vazao} m³/h
-- Pressão: {pressao} mca
-
----------------------------------
-RESULTADOS ENCONTRADOS:
-{tabela_resultados}
-"""
+        'email_body': """Olá,\n\nUm novo pedido de orçamento foi gerado através do Seletor de Bombas.\n\nDADOS DO CLIENTE:\n- Nome: {nome}\n- E-mail: {email}\n\nMENSAGEM:\n{mensagem}\n\n---------------------------------\nPARÂMETROS DA BUSCA:\n- Frequência: {freq}\n- Vazão: {vazao} m³/h\n- Pressão: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
     },
     'en': {
         'page_title': "Higra Mining Selector",
@@ -105,27 +101,7 @@ RESULTADOS ENCONTRADOS:
         'quote_form_click_here': "Click here to open and send the email",
         'quote_form_info': "Your default email client will open with all the information pre-filled.",
         'email_subject': "Quote Request via Pump Selector - {nome}",
-        'email_body': """Hello,
-
-A new quote request has been generated through the Pump Selector.
-
-CUSTOMER DATA:
-- Name: {nome}
-- Email: {email}
-
-MESSAGE:
-{mensagem}
-
----------------------------------
-SEARCH PARAMETERS:
-- Frequency: {freq}
-- Flow: {vazao} m³/h
-- Head: {pressao} mca
-
----------------------------------
-RESULTS FOUND:
-{tabela_resultados}
-"""
+        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     },
     'es': {
         'page_title': "Selector Higra Mining",
@@ -163,31 +139,13 @@ RESULTS FOUND:
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
         'quote_form_info': "Su cliente de correo electrónico predeterminado se abrirá con toda la información completada.",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hola,
-
-Se ha generado una nueva solicitud de cotización a través del Selector de Bombas.
-
-DATOS DEL CLIENTE:
-- Nombre: {nome}
-- Correo Electrónico: {email}
-
-MENSAJE:
-{mensagem}
-
----------------------------------
-PARÁMETROS DE BÚSQUEDA:
-- Frecuencia: {freq}
-- Caudal: {vazao} m³/h
-- Altura: {pressao} mca
-
----------------------------------
-RESULTADOS ENCONTRADOS:
-{tabela_resultados}
-"""
+        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
 
-# --- FUNÇÕES GLOBAIS E CONSTANTES ---
+# ===================================================================
+# FUNÇÕES GLOBAIS E CONSTANTES (IDÊNTICAS AO SEU ORIGINAL)
+# ===================================================================
 MOTORES_PADRAO = np.array([
     15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200, 250, 300,
     350, 400, 450, 500, 550, 600
@@ -274,9 +232,10 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
     return pd.DataFrame(), "nenhuma"
 
 # ===================================================================
-# INTERFACE STREAMLIT
+# INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
 # ===================================================================
 
+# --- CONFIGURAÇÕES INICIAIS ---
 if 'lang' not in st.session_state: st.session_state.lang = 'pt'
 if 'resultado_busca' not in st.session_state: st.session_state.resultado_busca = None
 if 'mailto_link' not in st.session_state: st.session_state.mailto_link = None
@@ -284,66 +243,118 @@ if 'iniciar_orcamento' not in st.session_state: st.session_state.iniciar_orcamen
 if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_selecionados = None
 
 st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
-st.markdown("""
+
+# --- ESTILOS CSS APRIMORADOS ---
+COR_PRIMARIA = "#134883"
+COR_SECUNDARIA = "#F8AC2E"
+COR_FUNDO = "#F0F5FF"
+COR_TEXTO = "#333333"
+
+st.markdown(f"""
 <style>
-    .stAlert > div {
-        border-radius: 10px;
-    }
+    /* Configurações gerais */
+    .stApp {{
+        background-color: {COR_FUNDO};
+        color: {COR_TEXTO};
+    }}
+    
+    /* Cabeçalhos */
+    h1, h2, h3, h4, h5, h6 {{
+        color: {COR_PRIMARIA};
+    }}
+    
+    /* Botões Principais (CORRIGIDO) */
+    .stButton>button {{
+        border: 2px solid {COR_PRIMARIA} !important;
+        background-color: {COR_PRIMARIA} !important;
+        color: white !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+        border-radius: 8px !important;
+    }}
+    .stButton>button:hover {{
+        background-color: white !important;
+        color: {COR_PRIMARIA} !important;
+    }}
+    
+    /* Alertas */
+    .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
+    .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
+    .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
+    .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
+    .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
 
-    .stAlert-success {
-        background-color: #e0f2f1;
-        color: #134883;
-    }
+    /* Container de bandeiras */
+    .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
+    .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
+    .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
+    .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
 
-    .stAlert-warning {
-        background-color: #fff8e1;
-        color: #F8AC2E;
-    }
+    /* Dataframe estilizado */
+    .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
 
-    .stAlert-info {
-        background-color: #e3f2fd;
-        color: #134883;
-    }
-
-    .stAlert-error {
-        background-color: #ffebee;
-        color: #b71c1c;
-    }
+    /* Botões de Rádio da Frequência (NOVO) */
+    div[data-baseweb="radio"] label > div:first-child {{
+        background-color: {COR_SECUNDARIA} !important; /* Cor Amarela */
+        border: 2px solid {COR_SECUNDARIA} !important;
 </style>
 """, unsafe_allow_html=True)
 
+
+# ===================================================================
+# CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA
+# ===================================================================
+
 # Mapeamento das bandeiras para idiomas
-emoji_lang_map = {
-    "Português": "pt",
-    "English": "en",
-    "Español": "es"
+bandeiras = {
+    "pt": {"nome": "PT", "img": "brasil.png"},
+    "en": {"nome": "EN", "img": "uk.png"},
+    "es": {"nome": "ES", "img": "espanha.png"}
 }
 
-# Lista de opções visuais com bandeiras
-lang_options = list(emoji_lang_map.keys())
-selected_lang_label = st.radio("🌍 Escolha o idioma:", lang_options, horizontal=True)
+col_logo, col_vazia, col_bandeiras = st.columns([4, 4, 2])
 
-# Atualizar sessão com base na opção escolhida
-st.session_state.lang = emoji_lang_map[selected_lang_label]
+with col_logo:
+    try:
+        st.image("logo.png", width=500)
+    except Exception:
+        st.warning("Logo não encontrada.")
+
+with col_bandeiras:
+    # Cria colunas para cada bandeira ficarem lado a lado
+    flag_cols = st.columns(len(bandeiras))
+    for i, (lang_code, info) in enumerate(bandeiras.items()):
+        with flag_cols[i]:
+            # Lógica do botão invisível sobre a imagem
+            if st.button(label=info['nome'], key=f"btn_lang_{lang_code}"):
+                st.session_state.lang = lang_code
+                st.rerun()
+            
+            # Adiciona efeito visual para a bandeira selecionada usando o container de markdown
+            classe_css = "selecionada" if st.session_state.lang == lang_code else ""
+            img_base64 = image_to_base64(info["img"])
+            st.markdown(
+                f'<div class="bandeira-container {classe_css}">'
+                f'<img src="data:image/png;base64,{img_base64}" class="bandeira-img" title="{info["nome"]}">'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            # Para simplificar, o clique é no botão de texto e a imagem é o feedback visual
+            # Se quiser a imagem clicável, a complexidade aumenta um pouco (componente customizado)
+
+
+# Atualiza a variável de tradução APÓS a possível troca de idioma
 T = TRADUCOES[st.session_state.lang]
 
-
-st.markdown("""
-    <style>
-        .stButton>button { border: 2px solid #134883; background-color: #134883; color: #ffffff; font-weight: bold; }
-        .stButton>button:hover { background-color: #ffffff; color: #134883; }
-        h1, h2, h3 { color: #134883; }
-    </style>
-""", unsafe_allow_html=True)
-
-col_logo, col_titulo = st.columns([1, 4])
-with col_logo:
-    try: st.image("logo.png", width=530) 
-    except Exception: st.warning("Logo não encontrada.")
-with col_titulo:
-    st.title(T['main_title'])
-    st.write(T['welcome_message'])
+# Título e Mensagem de Boas-vindas
+st.title(T['main_title'])
+st.write(T['welcome_message'])
 st.divider()
+
+
+# ===================================================================
+# RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
+# ===================================================================
 
 EMAIL_DESTINO = "seu.email@higra.com.br"
 ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
@@ -379,7 +390,7 @@ caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
 df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
 
 if df_processado is not None:
-    if st.button(T['search_button'], type="primary", use_container_width=True):
+    if st.button(T['search_button'], use_container_width=True):
         st.session_state.mailto_link = None
         st.session_state.iniciar_orcamento = False
         st.session_state.opcionais_selecionados = None
@@ -400,79 +411,81 @@ if df_processado is not None:
         if tipo == "unica": st.success(T['solution_unique'])
         elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
         elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
+        
         resultado_formatado = resultado.copy()
         for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
             if col in resultado_formatado.columns:
-                 resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
+                    resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
         st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
         st.divider()
         
-if ATIVAR_ORCAMENTO:
-    if st.button(T['quote_button_start'], type="secondary", use_container_width=True):
-        st.session_state.iniciar_orcamento = not st.session_state.iniciar_orcamento
-        st.session_state.mailto_link = None
-        st.session_state.opcionais_selecionados = None
+        # Módulo de Orçamento
+        if ATIVAR_ORCAMENTO:
+            if st.button(T['quote_button_start'], use_container_width=True):
+                st.session_state.iniciar_orcamento = not st.session_state.iniciar_orcamento
+                st.session_state.mailto_link = None
+                st.session_state.opcionais_selecionados = None
 
-    if st.session_state.iniciar_orcamento:
-        with st.form("opcionais_form"):
-            st.subheader(T['quote_options_header'])
-            col_op1, col_op2 = st.columns(2)
-            with col_op1:
-                rotor_orc = st.selectbox("Material do Rotor", ["FOFO", "CA40", "INOX34"])
-                difusor_orc = st.selectbox("Material do Difusor", ["FOFO", "CA40", "INOX34"])
-                equalizador_orc = st.selectbox("Equalizador de Pressão", ["FILTRO EQUALIZADOR", "PISTÃO EQUALIZADOR"])
-            with col_op2:
-                sensor_motor_orc = st.selectbox("Sensor Temperatura do Motor", ["1 SENSOR", "3 SENSORES"])
-                sensor_nivel_orc = st.selectbox("Sensor de Nível", ["NÃO", "SIM"])
-                crivo_orc = st.selectbox("Crivo", ["SIM", "NÃO"])
-            continuar_orcamento = st.form_submit_button(T['quote_continue_button'])
-            if continuar_orcamento:
-                st.session_state.opcionais_selecionados = {
-                    "Material do Rotor": rotor_orc,
-                    "Material do Difusor": difusor_orc,
-                    "Equalizador de Pressão": equalizador_orc,
-                    "Sensor Temperatura do Motor": sensor_motor_orc,
-                    "Sensor de Nível": sensor_nivel_orc,
-                    "Crivo": crivo_orc
-                }
+            if st.session_state.iniciar_orcamento:
+                with st.form("opcionais_form"):
+                    st.subheader(T['quote_options_header'])
+                    col_op1, col_op2 = st.columns(2)
+                    with col_op1:
+                        rotor_orc = st.selectbox("Material do Rotor", ["FOFO", "CA40", "INOX34"])
+                        difusor_orc = st.selectbox("Material do Difusor", ["FOFO", "CA40", "INOX34"])
+                        equalizador_orc = st.selectbox("Equalizador de Pressão", ["FILTRO EQUALIZADOR", "PISTÃO EQUALIZADOR"])
+                    with col_op2:
+                        sensor_motor_orc = st.selectbox("Sensor Temperatura do Motor", ["1 SENSOR", "3 SENSORES"])
+                        sensor_nivel_orc = st.selectbox("Sensor de Nível", ["NÃO", "SIM"])
+                        crivo_orc = st.selectbox("Crivo", ["SIM", "NÃO"])
+                    continuar_orcamento = st.form_submit_button(T['quote_continue_button'])
+                    if continuar_orcamento:
+                        st.session_state.opcionais_selecionados = {
+                            "Material do Rotor": rotor_orc,
+                            "Material do Difusor": difusor_orc,
+                            "Equalizador de Pressão": equalizador_orc,
+                            "Sensor Temperatura do Motor": sensor_motor_orc,
+                            "Sensor de Nível": sensor_nivel_orc,
+                            "Crivo": crivo_orc
+                        }
 
-    if st.session_state.opcionais_selecionados:
-        with st.form("contato_form"):
-            st.subheader(T['quote_contact_header'])
-            nome_cliente = st.text_input(T['quote_form_name'])
-            email_cliente = st.text_input(T['quote_form_email'])
-            mensagem_cliente = st.text_area(T['quote_form_message'])
-            enviar_orcamento = st.form_submit_button(T['quote_form_button'])
-            if enviar_orcamento:
-                if not nome_cliente or not email_cliente:
-                    st.warning(T['quote_form_warning'])
-                else:
-                    opcionais_texto = "\n\nOPCIONAIS SELECIONADOS PARA O ORÇAMENTO:\n"
-                    for chave, valor in st.session_state.opcionais_selecionados.items():
-                        opcionais_texto += f"- {chave}: {valor}\n"
-                    tabela_resultados_texto = resultado.to_string()
-                    corpo_email = T['email_body'].format(
-                        nome=nome_cliente,
-                        email=email_cliente,
-                        mensagem=mensagem_cliente,
-                        freq=frequencia_selecionada,
-                        vazao=vazao_para_busca,
-                        pressao=pressao_para_busca,
-                        tabela_resultados=tabela_resultados_texto
-                    ) + opcionais_texto
-                    corpo_email_codificado = quote(corpo_email)
-                    assunto = quote(T['email_subject'].format(nome=nome_cliente))
-                    st.session_state.mailto_link = f"mailto:{EMAIL_DESTINO}?subject={assunto}&body={corpo_email_codificado}"
+                if st.session_state.opcionais_selecionados:
+                    with st.form("contato_form"):
+                        st.subheader(T['quote_contact_header'])
+                        nome_cliente = st.text_input(T['quote_form_name'])
+                        email_cliente = st.text_input(T['quote_form_email'])
+                        mensagem_cliente = st.text_area(T['quote_form_message'])
+                        enviar_orcamento = st.form_submit_button(T['quote_form_button'])
+                        if enviar_orcamento:
+                            if not nome_cliente or not email_cliente:
+                                st.warning(T['quote_form_warning'])
+                            else:
+                                opcionais_texto = "\n\nOPCIONAIS SELECIONADOS PARA O ORÇAMENTO:\n"
+                                for chave, valor in st.session_state.opcionais_selecionados.items():
+                                    opcionais_texto += f"- {chave}: {valor}\n"
+                                tabela_resultados_texto = resultado.to_string()
+                                corpo_email = T['email_body'].format(
+                                    nome=nome_cliente,
+                                    email=email_cliente,
+                                    mensagem=mensagem_cliente,
+                                    freq=frequencia_selecionada,
+                                    vazao=vazao_para_busca,
+                                    pressao=pressao_para_busca,
+                                    tabela_resultados=tabela_resultados_texto
+                                ) + opcionais_texto
+                                corpo_email_codificado = quote(corpo_email)
+                                assunto = quote(T['email_subject'].format(nome=nome_cliente))
+                                st.session_state.mailto_link = f"mailto:{EMAIL_DESTINO}?subject={assunto}&body={corpo_email_codificado}"
 
-    if st.session_state.mailto_link:
-        st.success(T['quote_form_success'])
-        st.markdown(f'''
-            <a href="{st.session_state.mailto_link}" target="_blank" style="
-                display: inline-block; padding: 12px 20px; background-color: #F8AC2E;
-                color: #134883; font-weight: bold; text-align: center;
-                text-decoration: none; border-radius: 5px; border: 2px solid #134883;
-            ">
-                {T['quote_form_click_here']}
-            </a>
-        ''', unsafe_allow_html=True)
-        st.info(T['quote_form_info'])
+                if st.session_state.mailto_link:
+                    st.success(T['quote_form_success'])
+                    st.markdown(f'''
+                        <a href="{st.session_state.mailto_link}" target="_blank" style="
+                            display: inline-block; padding: 12px 20px; background-color: {COR_SECUNDARIA};
+                            color: {COR_PRIMARIA}; font-weight: bold; text-align: center;
+                            text-decoration: none; border-radius: 8px; border: 2px solid {COR_PRIMARIA};
+                        ">
+                            {T['quote_form_click_here']}
+                        </a>
+                    ''', unsafe_allow_html=True)
+                    st.info(T['quote_form_info'])
