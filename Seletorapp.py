@@ -63,7 +63,7 @@ def mostrar_pdf(caminho_arquivo):
         except Exception as e:
             st.error(f"Não foi possível exibir o PDF: {e}")
     else:
-        st.error(f"Arquivo de ficha técnica não encontrado no caminho espe
+        st.error(f"Arquivo de ficha técnica não encontrado no caminho no caminho especificado. Verifique a depuração acima.")
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
 # ===================================================================
