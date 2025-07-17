@@ -5,6 +5,8 @@ import re
 from urllib.parse import quote
 import base64
 from pathlib import Path
+import os
+
 
 # ===================================================================
 # FUNÇÃO AUXILIAR PARA IMAGENS
@@ -24,17 +26,40 @@ def image_to_base64(img_path):
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
 def mostrar_pdf(caminho_arquivo):
-    """Lê um arquivo PDF e o exibe em um iframe."""
-    try:
-        with open(caminho_arquivo, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+    """Lê um arquivo PDF e o exibe, com informações de depuração."""
+    
+    # --- PAINEL DE DEPURAÇÃO ---
+    with st.expander("🔍 Informações de Depuração do PDF"):
+        st.write(f"**Caminho completo que o Python está tentando abrir:** `{caminho_arquivo}`")
         
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
-    except Exception as e:
-        st.error(f"Não foi possível exibir o PDF: {e}")
+        # Verifica se o arquivo existe no caminho exato
+        arquivo_existe = os.path.exists(caminho_arquivo)
+        st.write(f"**O arquivo existe nesse caminho?** {'Sim' if arquivo_existe else 'Não'}")
+
+        # Lista os arquivos na pasta para comparar os nomes
+        pasta = os.path.dirname(caminho_arquivo)
+        st.write(f"**Verificando a pasta:** `{pasta}`")
+        try:
+            arquivos_na_pasta = os.listdir(pasta)
+            st.write(f"**Arquivos encontrados na pasta `{pasta}`:**")
+            st.write(arquivos_na_pasta)
+        except FileNotFoundError:
+            st.error(f"A pasta '{pasta}' não foi encontrada no servidor.")
+        except Exception as e:
+            st.error(f"Ocorreu um erro ao listar os arquivos: {e}")
+    # --- FIM DO PAINEL DE DEPURAÇÃO ---
+
+    if arquivo_existe:
+        try:
+            with open(caminho_arquivo, "rb") as f:
+                base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+            st.markdown(pdf_display, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Não foi possível exibir o PDF: {e}")
+    else:
+        st.error(f"Arquivo de ficha técnica não encontrado no caminho especificado. Verifique a depuração acima.")
 
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
