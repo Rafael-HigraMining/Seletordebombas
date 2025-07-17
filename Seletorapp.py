@@ -338,7 +338,7 @@ st.markdown("""
 
 col_logo, col_titulo = st.columns([1, 4])
 with col_logo:
-    try: st.image("logo.png", width=330) 
+    try: st.image("logo.png", width=530) 
     except Exception: st.warning("Logo não encontrada.")
 with col_titulo:
     st.title(T['main_title'])
