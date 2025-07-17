@@ -20,6 +20,21 @@ def image_to_base64(img_path):
     except FileNotFoundError:
         # Retorna um pixel transparente se a imagem não for encontrada
         return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+# ===================================================================
+# NOVA FUNÇÃO PARA EXIBIR PDF
+# ===================================================================
+def mostrar_pdf(caminho_arquivo):
+    """Lê um arquivo PDF e o exibe em um iframe."""
+    try:
+        with open(caminho_arquivo, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+        
+        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+        st.markdown(pdf_display, unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
+    except Exception as e:
+        st.error(f"Não foi possível exibir o PDF: {e}")
 
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
@@ -188,9 +203,11 @@ def carregar_e_processar_dados(caminho_arquivo):
 
 def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, limite_desempate_rendimento=3):
     if df is None: return pd.DataFrame()
+
+    # ETAPA 1: FILTRAGEM (mantida igual)
     cond_max = df['ROTORNUM'] == df['ROTOR_MAX_MODELO']
     cond_min = df['ROTORNUM'] == df['ROTOR_MIN_MODELO']
-    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.03, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
+    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.01, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     df['margem_baixo'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.1, df['PRESSAO_MAX_MODELO'] * 0.03], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     pressao_min_aceita = pressao - df['margem_baixo']
     pressao_max_aceita = pressao + df['margem_cima']
@@ -198,25 +215,55 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     if not df_filtrado.empty:
         df_filtrado = df_filtrado[~((df_filtrado['ROTORNUM'] == df_filtrado['ROTOR_MIN_MODELO']) & (pressao < df_filtrado["PRESSÃO (MCA)"] - df_filtrado['PRESSAO_MAX_MODELO'] * 0.03)) & ~((df_filtrado['ROTORNUM'] == df_filtrado['ROTOR_MAX_MODELO']) & (pressao > df_filtrado["PRESSÃO (MCA)"] + df_filtrado['PRESSAO_MAX_MODELO'] * 0.03))]
     if df_filtrado.empty: return pd.DataFrame()
+
+    # ETAPA 2: CÁLCULOS BÁSICOS
     df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
-    if pressao > 0:
-        df_filtrado["PERC_ERRO_PRESSAO"] = df_filtrado["ERRO_PRESSAO"] / pressao
-    else:
-        df_filtrado["PERC_ERRO_PRESSAO"] = 0
-    ajuste_bruto = df_filtrado["POTÊNCIA (HP)"] * df_filtrado["PERC_ERRO_PRESSAO"]
-    limite_seguranca = df_filtrado['POTENCIA_MAX_FAMILIA'] * fator_limitador
-    ajuste_final = np.clip(ajuste_bruto, -limite_seguranca, limite_seguranca)
-    df_filtrado["POTÊNCIA CORRIGIDA (HP)"] = df_filtrado["POTÊNCIA (HP)"] - ajuste_final
-    df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA CORRIGIDA (HP)"].apply(encontrar_motor_final)
+    df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
     df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
-    df_filtrado = df_filtrado.sort_values(by=["MOTOR FINAL (CV)", "RENDIMENTO (%)"], ascending=[True, False])
-    df_filtrado['DIFF_CONSECUTIVO'] = df_filtrado.groupby('MOTOR FINAL (CV)')['RENDIMENTO (%)'].diff(-1).abs()
-    df_filtrado['CHAVE_DESEMPATE'] = np.where(df_filtrado['DIFF_CONSECUTIVO'].fillna(np.inf) <= limite_desempate_rendimento, df_filtrado['ABS_ERRO_RELATIVO'], np.inf)
-    df_resultado = df_filtrado.sort_values(
-        by=["MOTOR FINAL (CV)", "CHAVE_DESEMPATE", "RENDIMENTO (%)", "POTÊNCIA CORRIGIDA (HP)"],
-        ascending=[True, True, False, True]
-    )
-    colunas_finais = ['MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)', 'MOTOR FINAL (CV)']
+    
+    if df_filtrado.empty: return pd.DataFrame()
+    
+    # ===================================================================
+    # ETAPA 3: NOVA LÓGICA DE ORDENAÇÃO COM AS REGRAS DO DIRETOR
+    # ===================================================================
+    
+    # 1. Encontrar o menor erro de pressão absoluto
+    min_erro_pressao = df_filtrado["ERRO_PRESSAO_ABS"].min()
+    
+    # 2. Identificar bombas com erro de pressão dentro da faixa de 2mca da melhor
+    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 2].copy()
+    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 2].copy()
+
+    if not df_elite.empty:
+        # 3. Calcular a diferença de rendimento em relação ao melhor rendimento no grupo elite
+        max_rend_elite = df_elite["RENDIMENTO (%)"].max()
+        df_elite["DIF_REND_MAX"] = max_rend_elite - df_elite["RENDIMENTO (%)"]
+        
+        # 4. Criar grupos de desempate:
+        #   - Grupo A: Rendimento dentro de 3% do melhor
+        #   - Grupo B: Rendimento mais de 3% abaixo do melhor
+        grupo_A = df_elite[df_elite["DIF_REND_MAX"] <= limite_desempate_rendimento].copy()
+        grupo_B = df_elite[df_elite["DIF_REND_MAX"] > limite_desempate_rendimento].copy()
+        
+        # 5. Ordenar grupos:
+        #   - Grupo A (rendimento similar): menor potência primeiro
+        #   - Grupo B: maior rendimento primeiro (ordem natural)
+        grupo_A = grupo_A.sort_values(by="POTÊNCIA (HP)", ascending=True)
+        grupo_B = grupo_B.sort_values(by="RENDIMENTO (%)", ascending=False)
+        
+        # 6. Recombinar grupos: Grupo A primeiro, depois Grupo B
+        df_elite = pd.concat([grupo_A, grupo_B])
+    
+    # 7. Ordenar o restante das bombas por erro de pressão
+    df_resto = df_resto.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
+    
+    # 8. Juntar todos os resultados: elite primeiro, depois resto
+    df_resultado = pd.concat([df_elite, df_resto])
+    
+    colunas_finais = [
+        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
+        'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)'
+    ]
     return df_resultado[colunas_finais].head(top_n)
 
 def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
@@ -395,7 +442,7 @@ if df_processado is not None:
         st.session_state.iniciar_orcamento = False
         st.session_state.opcionais_selecionados = None
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=5)
+            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
             if not resultado.empty:
                 st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
             else:
@@ -418,7 +465,24 @@ if df_processado is not None:
                     resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
         st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
         st.divider()
-        
+        # --- ADICIONE ESTE BLOCO NO FINAL DO 'if st.session_state.resultado_busca:' ---
+
+        # Exibe a ficha técnica da MELHOR bomba encontrada
+        st.divider()
+        st.header("📄GRÁFICO DE PERFORMANCE")
+
+        # Pega o modelo da primeira bomba da lista de resultados
+        modelo_selecionado = resultado.iloc[0]['MODELO']
+        frequencia_str = frequencia_selecionada.lower() # ex: "60hz"
+
+        # Constrói o caminho dinâmico para o arquivo PDF
+        caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+
+        st.info(f"Exibindo gráfico para moelo: **{modelo_selecionado}**")
+        mostrar_pdf(caminho_pdf)
+
+        # O código do formulário de orçamento que já existe continua depois daqui...
+                
         # Módulo de Orçamento
         if ATIVAR_ORCAMENTO:
             if st.button(T['quote_button_start'], use_container_width=True):
@@ -489,3 +553,4 @@ if df_processado is not None:
                         </a>
                     ''', unsafe_allow_html=True)
                     st.info(T['quote_form_info'])
+                    
