@@ -29,8 +29,12 @@ def mostrar_pdf(caminho_arquivo):
     """Lê um arquivo PDF e o exibe, com informações de depuração."""
     
     # --- PAINEL DE DEPURAÇÃO ---
-    with st.expander("🔍 Informações de Depuração do PDF"):
-        st.write(f"**Caminho completo que o Python está tentando abrir:** `{caminho_arquivo}`")
+    with st.expander("🔍 Informações de Depuração do PDF (Avançado)"):
+        
+        # --- MUDANÇA: Adicionada esta linha para vermos o ponto de partida ---
+        st.write(f"**Diretório de Trabalho Atual (de onde o script está partindo):** `{os.getcwd()}`")
+        
+        st.write(f"**Caminho relativo que estamos tentando abrir:** `{caminho_arquivo}`")
         
         # Verifica se o arquivo existe no caminho exato
         arquivo_existe = os.path.exists(caminho_arquivo)
@@ -59,8 +63,7 @@ def mostrar_pdf(caminho_arquivo):
         except Exception as e:
             st.error(f"Não foi possível exibir o PDF: {e}")
     else:
-        st.error(f"Arquivo de ficha técnica não encontrado no caminho especificado. Verifique a depuração acima.")
-
+        st.error(f"Arquivo de ficha técnica não encontrado no caminho espe
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
 # ===================================================================
