@@ -225,7 +225,7 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     # ETAPA 1: FILTRAGEM (mantida igual)
     cond_max = df['ROTORNUM'] == df['ROTOR_MAX_MODELO']
     cond_min = df['ROTORNUM'] == df['ROTOR_MIN_MODELO']
-    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.01, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
+    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.015, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     df['margem_baixo'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.1, df['PRESSAO_MAX_MODELO'] * 0.03], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     pressao_min_aceita = pressao - df['margem_baixo']
     pressao_max_aceita = pressao + df['margem_cima']
@@ -242,41 +242,64 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     if df_filtrado.empty: return pd.DataFrame()
     
     # ===================================================================
-    # ETAPA 3: NOVA LÓGICA DE ORDENAÇÃO COM AS REGRAS DO DIRETOR
+    # ETAPA 3: LÓGICA DE ORDENAÇÃO CORRIGIDA (VERSÃO FINAL)
     # ===================================================================
     
     # 1. Encontrar o menor erro de pressão absoluto
     min_erro_pressao = df_filtrado["ERRO_PRESSAO_ABS"].min()
     
-    # 2. Identificar bombas com erro de pressão dentro da faixa de 2mca da melhor
-    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 3.5].copy()
-    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 3.5].copy()
+    # 2. Identificar bombas com erro de pressão dentro da faixa de 2 mca da melhor
+    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 2].copy()
+    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 2].copy()
 
     if not df_elite.empty:
-        # 3. Calcular a diferença de rendimento em relação ao melhor rendimento no grupo elite
-        max_rend_elite = df_elite["RENDIMENTO (%)"].max()
-        df_elite["DIF_REND_MAX"] = max_rend_elite - df_elite["RENDIMENTO (%)"]
+        # CORREÇÃO FUNDAMENTAL: Verificar diferença em relação à MELHOR bomba em erro relativo
+        min_erro_rel = df_elite["ABS_ERRO_RELATIVO"].min()
         
-        # 4. Criar grupos de desempate:
-        #   - Grupo A: Rendimento dentro de 3% do melhor
-        #   - Grupo B: Rendimento mais de 3% abaixo do melhor
-        grupo_A = df_elite[df_elite["DIF_REND_MAX"] <= limite_desempate_rendimento].copy()
-        grupo_B = df_elite[df_elite["DIF_REND_MAX"] > limite_desempate_rendimento].copy()
+        # Criar uma coluna com a diferença em relação ao melhor erro relativo
+        df_elite["DIF_ERRO_REL_MELHOR"] = df_elite["ABS_ERRO_RELATIVO"] - min_erro_rel
         
-        # 5. Ordenar grupos:
-        #   - Grupo A (rendimento similar): menor potência primeiro
-        #   - Grupo B: maior rendimento primeiro (ordem natural)
-        grupo_A = grupo_A.sort_values(by="POTÊNCIA (HP)", ascending=True)
-        grupo_B = grupo_B.sort_values(by="RENDIMENTO (%)", ascending=False)
+        # Separar em dois grupos:
+        #   - Grupo A: Bombas com erro relativo próximo do melhor (diferença <= 25 pontos)
+        #   - Grupo B: Bombas com erro relativo significativamente pior
+        grupo_erro_baixo = df_elite[df_elite["DIF_ERRO_REL_MELHOR"] <= 25].copy()
+        grupo_erro_alto = df_elite[df_elite["DIF_ERRO_REL_MELHOR"] > 25].copy()
         
-        # 6. Recombinar grupos: Grupo A primeiro, depois Grupo B
-        df_elite = pd.concat([grupo_A, grupo_B])
+        # Aplicar regra de rendimento APENAS ao grupo com erro relativo baixo
+        if not grupo_erro_baixo.empty:
+            # Encontrar o melhor rendimento neste grupo
+            max_rend = grupo_erro_baixo["RENDIMENTO (%)"].max()
+            grupo_erro_baixo["DIF_REND_MAX"] = max_rend - grupo_erro_baixo["RENDIMENTO (%)"]
+            
+            # Subgrupo A1: Bombas com rendimento próximo do melhor (diferença <= 3%)
+            sub_A = grupo_erro_baixo[grupo_erro_baixo["DIF_REND_MAX"] <= limite_desempate_rendimento].copy()
+            # Subgrupo A2: Demais bombas
+            sub_B = grupo_erro_baixo[grupo_erro_baixo["DIF_REND_MAX"] > limite_desempate_rendimento].copy()
+            
+            # Ordenar subgrupos:
+            sub_A = sub_A.sort_values(by="POTÊNCIA (HP)", ascending=True)  # Menor potência primeiro
+            sub_B = sub_B.sort_values(by="RENDIMENTO (%)", ascending=False)  # Maior rendimento primeiro
+            
+            # Recombinar grupo de erro baixo
+            grupo_erro_baixo = pd.concat([sub_A, sub_B])
+        
+        # Ordenar grupo de erro alto por erro relativo
+        grupo_erro_alto = grupo_erro_alto.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
+        
+        # Recombinar grupo elite: erro baixo (já ordenado) + erro alto
+        df_elite = pd.concat([grupo_erro_baixo, grupo_erro_alto])
     
-    # 7. Ordenar o restante das bombas por erro de pressão
+    # Ordenar o restante por erro de pressão
     df_resto = df_resto.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
     
-    # 8. Juntar todos os resultados: elite primeiro, depois resto
+    # Juntar todos os resultados
     df_resultado = pd.concat([df_elite, df_resto])
+    
+    # Remover colunas auxiliares
+    aux_cols = ["DIF_ERRO_REL_MELHOR", "DIF_REND_MAX"]
+    for col in aux_cols:
+        if col in df_resultado.columns:
+            df_resultado = df_resultado.drop(columns=col)
     
     colunas_finais = [
         'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
@@ -461,7 +484,7 @@ if df_processado is not None:
         st.session_state.opcionais_selecionados = None
         st.session_state.mostrar_grafico = False
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=5)
+            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
             if not resultado.empty:
                 st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
             else:
