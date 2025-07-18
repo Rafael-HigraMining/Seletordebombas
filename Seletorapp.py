@@ -37,7 +37,7 @@ def mostrar_pdf(caminho_arquivo):
         page = doc.load_page(0)
         
         # Renderiza a página como imagem (aumentando a resolução)
-        zoom = 2.0  # Aumenta a qualidade
+        zoom = 1.0  # Aumenta a qualidade
         mat = fitz.Matrix(zoom, zoom)
         pix = page.get_pixmap(matrix=mat)
         
