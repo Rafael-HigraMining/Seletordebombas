@@ -9,6 +9,8 @@ from pathlib import Path
 # ===================================================================
 # FUNÇÃO AUXILIAR PARA IMAGENS
 # ===================================================================
+if 'mostrar_grafico' not in st.session_state:
+    st.session_state.mostrar_grafico = False
 # Esta função garante que as imagens sejam carregadas de forma segura.
 @st.cache_data
 def image_to_base64(img_path):
@@ -339,6 +341,19 @@ st.markdown(f"""
         background-color: white !important;
         color: {COR_PRIMARIA} !important;
     }}
+        /* Estilo personalizado para o botão de visualizar gráfico */
+    div.stButton > button:first-child {
+        background-color: #134883 !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #0d3668 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
     
     /* Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
@@ -457,6 +472,7 @@ if df_processado is not None:
         st.session_state.mailto_link = None
         st.session_state.iniciar_orcamento = False
         st.session_state.opcionais_selecionados = None
+        st.session_state.mostrar_grafico = False
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
             resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=5)
             if not resultado.empty:
@@ -485,17 +501,35 @@ if df_processado is not None:
 
         # Exibe a ficha técnica da MELHOR bomba encontrada
         st.divider()
-        st.header("📄GRÁFICO DE PERFORMANCE")
 
-        # Pega o modelo da primeira bomba da lista de resultados
-        modelo_selecionado = resultado.iloc[0]['MODELO']
-        frequencia_str = frequencia_selecionada.lower() # ex: "60hz"
+# Cabeçalho para a seção de gráfico
+st.header("📊 GRÁFICO DE PERFORMANCE")
 
-        # Constrói o caminho dinâmico para o arquivo PDF
-        caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+# Obtém o modelo selecionado
+modelo_selecionado = resultado.iloc[0]['MODELO']
+frequencia_str = frequencia_selecionada
+caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
 
-        st.info(f"Exibindo gráfico para moelo: **{modelo_selecionado}**")
+# Botão estilizado para visualizar o gráfico
+if st.button(
+    "Visualizar Gráfico", 
+    key="btn_visualizar_grafico",
+    use_container_width=True,
+    type="primary",  # Usa o estilo primário (azul)
+):
+    # Atualiza o estado para mostrar o gráfico
+    st.session_state.mostrar_grafico = True
+
+# Verifica se devemos mostrar o gráfico
+if st.session_state.get('mostrar_grafico', False):
+    # Container estilizado para o gráfico
+    with st.container(border=True):
+        st.subheader(f"Modelo: {modelo_selecionado}")
         mostrar_pdf(caminho_pdf)
+        
+        # Botão para fechar o gráfico
+        if st.button("Fechar Gráfico", use_container_width=True):
+            st.session_state.mostrar_grafico = False
 
         # O código do formulário de orçamento que já existe continua depois daqui...
                 
