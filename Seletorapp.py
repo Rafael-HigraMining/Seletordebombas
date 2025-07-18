@@ -7,7 +7,7 @@ import base64
 from pathlib import Path
 import subprocess
 import sys
-from pdf2image import convert_from_bytes
+
 
 def install_poppler():
     try:
@@ -42,6 +42,8 @@ def image_to_base64(img_path):
 # ===================================================================
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
+from pdf2image import convert_from_bytes
+
 def mostrar_pdf(caminho_arquivo):
     """Converte PDF em imagem e exibe no Streamlit"""
     try:
