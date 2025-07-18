@@ -5,26 +5,7 @@ import re
 from urllib.parse import quote
 import base64
 from pathlib import Path
-import subprocess
-import sys
 
-
-def install_poppler():
-    try:
-        # Tenta instalar o poppler para Linux (necessário para pdf2image)
-        subprocess.check_call([
-            sys.executable, 
-            "-m", 
-            "pip", 
-            "install", 
-            "poppler-utils"
-        ])
-    except Exception as e:
-        st.warning(f"Erro ao instalar poppler-utils: {e}")
-
-# Verifica se estamos no Streamlit Cloud
-if "streamlit" in sys.modules:
-    install_poppler()
 # ===================================================================
 # FUNÇÃO AUXILIAR PARA IMAGENS
 # ===================================================================
@@ -42,27 +23,24 @@ def image_to_base64(img_path):
 # ===================================================================
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
-from pdf2image import convert_from_bytes
-
 def mostrar_pdf(caminho_arquivo):
-    """Converte PDF em imagem e exibe no Streamlit"""
+    """Lê um arquivo PDF e o exibe como imagem."""
     try:
-        with open(caminho_arquivo, "rb") as f:
-            pdf_bytes = f.read()
-            
-            # Converte PDF para lista de imagens (1 página = 1 imagem)
-            images = convert_from_bytes(pdf_bytes)
-            
-            if images:
-                # Exibe a primeira página (supondo que só tenha 1 página)
-                st.image(
-                    images[0], 
-                    caption=f"Gráfico de Performance: {os.path.basename(caminho_arquivo)}",
-                    use_column_width=True
-                )
-            else:
-                st.warning("O PDF não contém imagens para exibição")
-                
+        import fitz  # PyMuPDF
+        import io
+        from PIL import Image
+        
+        # Abre o PDF e extrai a primeira página como imagem
+        doc = fitz.open(caminho_arquivo)
+        page = doc.load_page(0)  # Primeira página
+        
+        # Renderiza a página como imagem (alta resolução)
+        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # Aumenta a resolução
+        img_bytes = pix.tobytes("png")
+        
+        # Exibe a imagem no Streamlit
+        st.image(img_bytes, caption="Gráfico de Performance", use_column_width=True)
+        
     except FileNotFoundError:
         st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
     except Exception as e:
