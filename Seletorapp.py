@@ -341,19 +341,25 @@ st.markdown(f"""
         background-color: white !important;
         color: {COR_PRIMARIA} !important;
     }}
-        /* Estilo personalizado para o botão de visualizar gráfico */
-    div.stButton > button:first-child {
-        background-color: #134883 !important;
+st.markdown(f"""
+<style>
+    /* ... (seus estilos existentes) ... */
+
+    /* NOVO ESTILO PARA O BOTÃO VISUALIZAR GRÁFICO */
+    .stButton>button.visualizar-grafico {{
+        background-color: {COR_PRIMARIA} !important;
         color: white !important;
         border: none !important;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         transition: all 0.3s ease;
-    }
-    div.stButton > button:first-child:hover {
+    }}
+    .stButton>button.visualizar-grafico:hover {{
         background-color: #0d3668 !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
+    }}
+</style>
+""", unsafe_allow_html=True)
     
     /* Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
@@ -500,9 +506,7 @@ if df_processado is not None:
         # --- ADICIONE ESTE BLOCO NO FINAL DO 'if st.session_state.resultado_busca:' ---
 
         # Exibe a ficha técnica da MELHOR bomba encontrada
-        st.divider()
-
-# Cabeçalho para a seção de gráfico
+st.divider()
 st.header("📊 GRÁFICO DE PERFORMANCE")
 
 # Obtém o modelo selecionado
@@ -510,12 +514,16 @@ modelo_selecionado = resultado.iloc[0]['MODELO']
 frequencia_str = frequencia_selecionada
 caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
 
+# Container para o botão
+btn_container = st.container()
+
 # Botão estilizado para visualizar o gráfico
-if st.button(
+if btn_container.button(
     "Visualizar Gráfico", 
     key="btn_visualizar_grafico",
     use_container_width=True,
-    type="primary",  # Usa o estilo primário (azul)
+    # Aplica a classe CSS personalizada
+    type="primary"  # Já usa a cor azul por padrão
 ):
     # Atualiza o estado para mostrar o gráfico
     st.session_state.mostrar_grafico = True
