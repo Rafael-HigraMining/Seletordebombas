@@ -24,22 +24,29 @@ def image_to_base64(img_path):
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
 def mostrar_pdf(caminho_arquivo):
-    """Lê um arquivo PDF e o exibe como imagem."""
+    """Exibe a primeira página de um PDF como imagem diretamente no Streamlit"""
     try:
         import fitz  # PyMuPDF
-        import io
         from PIL import Image
+        import io
         
-        # Abre o PDF e extrai a primeira página como imagem
+        # Abre o arquivo PDF
         doc = fitz.open(caminho_arquivo)
-        page = doc.load_page(0)  # Primeira página
         
-        # Renderiza a página como imagem (alta resolução)
-        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # Aumenta a resolução
+        # Seleciona a primeira página
+        page = doc.load_page(0)
+        
+        # Renderiza a página como imagem (aumentando a resolução)
+        zoom = 2.0  # Aumenta a qualidade
+        mat = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=mat)
+        
+        # Converte para formato PIL Image
         img_bytes = pix.tobytes("png")
+        image = Image.open(io.BytesIO(img_bytes))
         
         # Exibe a imagem no Streamlit
-        st.image(img_bytes, caption="Gráfico de Performance", use_column_width=True)
+        st.image(image, caption=f"Gráfico de Performance", use_column_width=True)
         
     except FileNotFoundError:
         st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
