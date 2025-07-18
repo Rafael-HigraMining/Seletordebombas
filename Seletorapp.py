@@ -68,6 +68,9 @@ TRADUCOES = {
         'eletric_freq_title': "Frequência Elétrica",
         'freq_header': "Frequência",
         'flow_header': "**Vazão Desejada**",
+        'graph_header': "📊 Gráfico de Performance",
+        'view_graph_button': "Visualizar Gráfico",
+        'close_graph_button': "Fechar Gráfico",
         'pressure_header': "**Pressão Desejada**",
         'flow_value_label': "Valor da Vazão",
         'pressure_value_label': "Valor da Pressão",
@@ -110,6 +113,9 @@ TRADUCOES = {
         'flow_value_label': "Flow Value",
         'pressure_value_label': "Head Value",
         'flow_unit_label': "Flow Unit",
+        'graph_header': "📊 Performance Chart",
+        'view_graph_button': "View Chart",
+        'close_graph_button': "Close Chart",
         'pressure_unit_label': "Head Unit",
         'converted_values_info': "Converted values for search: **Flow: {vazao} m³/h** | **Head: {pressao} mca**",
         'search_button': "Find Best Option",
@@ -146,6 +152,9 @@ TRADUCOES = {
         'flow_header': "**Caudal Deseado**",
         'pressure_header': "**Altura Deseada**",
         'flow_value_label': "Valor del Caudal",
+        'graph_header': "📊 Gráfico de Rendimiento",
+        'view_graph_button': "Visualizar Gráfico",
+        'close_graph_button': "Cerrar Gráfico",
         'pressure_value_label': "Valor de la Altura",
         'flow_unit_label': "Unidad Caudal",
         'pressure_unit_label': "Unidad Altura",
@@ -519,7 +528,8 @@ if df_processado is not None:
         # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (DENTRO DO BLOCO COM RESULTADOS)
         # ===================================================================
         st.divider()
-        st.header("📊 GRÁFICO DE PERFORMANCE")
+        # Corrigido para usar a tradução
+        st.header(T['graph_header']) 
         
         # Obtém o modelo selecionado
         modelo_selecionado = resultado.iloc[0]['MODELO']
@@ -528,25 +538,27 @@ if df_processado is not None:
         
         # Botão estilizado para visualizar o gráfico
         if st.button(
-            "Visualizar Gráfico", 
+            T['view_graph_button'],
             key="btn_visualizar_grafico",
             use_container_width=True,
             type="primary",
         ):
             st.session_state.mostrar_grafico = True
-        
+
         # Verifica se devemos mostrar o gráfico
         if st.session_state.get('mostrar_grafico', False):
-            # Container estilizado para o gráfico
+            # O container e tudo dentro dele precisa estar INDENTADO (com mais espaços)
+            # para pertencer ao 'if' acima.
             with st.container(border=True):
                 st.subheader(f"Modelo: {modelo_selecionado}")
                 mostrar_pdf(caminho_pdf)
-                
-                # Botão para fechar o gráfico
-                if st.button("Fechar Gráfico", key="btn_fechar_grafico", use_container_width=True):
-                    st.session_state.mostrar_grafico = False
 
-        # O código do formulário de orçamento que já existe continua depois daqui...
+                # O botão de fechar também deve aparecer junto com o gráfico
+                if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
+                    st.session_state.mostrar_grafico = False
+                    st.rerun() # Adicionado para fechar o gráfico instantaneamente
+
+        # O código do formulário de orçamento que já existe continua depois daqui....
                 
         # Módulo de Orçamento
         if ATIVAR_ORCAMENTO:
