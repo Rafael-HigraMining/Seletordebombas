@@ -509,33 +509,18 @@ if df_processado is not None:
 st.divider()
 st.header("📊 GRÁFICO DE PERFORMANCE")
 
-# Obtém o modelo selecionado
 modelo_selecionado = resultado.iloc[0]['MODELO']
 frequencia_str = frequencia_selecionada
 caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
 
-# Container para o botão
-btn_container = st.container()
-
-# Botão estilizado para visualizar o gráfico
-if btn_container.button(
-    "Visualizar Gráfico", 
-    key="btn_visualizar_grafico",
-    use_container_width=True,
-    # Aplica a classe CSS personalizada
-    type="primary"  # Já usa a cor azul por padrão
-):
-    # Atualiza o estado para mostrar o gráfico
+# Botão azul usando o tipo "primary"
+if st.button("Visualizar Gráfico", type="primary", use_container_width=True):
     st.session_state.mostrar_grafico = True
 
-# Verifica se devemos mostrar o gráfico
 if st.session_state.get('mostrar_grafico', False):
-    # Container estilizado para o gráfico
     with st.container(border=True):
         st.subheader(f"Modelo: {modelo_selecionado}")
         mostrar_pdf(caminho_pdf)
-        
-        # Botão para fechar o gráfico
         if st.button("Fechar Gráfico", use_container_width=True):
             st.session_state.mostrar_grafico = False
 
