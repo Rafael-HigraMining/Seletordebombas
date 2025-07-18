@@ -5,7 +5,26 @@ import re
 from urllib.parse import quote
 import base64
 from pathlib import Path
+import subprocess
+import sys
+from pdf2image import convert_from_bytes
 
+def install_poppler():
+    try:
+        # Tenta instalar o poppler para Linux (necessário para pdf2image)
+        subprocess.check_call([
+            sys.executable, 
+            "-m", 
+            "pip", 
+            "install", 
+            "poppler-utils"
+        ])
+    except Exception as e:
+        st.warning(f"Erro ao instalar poppler-utils: {e}")
+
+# Verifica se estamos no Streamlit Cloud
+if "streamlit" in sys.modules:
+    install_poppler()
 # ===================================================================
 # FUNÇÃO AUXILIAR PARA IMAGENS
 # ===================================================================
@@ -24,18 +43,28 @@ def image_to_base64(img_path):
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
 def mostrar_pdf(caminho_arquivo):
-    """Lê um arquivo PDF e o exibe em um iframe."""
+    """Converte PDF em imagem e exibe no Streamlit"""
     try:
         with open(caminho_arquivo, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-        
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
+            pdf_bytes = f.read()
+            
+            # Converte PDF para lista de imagens (1 página = 1 imagem)
+            images = convert_from_bytes(pdf_bytes)
+            
+            if images:
+                # Exibe a primeira página (supondo que só tenha 1 página)
+                st.image(
+                    images[0], 
+                    caption=f"Gráfico de Performance: {os.path.basename(caminho_arquivo)}",
+                    use_column_width=True
+                )
+            else:
+                st.warning("O PDF não contém imagens para exibição")
+                
     except FileNotFoundError:
         st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
     except Exception as e:
         st.error(f"Não foi possível exibir o PDF: {e}")
-
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
 # ===================================================================
