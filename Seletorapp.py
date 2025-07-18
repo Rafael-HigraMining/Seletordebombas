@@ -249,8 +249,8 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     min_erro_pressao = df_filtrado["ERRO_PRESSAO_ABS"].min()
     
     # 2. Identificar bombas com erro de pressão dentro da faixa de 2mca da melhor
-    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 2].copy()
-    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 2].copy()
+    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 3.5].copy()
+    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 3.5].copy()
 
     if not df_elite.empty:
         # 3. Calcular a diferença de rendimento em relação ao melhor rendimento no grupo elite
