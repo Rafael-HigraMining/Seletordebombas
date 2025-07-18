@@ -45,8 +45,8 @@ def mostrar_pdf(caminho_arquivo):
         img_bytes = pix.tobytes("png")
         image = Image.open(io.BytesIO(img_bytes))
         
-        # Exibe a imagem no Streamlit
-        st.image(image, caption=f"Gráfico de Performance", use_column_width=True)
+        # Exibe a imagem no Streamlit (COM PARÂMETRO ATUALIZADO)
+        st.image(image, caption=f"Gráfico de Performance", use_container_width=True)  # Correção aqui
         
     except FileNotFoundError:
         st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
