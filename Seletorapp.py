@@ -324,6 +324,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
 # ===================================================================
 
 # --- CONFIGURAÇÕES INICIAIS ---
+query_params = st.query_params
+if 'lang' in query_params:
+    lang_from_url = query_params['lang']
+    if lang_from_url in ['pt', 'en', 'es']:
+        st.session_state.lang = lang_from_url
 if 'lang' not in st.session_state: st.session_state.lang = 'pt'
 if 'resultado_busca' not in st.session_state: st.session_state.resultado_busca = None
 if 'mailto_link' not in st.session_state: st.session_state.mailto_link = None
@@ -390,7 +395,7 @@ st.markdown(f"""
 
 
 # ===================================================================
-# CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA
+# CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA (VERSÃO ATUALIZADA)
 # ===================================================================
 
 # Mapeamento das bandeiras para idiomas
@@ -413,22 +418,24 @@ with col_bandeiras:
     flag_cols = st.columns(len(bandeiras))
     for i, (lang_code, info) in enumerate(bandeiras.items()):
         with flag_cols[i]:
-            # Lógica do botão invisível sobre a imagem
-            if st.button(label=info['nome'], key=f"btn_lang_{lang_code}"):
-                st.session_state.lang = lang_code
-                st.rerun()
-            
-            # Adiciona efeito visual para a bandeira selecionada usando o container de markdown
             classe_css = "selecionada" if st.session_state.lang == lang_code else ""
             img_base64 = image_to_base64(info["img"])
-            st.markdown(
-                f'<div class="bandeira-container {classe_css}">'
-                f'<img src="data:image/png;base64,{img_base64}" class="bandeira-img" title="{info["nome"]}">'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-            # Para simplificar, o clique é no botão de texto e a imagem é o feedback visual
-            # Se quiser a imagem clicável, a complexidade aumenta um pouco (componente customizado)
+
+            # Unimos o texto e a imagem dentro de um único link (tag <a>).
+            # O href="?lang=..." instrui o Streamlit a recarregar a página com o novo idioma.
+            # O target="_self" garante que a página recarregue na mesma aba.
+            st.markdown(f"""
+            <a href="?lang={lang_code}" target="_self" style="text-decoration: none;">
+                <div style="display: flex; flex-direction: column; align-items: center; font-family: 'Source Sans Pro', sans-serif; font-weight: bold; color: {COR_PRIMARIA};">
+                    <span>{info['nome']}</span>
+                    <div class="bandeira-container {classe_css}">
+                        <img src="data:image/png;base64,{img_base64}" class="bandeira-img">
+                    </div>
+                </div>
+            </a>
+            """, unsafe_allow_html=True)
+
+
 
 
 # Atualiza a variável de tradução APÓS a possível troca de idioma
