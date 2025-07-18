@@ -458,7 +458,7 @@ if df_processado is not None:
         st.session_state.iniciar_orcamento = False
         st.session_state.opcionais_selecionados = None
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
+            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=5)
             if not resultado.empty:
                 st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
             else:
