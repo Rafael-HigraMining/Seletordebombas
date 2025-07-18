@@ -341,25 +341,6 @@ st.markdown(f"""
         background-color: white !important;
         color: {COR_PRIMARIA} !important;
     }}
-st.markdown(f"""
-<style>
-    /* ... (seus estilos existentes) ... */
-
-    /* NOVO ESTILO PARA O BOTÃO VISUALIZAR GRÁFICO */
-    .stButton>button.visualizar-grafico {{
-        background-color: {COR_PRIMARIA} !important;
-        color: white !important;
-        border: none !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
-    }}
-    .stButton>button.visualizar-grafico:hover {{
-        background-color: #0d3668 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }}
-</style>
-""", unsafe_allow_html=True)
     
     /* Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
