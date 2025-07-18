@@ -469,41 +469,52 @@ if df_processado is not None:
                 st.error(T['no_solution_error'])
 
     if st.session_state.resultado_busca:
-        st.divider()
-        st.header(T['results_header'])
-        resultado_data = st.session_state.resultado_busca
-        resultado = resultado_data["resultado"]
-        tipo = resultado_data["tipo"]
-        if tipo == "unica": st.success(T['solution_unique'])
-        elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
-        elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
-        
-        resultado_formatado = resultado.copy()
-        for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
-            if col in resultado_formatado.columns:
-                    resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
-        st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
-        st.divider()
-        # --- ADICIONE ESTE BLOCO NO FINAL DO 'if st.session_state.resultado_busca:' ---
-
-        # Exibe a ficha técnica da MELHOR bomba encontrada
-st.divider()
-st.header("📊 GRÁFICO DE PERFORMANCE")
-
-modelo_selecionado = resultado.iloc[0]['MODELO']
-frequencia_str = frequencia_selecionada
-caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
-
-# Botão azul usando o tipo "primary"
-if st.button("Visualizar Gráfico", type="primary", use_container_width=True):
-    st.session_state.mostrar_grafico = True
-
-if st.session_state.get('mostrar_grafico', False):
-    with st.container(border=True):
-        st.subheader(f"Modelo: {modelo_selecionado}")
-        mostrar_pdf(caminho_pdf)
-        if st.button("Fechar Gráfico", use_container_width=True):
-            st.session_state.mostrar_grafico = False
+    st.divider()
+    st.header(T['results_header'])
+    resultado_data = st.session_state.resultado_busca
+    resultado = resultado_data["resultado"]
+    tipo = resultado_data["tipo"]
+    if tipo == "unica": st.success(T['solution_unique'])
+    elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
+    elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
+    
+    resultado_formatado = resultado.copy()
+    for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
+        if col in resultado_formatado.columns:
+                resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
+    st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
+    st.divider()
+    
+    # ===================================================================
+    # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (DENTRO DO BLOCO COM RESULTADOS)
+    # ===================================================================
+    st.divider()
+    st.header("📊 GRÁFICO DE PERFORMANCE")
+    
+    # Obtém o modelo selecionado
+    modelo_selecionado = resultado.iloc[0]['MODELO']
+    frequencia_str = frequencia_selecionada
+    caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+    
+    # Botão estilizado para visualizar o gráfico
+    if st.button(
+        "Visualizar Gráfico", 
+        key="btn_visualizar_grafico",
+        use_container_width=True,
+        type="primary",
+    ):
+        st.session_state.mostrar_grafico = True
+    
+    # Verifica se devemos mostrar o gráfico
+    if st.session_state.get('mostrar_grafico', False):
+        # Container estilizado para o gráfico
+        with st.container(border=True):
+            st.subheader(f"Modelo: {modelo_selecionado}")
+            mostrar_pdf(caminho_pdf)
+            
+            # Botão para fechar o gráfico
+            if st.button("Fechar Gráfico", key="btn_fechar_grafico", use_container_width=True):
+                st.session_state.mostrar_grafico = False
 
         # O código do formulário de orçamento que já existe continua depois daqui...
                 
