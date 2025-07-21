@@ -418,7 +418,7 @@ col_logo, col_vazia, col_bandeiras = st.columns([4, 4, 2])
 
 with col_logo:
     try:
-        st.image("logo.png", width=500)
+        st.image("logo.png", width=700)
     except Exception:
         st.warning("Logo não encontrada.")
 
