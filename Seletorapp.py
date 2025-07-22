@@ -30,8 +30,8 @@ def image_to_base64(img_path):
 # ===================================================================
 # NOVA FUNÇÃO PARA EXIBIR PDF
 # ===================================================================
-def mostrar_pdf(caminho_arquivo):
-    """Exibe a primeira página de um PDF como imagem diretamente no Streamlit"""
+def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
+    """Exibe a primeira página de um PDF como imagem diretamente no Streamlit."""
     try:
         import fitz  # PyMuPDF
         from PIL import Image
@@ -52,13 +52,14 @@ def mostrar_pdf(caminho_arquivo):
         img_bytes = pix.tobytes("png")
         image = Image.open(io.BytesIO(img_bytes))
         
-        # Exibe a imagem no Streamlit (COM PARÂMETRO ATUALIZADO)
-        st.image(image, caption=f"Gráfico de Performance", use_container_width=True)  # Correção aqui
+        # CORREÇÃO: Usa a legenda que foi passada como parâmetro
+        st.image(image, caption=legenda, use_container_width=True)
         
     except FileNotFoundError:
-        st.warning(f"Arquivo de ficha técnica não encontrado para este modelo.")
+        st.warning(f"Arquivo não encontrado para este modelo.")
     except Exception as e:
         st.error(f"Não foi possível exibir o PDF: {e}")
+
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
 # ===================================================================
@@ -563,7 +564,7 @@ vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
 pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
 st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
-# 2. Botão do SELETOR (agora no lugar certo e com acesso aos dados)
+# 2. Botão do SELETOR 
 if df_processado is not None:
     if st.button(T['search_button'], use_container_width=True):
         st.session_state.mailto_link = None
@@ -748,7 +749,7 @@ if df_buscador is not None:
 
                     # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
                     if st.session_state.get('mostrar_desenho_visualizacao', False):
-                        mostrar_pdf(caminho_desenho_final)
+                        mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
                         if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
                             st.session_state.mostrar_desenho_visualizacao = False
                             st.rerun()
@@ -836,7 +837,7 @@ if df_buscador is not None:
 
                     # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
                     if st.session_state.get('mostrar_lista_visualizacao', False):
-                        mostrar_pdf(caminho_lista_pecas)
+                        mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
                         if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
                             st.session_state.mostrar_lista_visualizacao = False
                             st.rerun()
@@ -867,7 +868,7 @@ if df_buscador is not None:
             # para pertencer ao 'if' acima.
             with st.container(border=True):
                 st.subheader(f"Modelo: {modelo_selecionado}")
-                mostrar_pdf(caminho_pdf)
+                mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
 
                 # O botão de fechar também deve aparecer junto com o gráfico
                 if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
