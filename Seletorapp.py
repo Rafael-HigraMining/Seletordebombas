@@ -9,6 +9,11 @@ from pathlib import Path
 # ===================================================================
 # FUNÇÃO AUXILIAR PARA IMAGENS
 # ===================================================================
+if 'mostrar_lista_pecas' not in st.session_state: st.session_state.mostrar_lista_pecas = False
+if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho = False
+if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.mostrar_desenho_visualizacao = False
+if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
+
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
 # Esta função garante que as imagens sejam carregadas de forma segura.
@@ -69,15 +74,30 @@ TRADUCOES = {
         'freq_header': "Frequência",
         'flow_header': "**Vazão Desejada**",
         'graph_header': "📊 Gráfico de Performance",
+        'drawing_header': "📐 Desenho Dimensional",
+        'parts_list_header': "📋 Lista de Peças",
         'view_graph_button': "Visualizar Gráfico",
         'close_graph_button': "Fechar Gráfico",
         'pressure_header': "**Pressão Desejada**",
         'flow_value_label': "Valor da Vazão",
         'pressure_value_label': "Valor da Pressão",
+        'view_drawing_button': "Visualizar Desenho",
+        'view_parts_list_button': "Visualizar Lista de Peças",
+        'close_view_button': "Fechar Visualização",
         'flow_unit_label': "Unidade Vazão",
+        'finder_header': "Ou busque diretamente pelo modelo da bomba",
+        'model_select_label': "1. Selecione o Modelo",
+        'motor_select_label': "2. Selecione o Motor (CV)",
+        'find_pump_button': "Buscar Bomba",
         'pressure_unit_label': "Unidade Pressão",
         'converted_values_info': "Valores convertidos para a busca: **Vazão: {vazao} m³/h** | **Pressão: {pressao} mca**",
         'search_button': "Buscar Melhor Opção",
+        'dimensional_drawing_button': "Desenho Dimensional",
+        'dimensional_drawing_warning': "Atenção: O Desenho Dimensional é um documento de referência e pode conter variações. Em caso de dúvida ou para confirmação mais detalhada, por favor, entre em contato.",
+        'parts_list_button': "Lista de Peças",
+        'parts_list_warning': "Atenção: A lista de peças é um documento de referência e pode conter variações. Em caso de dúvida ou para confirmação mais detalhada, por favor, entre em contato.",
+        'download_parts_list_button': "Baixar Lista de Peças",
+        'parts_list_unavailable': "Lista de peças indisponível. Por favor, entre em contato para receber.",
         'spinner_text': "Calculando as melhores opções para {freq}...",
         'results_header': "Resultados da Busca",
         'solution_unique': "✅ Solução encontrada com **BOMBA ÚNICA**:",
@@ -96,6 +116,9 @@ TRADUCOES = {
         'quote_form_button': "Enviar Pedido de Orçamento",
         'quote_form_warning': "Por favor, preencha seu nome e e-mail.",
         'quote_form_success': "Pedido pronto para ser enviado!",
+        'download_drawing_button': "Baixar Desenho Dimensional",
+        'drawing_unavailable': "Desenho dimensional indisponível. Entre em contato para receber.",
+        'contact_button': "Contato",
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
         'quote_form_info': "Seu programa de e-mail padrão será aberto com todas as informações preenchidas.",
         'email_subject': "Pedido de Orçamento via Seletor de Bombas - {nome}",
@@ -111,16 +134,31 @@ TRADUCOES = {
         'flow_header': "**Desired Flow**",
         'pressure_header': "**Desired Head**",
         'flow_value_label': "Flow Value",
+        'finder_header': "Or search directly by pump model",
+        'model_select_label': "1. Select Model",
+        'motor_select_label': "2. Select Motor (CV)",
+        'find_pump_button': "Find Pump",
         'pressure_value_label': "Head Value",
         'flow_unit_label': "Flow Unit",
         'graph_header': "📊 Performance Chart",
+        'drawing_header': "📐 Dimensional Drawing",
+        'parts_list_header': "📋 Parts List",
         'view_graph_button': "View Chart",
         'close_graph_button': "Close Chart",
         'pressure_unit_label': "Head Unit",
+        'view_drawing_button': "View Drawing",
+        'view_parts_list_button': "View Parts List",
+        'close_view_button': "Close View",
+        'parts_list_button': "Parts List",
+        'parts_list_warning': "Attention: The parts list is a reference document and may contain variations. If in doubt or for more detailed confirmation, please contact us.",
+        'download_parts_list_button': "Download Parts List",
+        'parts_list_unavailable': "Parts list unavailable. Please contact us to receive it.",
         'converted_values_info': "Converted values for search: **Flow: {vazao} m³/h** | **Head: {pressao} mca**",
         'search_button': "Find Best Option",
         'spinner_text': "Calculating the best options for {freq}...",
         'results_header': "Search Results",
+        'dimensional_drawing_button': "Dimensional Drawing",
+        'dimensional_drawing_warning': "Attention: The Dimensional Drawing is a reference document and may contain variations. If in doubt or for more detailed confirmation, please contact us.",
         'solution_unique': "✅ Solution found with a **SINGLE PUMP**:",
         'solution_parallel': "⚠️ No single pump with good efficiency. Alternative: **TWO PUMPS IN PARALLEL**:",
         'solution_parallel_info': "Flow and power below are PER PUMP. Total flow = 2x.",
@@ -132,6 +170,9 @@ TRADUCOES = {
         'quote_continue_button': "Continue to Next Step",
         'quote_contact_header': "Step 2: Your Contact Information",
         'quote_form_name': "Your Name *",
+        'download_drawing_button': "Download Dimensional Drawing",
+        'drawing_unavailable': "Dimensional drawing unavailable. Please contact us to receive it.",
+        'contact_button': "Contact",
         'quote_form_email': "Your Email *",
         'quote_form_message': "Message (optional)",
         'quote_form_button': "Send Quote Request",
@@ -153,13 +194,28 @@ TRADUCOES = {
         'pressure_header': "**Altura Deseada**",
         'flow_value_label': "Valor del Caudal",
         'graph_header': "📊 Gráfico de Rendimiento",
+        'drawing_header': "📐 Dibujo Dimensional",
+        'parts_list_header': "📋 Lista de Repuestos",
         'view_graph_button': "Visualizar Gráfico",
         'close_graph_button': "Cerrar Gráfico",
+        'view_drawing_button': "Visualizar Dibujo",
+        'view_parts_list_button': "Visualizar Lista de Repuestos",
+        'close_view_button': "Cerrar Visualización",
         'pressure_value_label': "Valor de la Altura",
+        'finder_header': "O busque directamente por el modelo de la bomba",
+        'model_select_label': "1. Seleccione el Modelo",
+        'motor_select_label': "2. Seleccione el Motor (CV)",
+        'find_pump_button': "Buscar Bomba",
         'flow_unit_label': "Unidad Caudal",
+        'parts_list_button': "Lista de Repuestos",
+        'parts_list_warning': "Atención: La lista de repuestos es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
+        'download_parts_list_button': "Descargar Lista de Repuestos",
+        'parts_list_unavailable': "Lista de repuestos no disponible. Por favor, póngase en contacto para recibirla.",
         'pressure_unit_label': "Unidad Altura",
         'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
         'search_button': "Buscar Mejor Opción",
+        'dimensional_drawing_button': "Dibujo Dimensional",
+        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
         'spinner_text': "Calculando las mejores opciones para {freq}...",
         'results_header': "Resultados de la Búsqueda",
         'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
@@ -175,6 +231,9 @@ TRADUCOES = {
         'quote_form_name': "Su Nombre *",
         'quote_form_email': "Su Correo Electrónico *",
         'quote_form_message': "Mensaje (opcional)",
+        'download_drawing_button': "Descargar Dibujo Dimensional",
+        'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
+        'contact_button': "Contacto",
         'quote_form_button': "Enviar Solicitud de Cotización",
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
@@ -199,6 +258,7 @@ def encontrar_motor_final(potencia_real):
     return candidatos.min() if len(candidatos) > 0 else np.nan
 
 @st.cache_data
+
 def carregar_e_processar_dados(caminho_arquivo):
     try:
         df = pd.read_excel(caminho_arquivo)
@@ -465,14 +525,27 @@ ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
 FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
 FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10.0 }
 
-st.header(T['input_header'])
+# ===================================================================
+# SEÇÃO DE ENTRADAS (VERSÃO CORRIGIDA E REESTRUTURADA)
+# ===================================================================
 
-# Novo subtítulo acima da seleção de frequência
+# --- Parte 1: Seletor por Ponto de Trabalho ---
+st.header(T['input_header'])
 st.markdown(f"#### {T['eletric_freq_title']}")
 
 col_freq, col_vazio = st.columns([1, 3])
 with col_freq:
-    frequencia_selecionada = st.radio(T['freq_header'], list(ARQUIVOS_DADOS.keys()), horizontal=True, label_visibility="collapsed")
+    frequencia_selecionada = st.radio(
+        T['freq_header'], 
+        list(ARQUIVOS_DADOS.keys()), 
+        horizontal=True, 
+        label_visibility="collapsed",
+        key='freq_seletor'
+    )
+
+# 1. Carrega os dados para o SELETOR (CORREÇÃO: movido para ANTES do botão)
+caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
+df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
 
 col_vazao, col_pressao = st.columns(2)
 with col_vazao:
@@ -490,15 +563,15 @@ vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
 pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
 st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
-caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
-df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
-
+# 2. Botão do SELETOR (agora no lugar certo e com acesso aos dados)
 if df_processado is not None:
     if st.button(T['search_button'], use_container_width=True):
         st.session_state.mailto_link = None
         st.session_state.iniciar_orcamento = False
         st.session_state.opcionais_selecionados = None
         st.session_state.mostrar_grafico = False
+        st.session_state.mostrar_desenho = False
+        st.session_state.mostrar_lista_pecas = False
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
             resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
             if not resultado.empty:
@@ -506,6 +579,72 @@ if df_processado is not None:
             else:
                 st.session_state.resultado_busca = None
                 st.error(T['no_solution_error'])
+
+# --- Parte 2: Buscador por Modelo ---
+st.divider()
+st.header(T['finder_header'])
+
+col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
+with col_freq_busca:
+    frequencia_buscador = st.radio(
+        T['freq_header'], 
+        list(ARQUIVOS_DADOS.keys()), 
+        horizontal=True, 
+        key='freq_buscador'
+    )
+
+caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
+df_buscador = carregar_e_processar_dados(caminho_buscador)
+
+if df_buscador is not None:
+    with col_modelo_busca:
+        lista_modelos = ["-"] + sorted(df_buscador['MODELO'].unique())
+        modelo_selecionado_buscador = st.selectbox(
+            T['model_select_label'],
+            lista_modelos,
+            key='modelo_buscador'
+        )
+
+    with col_motor_busca:
+        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
+            motores_disponiveis = sorted(
+                df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
+            )
+            motor_selecionado_buscador = st.selectbox(
+                T['motor_select_label'],
+                motores_disponiveis,
+                key='motor_buscador'
+            )
+        else:
+            st.selectbox(T['motor_select_label'], ["-"], disabled=True)
+
+    if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
+        if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
+            df_filtrado = df_buscador[
+                (df_buscador['MODELO'] == modelo_selecionado_buscador) &
+                (df_buscador['MOTOR PADRÃO (CV)'] == motor_selecionado_buscador)
+            ]
+            
+            if not df_filtrado.empty:
+                melhor_opcao = df_filtrado.loc[df_filtrado['RENDIMENTO (%)'].idxmax()]
+                
+                # CORREÇÃO: Cria um novo DataFrame e renomeia a coluna para compatibilidade
+                resultado_df = pd.DataFrame([melhor_opcao])
+                resultado_df = resultado_df.rename(columns={'MOTOR PADRÃO (CV)': 'MOTOR FINAL (CV)'})
+
+                st.session_state.resultado_busca = {"resultado": resultado_df, "tipo": "unica"}
+                
+                st.session_state.mostrar_grafico = False
+                st.session_state.mostrar_desenho = False
+                st.session_state.mostrar_lista_pecas = False
+                
+                st.rerun()
+            else:
+                st.error(T['no_solution_error'])
+
+# --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
+# A linha 'if st.session_state.resultado_busca:' já existe no seu código,
+# então a substituição termina antes dela.
 
     if st.session_state.resultado_busca:
         st.divider()
@@ -544,7 +683,184 @@ if df_processado is not None:
             type="primary",
         ):
             st.session_state.mostrar_grafico = True
+            
+        st.divider()
 
+ # ===================================================================
+        # SEÇÃO DE DOWNLOAD DO DESENHO DIMENSIONAL (COM CAIXA EXPANSÍVEL)
+        # ===================================================================
+# ADICIONE AS 2 LINHAS ABAIXO
+        
+        st.header(T['drawing_header'])
+        
+        # 1. Botão principal que abre/fecha a seção do desenho
+        if st.button(T['dimensional_drawing_button'], use_container_width=True):
+            st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
+
+        # 2. Container que só aparece quando o botão acima é clicado
+        if st.session_state.get('mostrar_desenho', False):
+            with st.container(border=True):
+                # Mensagem de aviso padrão
+                st.info(T['dimensional_drawing_warning'])
+
+                # A lógica de busca do arquivo (que já tínhamos) agora fica DENTRO do container
+                # -------------------------------------------------------------------------
+                
+                # a. Obter dados da bomba selecionada (top 1)
+                melhor_bomba = resultado.iloc[0]
+                modelo_selecionado = melhor_bomba['MODELO']
+                motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
+
+                # b. Preparar para a busca na pasta "Desenhos"
+                desenho_base_path = Path("Desenhos")
+                caminho_desenho_final = None
+                
+                # c. Lógica de busca por motor mais próximo
+                if desenho_base_path.exists():
+                    desenhos_candidatos = {} # Dicionário para guardar {motor_disponivel: caminho_completo}
+                    for path_arquivo in desenho_base_path.glob(f"{modelo_selecionado}*.pdf"):
+                        nome_sem_ext = path_arquivo.stem
+                        partes = nome_sem_ext.split('_')
+                        if len(partes) == 2:
+                            try:
+                                motor_no_arquivo = int(partes[1])
+                                desenhos_candidatos[motor_no_arquivo] = path_arquivo
+                            except ValueError:
+                                continue
+                    if desenhos_candidatos:
+                        motor_mais_proximo = min(
+                            desenhos_candidatos.keys(), 
+                            key=lambda motor: abs(motor - motor_alvo)
+                        )
+                        caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
+                
+                # d. Fallback para o nome geral
+                if not caminho_desenho_final:
+                    caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
+                    if caminho_geral.exists():
+                        caminho_desenho_final = caminho_geral
+
+# e. Exibe os botões e a visualização condicional
+                if caminho_desenho_final:
+                    # Botão para pré-visualizar o PDF como imagem
+                    if st.button(T['view_drawing_button'], use_container_width=True, type="secondary"):
+                        st.session_state.mostrar_desenho_visualizacao = not st.session_state.get('mostrar_desenho_visualizacao', False)
+
+                    # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
+                    if st.session_state.get('mostrar_desenho_visualizacao', False):
+                        mostrar_pdf(caminho_desenho_final)
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
+                            st.session_state.mostrar_desenho_visualizacao = False
+                            st.rerun()
+                    
+                    # Botão para fazer o download do arquivo
+                    with open(caminho_desenho_final, "rb") as pdf_file:
+                        st.download_button(
+                            label=T['download_drawing_button'],
+                            data=pdf_file,
+                            file_name=caminho_desenho_final.name,
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                else:
+                    st.warning(T['drawing_unavailable'])
+                    
+                # f. Exibe o botão de Contato em ambos os casos (arquivo encontrado ou não)
+                link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
+                st.markdown(f'''
+                <a href="{link_contato}" target="_blank" style="
+                    display: block; 
+                    padding: 0.5rem 1rem; 
+                    background-color: {COR_PRIMARIA};
+                    color: white; 
+                    font-weight: bold; 
+                    text-align: center;
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                ''', unsafe_allow_html=True)
+                
+        st.divider()
+
+# Adiciona uma linha para separar as seções
+
+        # ===================================================================
+        # SEÇÃO LISTA DE PEÇAS
+        # ===================================================================
+        
+        st.header(T['parts_list_header'])
+        
+        # 1. Botão principal que abre/fecha a seção da lista de peças
+        if st.button(T['parts_list_button'], use_container_width=True):
+            # Inverte o estado atual (se era False, vira True, e vice-versa)
+            st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+
+        # 2. Container que só aparece quando o botão acima for clicado
+        if st.session_state.get('mostrar_lista_pecas', False):
+            with st.container(border=True):
+                # Lógica de busca do arquivo (simples, só por modelo, na pasta "Lista")
+                caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
+                
+                # Link de contato para o WhatsApp
+                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                botao_contato_html = f'''
+                <a href="{link_contato_pecas}" target="_blank" style="
+                    display: block; 
+                    padding: 0.5rem 1rem; 
+                    background-color: {COR_PRIMARIA};
+                    color: white; 
+                    font-weight: bold; 
+                    text-align: center;
+                    text-decoration: none; 
+                    border-radius: 8px; 
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                '''
+
+# CASO A: O arquivo da lista de peças EXISTE
+                if caminho_lista_pecas.exists():
+                    st.info(T['parts_list_warning']) # Mensagem de aviso
+                    
+                    # Botão para pré-visualizar a lista de peças
+                    if st.button(T['view_parts_list_button'], use_container_width=True, type="secondary"):
+                        st.session_state.mostrar_lista_visualizacao = not st.session_state.get('mostrar_lista_visualizacao', False)
+
+                    # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
+                    if st.session_state.get('mostrar_lista_visualizacao', False):
+                        mostrar_pdf(caminho_lista_pecas)
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
+                            st.session_state.mostrar_lista_visualizacao = False
+                            st.rerun()
+
+                    # Botão para fazer o download do arquivo
+                    with open(caminho_lista_pecas, "rb") as pdf_file:
+                        st.download_button(
+                            label=T['download_parts_list_button'],
+                            data=pdf_file,
+                            file_name=caminho_lista_pecas.name,
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    
+                    # Exibe o botão de contato logo abaixo
+                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+
+                # CASO B: O arquivo da lista de peças NÃO existe
+                else:
+                    st.warning(T['parts_list_unavailable'])
+                    
+                    # Exibe apenas o botão de contato
+                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                    
         # Verifica se devemos mostrar o gráfico
         if st.session_state.get('mostrar_grafico', False):
             # O container e tudo dentro dele precisa estar INDENTADO (com mais espaços)
@@ -631,3 +947,4 @@ if df_processado is not None:
                     ''', unsafe_allow_html=True)
                     st.info(T['quote_form_info'])
                     
+    
