@@ -13,6 +13,7 @@ if 'mostrar_lista_pecas' not in st.session_state: st.session_state.mostrar_lista
 if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho = False
 if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.mostrar_desenho_visualizacao = False
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
+if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
 
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
@@ -83,10 +84,11 @@ TRADUCOES = {
         'flow_value_label': "Valor da Vazão",
         'pressure_value_label': "Valor da Pressão",
         'view_drawing_button': "Visualizar Desenho",
+        'show_finder_button': "🔎 Buscar por Modelo da Bomba",
         'view_parts_list_button': "Visualizar Lista de Peças",
         'close_view_button': "Fechar Visualização",
         'flow_unit_label': "Unidade Vazão",
-        'finder_header': "Ou busque diretamente pelo modelo da bomba",
+        'finder_header': "Busque diretamente pelo modelo da bomba",
         'model_select_label': "1. Selecione o Modelo",
         'motor_select_label': "2. Selecione o Motor (CV)",
         'find_pump_button': "Buscar Bomba",
@@ -135,7 +137,7 @@ TRADUCOES = {
         'flow_header': "**Desired Flow**",
         'pressure_header': "**Desired Head**",
         'flow_value_label': "Flow Value",
-        'finder_header': "Or search directly by pump model",
+        'finder_header': "Search directly by pump model",
         'model_select_label': "1. Select Model",
         'motor_select_label': "2. Select Motor (CV)",
         'find_pump_button': "Find Pump",
@@ -145,6 +147,7 @@ TRADUCOES = {
         'drawing_header': "📐 Dimensional Drawing",
         'parts_list_header': "📋 Parts List",
         'view_graph_button': "View Chart",
+        'show_finder_button': "🔎 Search by Pump Model",
         'close_graph_button': "Close Chart",
         'pressure_unit_label': "Head Unit",
         'view_drawing_button': "View Drawing",
@@ -193,6 +196,7 @@ TRADUCOES = {
         'freq_header': "Frecuencia",
         'flow_header': "**Caudal Deseado**",
         'pressure_header': "**Altura Deseada**",
+        'show_finder_button': "🔎 Buscar por Modelo de Bomba",
         'flow_value_label': "Valor del Caudal",
         'graph_header': "📊 Gráfico de Rendimiento",
         'drawing_header': "📐 Dibujo Dimensional",
@@ -203,7 +207,7 @@ TRADUCOES = {
         'view_parts_list_button': "Visualizar Lista de Repuestos",
         'close_view_button': "Cerrar Visualización",
         'pressure_value_label': "Valor de la Altura",
-        'finder_header': "O busque directamente por el modelo de la bomba",
+        'finder_header': "Busque directamente por el modelo de la bomba",
         'model_select_label': "1. Seleccione el Modelo",
         'motor_select_label': "2. Seleccione el Motor (CV)",
         'find_pump_button': "Buscar Bomba",
@@ -522,263 +526,277 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 # SEÇÃO DE ENTRADAS (VERSÃO CORRIGIDA E REESTRUTURADA)
 # ===================================================================
 
-# --- Parte 1: Seletor por Ponto de Trabalho ---
-st.header(T['input_header'])
-st.markdown(f"#### {T['eletric_freq_title']}")
+# --- Parte 1: Seletor por Ponto de Trabalho (VERSÃO CORRIGIDA) ---
+# ===================================================================
+# SEÇÃO DE ENTRADAS REESTRUTURADA COM ABAS (VERSÃO CORRIGIDA)
+# ===================================================================
 
-col_freq, col_vazio = st.columns([1, 3])
-with col_freq:
-    frequencia_selecionada = st.radio(
-        T['freq_header'], 
-        list(ARQUIVOS_DADOS.keys()), 
-        horizontal=True, 
-        label_visibility="collapsed",
-        key='freq_seletor'
-    )
+# Cria as duas abas para separar as formas de busca
+tab_seletor, tab_buscador = st.tabs(["Seletor por Ponto de Trabalho", "Buscador por Modelo"])
 
-# 1. Carrega os dados para o SELETOR (CORREÇÃO: movido para ANTES do botão)
-caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
-df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
+# --- Aba 1: Seletor por Ponto de Trabalho ---
+with tab_seletor:
+    st.markdown(f"#### {T['eletric_freq_title']}")
 
-col_vazao, col_pressao = st.columns(2)
-with col_vazao:
-    st.markdown(T['flow_header'])
-    sub_col_v1, sub_col_v2 = st.columns([2,1])
-    with sub_col_v1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed")
-    with sub_col_v2: unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed")
-with col_pressao:
-    st.markdown(T['pressure_header'])
-    sub_col_p1, sub_col_p2 = st.columns([2,1])
-    with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed")
-    with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed")
-
-vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
-pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
-st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
-
-# 2. Botão do SELETOR 
-if df_processado is not None:
-    if st.button(T['search_button'], use_container_width=True):
-        st.session_state.mailto_link = None
-        st.session_state.iniciar_orcamento = False
-        st.session_state.opcionais_selecionados = None
-        st.session_state.mostrar_grafico = False
-        st.session_state.mostrar_desenho = False
-        st.session_state.mostrar_lista_pecas = False
-        with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-            resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
-            if not resultado.empty:
-                st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
-            else:
-                st.session_state.resultado_busca = None
-                st.error(T['no_solution_error'])
-
-# --- Parte 2: Buscador por Modelo ---
-st.divider()
-st.header(T['finder_header'])
-
-col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
-with col_freq_busca:
-    frequencia_buscador = st.radio(
-        T['freq_header'], 
-        list(ARQUIVOS_DADOS.keys()), 
-        horizontal=True, 
-        key='freq_buscador'
-    )
-
-caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
-df_buscador = carregar_e_processar_dados(caminho_buscador)
-
-if df_buscador is not None:
-    with col_modelo_busca:
-        lista_modelos = ["-"] + sorted(df_buscador['MODELO'].unique())
-        modelo_selecionado_buscador = st.selectbox(
-            T['model_select_label'],
-            lista_modelos,
-            key='modelo_buscador'
+    col_freq, col_vazio = st.columns([1, 3])
+    with col_freq:
+        frequencia_selecionada = st.radio(
+            T['freq_header'], 
+            list(ARQUIVOS_DADOS.keys()), 
+            horizontal=True, 
+            label_visibility="collapsed",
+            key='freq_seletor'
         )
 
-    with col_motor_busca:
-        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
-            motores_disponiveis = sorted(
-                df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
-            )
-            motor_selecionado_buscador = st.selectbox(
-                T['motor_select_label'],
-                motores_disponiveis,
-                key='motor_buscador'
-            )
-        else:
-            st.selectbox(T['motor_select_label'], ["-"], disabled=True)
+    # Carrega os dados para o SELETOR
+    caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
+    df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
 
-    if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
-        if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
-            df_filtrado = df_buscador[
-                (df_buscador['MODELO'] == modelo_selecionado_buscador) &
-                (df_buscador['MOTOR PADRÃO (CV)'] == motor_selecionado_buscador)
-            ]
+    col_vazao, col_pressao = st.columns(2)
+    with col_vazao:
+        st.markdown(T['flow_header'])
+        sub_col_v1, sub_col_v2 = st.columns([2,1])
+        with sub_col_v1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_bruta')
+        with sub_col_v2: unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao')
+    with col_pressao:
+        st.markdown(T['pressure_header'])
+        sub_col_p1, sub_col_p2 = st.columns([2,1])
+        with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
+        with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
+
+    vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
+    pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
+    st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
+
+    # Botão do SELETOR, agora dentro de sua própria aba
+    if df_processado is not None:
+        if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
+            # Reseta todos os estados ao iniciar uma nova busca
+            st.session_state.resultado_busca = None
+            st.session_state.mostrar_grafico = False
+            st.session_state.mostrar_desenho = False
+            st.session_state.mostrar_lista_pecas = False
+            st.session_state.mostrar_desenho_visualizacao = False
+            st.session_state.mostrar_lista_visualizacao = False
             
-            if not df_filtrado.empty:
-                melhor_opcao = df_filtrado.loc[df_filtrado['RENDIMENTO (%)'].idxmax()]
-                
-                # CORREÇÃO: Cria um novo DataFrame e renomeia a coluna para compatibilidade
-                resultado_df = pd.DataFrame([melhor_opcao])
-                resultado_df = resultado_df.rename(columns={'MOTOR PADRÃO (CV)': 'MOTOR FINAL (CV)'})
+            with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
+                resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
+                if not resultado.empty:
+                    st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
+                else:
+                    st.error(T['no_solution_error'])
+            
+            st.rerun()
 
-                st.session_state.resultado_busca = {"resultado": resultado_df, "tipo": "unica"}
+# --- Aba 2: Buscador por Modelo ---
+with tab_buscador:
+    col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
+    
+    with col_freq_busca:
+        frequencia_buscador = st.radio(
+            T['freq_header'], 
+            list(ARQUIVOS_DADOS.keys()), 
+            horizontal=True, 
+            key='freq_buscador'
+        )
+
+    caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
+    df_buscador = carregar_e_processar_dados(caminho_buscador)
+
+    if df_buscador is not None:
+        with col_modelo_busca:
+            lista_modelos = ["-"] + sorted(df_buscador['MODELO'].unique())
+            modelo_selecionado_buscador = st.selectbox(
+                T['model_select_label'],
+                lista_modelos,
+                key='modelo_buscador'
+            )
+
+        with col_motor_busca:
+            if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
+                motores_unicos = df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
+                motores_disponiveis = sorted([motor for motor in motores_unicos if pd.notna(motor)])
                 
+                motor_selecionado_buscador = st.selectbox(
+                    T['motor_select_label'],
+                    motores_disponiveis,
+                    key='motor_buscador'
+                )
+            else:
+                st.selectbox(T['motor_select_label'], ["-"], disabled=True)
+
+        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
+            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
+                # Reseta todos os estados ao iniciar uma nova busca
+                st.session_state.resultado_busca = None
                 st.session_state.mostrar_grafico = False
                 st.session_state.mostrar_desenho = False
                 st.session_state.mostrar_lista_pecas = False
-                
-                st.rerun()
-            else:
-                st.error(T['no_solution_error'])
+                st.session_state.mostrar_desenho_visualizacao = False
+                st.session_state.mostrar_lista_visualizacao = False
 
+                df_filtrado = df_buscador[
+                    (df_buscador['MODELO'] == modelo_selecionado_buscador) &
+                    (df_buscador['MOTOR PADRÃO (CV)'] == motor_selecionado_buscador)
+                ]
+                
+                if not df_filtrado.empty:
+                    melhor_opcao = df_filtrado.loc[df_filtrado['RENDIMENTO (%)'].idxmax()]
+                    
+                    resultado_df = pd.DataFrame([melhor_opcao])
+                    resultado_df = resultado_df.rename(columns={'MOTOR PADRÃO (CV)': 'MOTOR FINAL (CV)'})
+
+                    st.session_state.resultado_busca = {"resultado": resultado_df, "tipo": "unica"}
+                    
+                    st.rerun()
+                else:
+                    st.error(T['no_solution_error'])
+
+# O bloco de exibição de resultados abaixo desta linha permanece o mesmo.
 # --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
 # A linha 'if st.session_state.resultado_busca:' já existe no seu código,
 # então a substituição termina antes dela.
 
-    if st.session_state.resultado_busca:
-        st.divider()
-        st.header(T['results_header'])
-        resultado_data = st.session_state.resultado_busca
-        resultado = resultado_data["resultado"]
-        tipo = resultado_data["tipo"]
-        if tipo == "unica": st.success(T['solution_unique'])
-        elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
-        elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
+if st.session_state.resultado_busca:
+    st.divider()
+    st.header(T['results_header'])
+    resultado_data = st.session_state.resultado_busca
+    resultado = resultado_data["resultado"]
+    tipo = resultado_data["tipo"]
+    if tipo == "unica": st.success(T['solution_unique'])
+    elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
+    elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
         
-        resultado_formatado = resultado.copy()
-        for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
-            if col in resultado_formatado.columns:
-                    resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
-        st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
-        st.divider()
+    resultado_formatado = resultado.copy()
+    for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
+        if col in resultado_formatado.columns:
+                resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
+    st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
+    st.divider()
         
         # ===================================================================
         # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (DENTRO DO BLOCO COM RESULTADOS)
         # ===================================================================
-        st.divider()
+    st.divider()
         # Corrigido para usar a tradução
-        st.header(T['graph_header']) 
+    st.header(T['graph_header']) 
         
         # Obtém o modelo selecionado
-        modelo_selecionado = resultado.iloc[0]['MODELO']
-        frequencia_str = frequencia_selecionada
-        caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+    modelo_selecionado = resultado.iloc[0]['MODELO']
+    frequencia_str = frequencia_selecionada
+    caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
         
         # Botão estilizado para visualizar o gráfico
-        if st.button(
-            T['view_graph_button'],
-            key="btn_visualizar_grafico",
-            use_container_width=True,
-            type="primary",
-        ):
-            st.session_state.mostrar_grafico = True
+    if st.button(
+        T['view_graph_button'],
+        key="btn_visualizar_grafico",
+        use_container_width=True,
+        type="primary",
+    ):
+        st.session_state.mostrar_grafico = True
             
-        st.divider()
+    st.divider()
 
  # ===================================================================
         # SEÇÃO DE DOWNLOAD DO DESENHO DIMENSIONAL (COM CAIXA EXPANSÍVEL)
         # ===================================================================
 # ADICIONE AS 2 LINHAS ABAIXO
         
-        st.header(T['drawing_header'])
+    st.header(T['drawing_header'])
         
         # 1. Botão principal que abre/fecha a seção do desenho
-        if st.button(T['dimensional_drawing_button'], use_container_width=True):
-            st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
+    if st.button(T['dimensional_drawing_button'], use_container_width=True):
+        st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
 
         # 2. Container que só aparece quando o botão acima é clicado
-        if st.session_state.get('mostrar_desenho', False):
-            with st.container(border=True):
+    if st.session_state.get('mostrar_desenho', False):
+        with st.container(border=True):
                 # Mensagem de aviso padrão
-                st.info(T['dimensional_drawing_warning'])
+            st.info(T['dimensional_drawing_warning'])
 
                 # A lógica de busca do arquivo (que já tínhamos) agora fica DENTRO do container
                 # -------------------------------------------------------------------------
                 
                 # a. Obter dados da bomba selecionada (top 1)
-                melhor_bomba = resultado.iloc[0]
-                modelo_selecionado = melhor_bomba['MODELO']
-                motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
+            melhor_bomba = resultado.iloc[0]
+            modelo_selecionado = melhor_bomba['MODELO']
+            motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
 
                 # b. Preparar para a busca na pasta "Desenhos"
-                desenho_base_path = Path("Desenhos")
-                caminho_desenho_final = None
+            desenho_base_path = Path("Desenhos")
+            caminho_desenho_final = None
                 
                 # c. Lógica de busca por motor mais próximo
-                if desenho_base_path.exists():
-                    desenhos_candidatos = {} # Dicionário para guardar {motor_disponivel: caminho_completo}
-                    for path_arquivo in desenho_base_path.glob(f"{modelo_selecionado}*.pdf"):
-                        nome_sem_ext = path_arquivo.stem
-                        partes = nome_sem_ext.split('_')
-                        if len(partes) == 2:
-                            try:
-                                motor_no_arquivo = int(partes[1])
-                                desenhos_candidatos[motor_no_arquivo] = path_arquivo
-                            except ValueError:
-                                continue
-                    if desenhos_candidatos:
-                        motor_mais_proximo = min(
-                            desenhos_candidatos.keys(), 
-                            key=lambda motor: abs(motor - motor_alvo)
-                        )
-                        caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
+            if desenho_base_path.exists():
+                desenhos_candidatos = {} # Dicionário para guardar {motor_disponivel: caminho_completo}
+                for path_arquivo in desenho_base_path.glob(f"{modelo_selecionado}*.pdf"):
+                    nome_sem_ext = path_arquivo.stem
+                    partes = nome_sem_ext.split('_')
+                    if len(partes) == 2:
+                        try:
+                            motor_no_arquivo = int(partes[1])
+                            desenhos_candidatos[motor_no_arquivo] = path_arquivo
+                        except ValueError:
+                            continue
+                if desenhos_candidatos:
+                    motor_mais_proximo = min(
+                        desenhos_candidatos.keys(), 
+                        key=lambda motor: abs(motor - motor_alvo)
+                    )
+                    caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
                 
                 # d. Fallback para o nome geral
-                if not caminho_desenho_final:
-                    caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
-                    if caminho_geral.exists():
-                        caminho_desenho_final = caminho_geral
+            if not caminho_desenho_final:
+                caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
+                if caminho_geral.exists():
+                    caminho_desenho_final = caminho_geral
 
 # e. Exibe os botões e a visualização condicional
-                if caminho_desenho_final:
+            if caminho_desenho_final:
                     # Botão para pré-visualizar o PDF como imagem
-                    if st.button(T['view_drawing_button'], use_container_width=True, type="secondary"):
-                        st.session_state.mostrar_desenho_visualizacao = not st.session_state.get('mostrar_desenho_visualizacao', False)
+                if st.button(T['view_drawing_button'], use_container_width=True, type="secondary"):
+                    st.session_state.mostrar_desenho_visualizacao = not st.session_state.get('mostrar_desenho_visualizacao', False)
 
                     # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
-                    if st.session_state.get('mostrar_desenho_visualizacao', False):
-                        mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
-                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
-                            st.session_state.mostrar_desenho_visualizacao = False
-                            st.rerun()
+                if st.session_state.get('mostrar_desenho_visualizacao', False):
+                    mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
+                    if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
+                        st.session_state.mostrar_desenho_visualizacao = False
+                        st.rerun()
                     
                     # Botão para fazer o download do arquivo
-                    with open(caminho_desenho_final, "rb") as pdf_file:
-                        st.download_button(
-                            label=T['download_drawing_button'],
-                            data=pdf_file,
-                            file_name=caminho_desenho_final.name,
-                            mime="application/pdf",
-                            use_container_width=True
-                        )
-                else:
-                    st.warning(T['drawing_unavailable'])
+                with open(caminho_desenho_final, "rb") as pdf_file:
+                    st.download_button(
+                        label=T['download_drawing_button'],
+                        data=pdf_file,
+                        file_name=caminho_desenho_final.name,
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+            else:
+                st.warning(T['drawing_unavailable'])
                     
                 # f. Exibe o botão de Contato em ambos os casos (arquivo encontrado ou não)
-                link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
-                st.markdown(f'''
-                <a href="{link_contato}" target="_blank" style="
-                    display: block; 
-                    padding: 0.5rem 1rem; 
-                    background-color: {COR_PRIMARIA};
-                    color: white; 
-                    font-weight: bold; 
-                    text-align: center;
-                    text-decoration: none; 
-                    border-radius: 8px; 
-                    border: 2px solid {COR_PRIMARIA};
-                    box-sizing: border-box;
-                    margin-top: 10px;
-                ">
-                    {T['contact_button']}
-                </a>
-                ''', unsafe_allow_html=True)
+            link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
+            st.markdown(f'''
+            <a href="{link_contato}" target="_blank" style="
+                display: block; 
+                padding: 0.5rem 1rem; 
+                background-color: {COR_PRIMARIA};
+                color: white; 
+                font-weight: bold; 
+                text-align: center;
+                text-decoration: none; 
+                border-radius: 8px; 
+                border: 2px solid {COR_PRIMARIA};
+                box-sizing: border-box;
+                margin-top: 10px;
+            ">
+                {T['contact_button']}
+            </a>
+            ''', unsafe_allow_html=True)
                 
-        st.divider()
+    st.divider()
 
 # Adiciona uma linha para separar as seções
 
@@ -786,87 +804,87 @@ if df_buscador is not None:
         # SEÇÃO LISTA DE PEÇAS
         # ===================================================================
         
-        st.header(T['parts_list_header'])
+    st.header(T['parts_list_header'])
         
         # 1. Botão principal que abre/fecha a seção da lista de peças
-        if st.button(T['parts_list_button'], use_container_width=True):
+    if st.button(T['parts_list_button'], use_container_width=True):
             # Inverte o estado atual (se era False, vira True, e vice-versa)
-            st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+        st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
 
         # 2. Container que só aparece quando o botão acima for clicado
-        if st.session_state.get('mostrar_lista_pecas', False):
-            with st.container(border=True):
+    if st.session_state.get('mostrar_lista_pecas', False):
+        with st.container(border=True):
                 # Lógica de busca do arquivo (simples, só por modelo, na pasta "Lista")
-                caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
+            caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
                 
                 # Link de contato para o WhatsApp
-                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
-                botao_contato_html = f'''
-                <a href="{link_contato_pecas}" target="_blank" style="
-                    display: block; 
-                    padding: 0.5rem 1rem; 
-                    background-color: {COR_PRIMARIA};
-                    color: white; 
-                    font-weight: bold; 
-                    text-align: center;
-                    text-decoration: none; 
-                    border-radius: 8px; 
-                    border: 2px solid {COR_PRIMARIA};
-                    box-sizing: border-box;
-                    margin-top: 10px;
-                ">
-                    {T['contact_button']}
-                </a>
-                '''
+            link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+            botao_contato_html = f'''
+            <a href="{link_contato_pecas}" target="_blank" style="
+                display: block; 
+                padding: 0.5rem 1rem; 
+                background-color: {COR_PRIMARIA};
+                color: white; 
+                font-weight: bold; 
+                text-align: center;
+                text-decoration: none; 
+                border-radius: 8px; 
+                border: 2px solid {COR_PRIMARIA};
+                box-sizing: border-box;
+                margin-top: 10px;
+            ">
+                {T['contact_button']}
+            </a>
+            '''
 
 # CASO A: O arquivo da lista de peças EXISTE
-                if caminho_lista_pecas.exists():
-                    st.info(T['parts_list_warning']) # Mensagem de aviso
+            if caminho_lista_pecas.exists():
+                st.info(T['parts_list_warning']) # Mensagem de aviso
                     
                     # Botão para pré-visualizar a lista de peças
-                    if st.button(T['view_parts_list_button'], use_container_width=True, type="secondary"):
-                        st.session_state.mostrar_lista_visualizacao = not st.session_state.get('mostrar_lista_visualizacao', False)
+                if st.button(T['view_parts_list_button'], use_container_width=True, type="secondary"):
+                    st.session_state.mostrar_lista_visualizacao = not st.session_state.get('mostrar_lista_visualizacao', False)
 
                     # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
-                    if st.session_state.get('mostrar_lista_visualizacao', False):
-                        mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
-                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
-                            st.session_state.mostrar_lista_visualizacao = False
-                            st.rerun()
+                if st.session_state.get('mostrar_lista_visualizacao', False):
+                    mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
+                    if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
+                        st.session_state.mostrar_lista_visualizacao = False
+                        st.rerun()
 
                     # Botão para fazer o download do arquivo
-                    with open(caminho_lista_pecas, "rb") as pdf_file:
-                        st.download_button(
-                            label=T['download_parts_list_button'],
-                            data=pdf_file,
-                            file_name=caminho_lista_pecas.name,
-                            mime="application/pdf",
-                            use_container_width=True
-                        )
+                with open(caminho_lista_pecas, "rb") as pdf_file:
+                    st.download_button(
+                        label=T['download_parts_list_button'],
+                        data=pdf_file,
+                        file_name=caminho_lista_pecas.name,
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
                     
                     # Exibe o botão de contato logo abaixo
-                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                st.markdown(botao_contato_html, unsafe_allow_html=True)
 
                 # CASO B: O arquivo da lista de peças NÃO existe
-                else:
-                    st.warning(T['parts_list_unavailable'])
+            else:
+                st.warning(T['parts_list_unavailable'])
                     
                     # Exibe apenas o botão de contato
-                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                st.markdown(botao_contato_html, unsafe_allow_html=True)
                     
         # Verifica se devemos mostrar o gráfico
-        if st.session_state.get('mostrar_grafico', False):
+    if st.session_state.get('mostrar_grafico', False):
             # O container e tudo dentro dele precisa estar INDENTADO (com mais espaços)
             # para pertencer ao 'if' acima.
-            with st.container(border=True):
-                st.subheader(f"Modelo: {modelo_selecionado}")
-                mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
+        with st.container(border=True):
+            st.subheader(f"Modelo: {modelo_selecionado}")
+            mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
 
                 # O botão de fechar também deve aparecer junto com o gráfico
-                if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
-                    st.session_state.mostrar_grafico = False
-                    st.rerun() # Adicionado para fechar o gráfico instantaneamente
-
+            if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
+                st.session_state.mostrar_grafico = False
+                st.rerun() # Adicionado para fechar o gráfico instantaneamente
+                
         # O código do formulário de orçamento que já existe continua depois daqui....
                 
         # Módulo de Orçamento
