@@ -77,6 +77,8 @@ TRADUCOES = {
         'flow_header': "**Vazão Desejada**",
         'graph_header': "📊 Gráfico de Performance",
         'drawing_header': "📐 Desenho Dimensional",
+        'selector_tab_label': "Seletor por Ponto de Trabalho",
+        'finder_tab_label': "Buscador por Modelo",
         'parts_list_header': "📋 Lista de Peças",
         'view_graph_button': "Visualizar Gráfico",
         'close_graph_button': "Fechar Gráfico",
@@ -142,6 +144,8 @@ TRADUCOES = {
         'motor_select_label': "2. Select Motor (CV)",
         'find_pump_button': "Find Pump",
         'pressure_value_label': "Head Value",
+        'selector_tab_label': "Selector by Duty Point",
+        'finder_tab_label': "Search by Model",
         'flow_unit_label': "Flow Unit",
         'graph_header': "📊 Performance Chart",
         'drawing_header': "📐 Dimensional Drawing",
@@ -200,6 +204,8 @@ TRADUCOES = {
         'flow_value_label': "Valor del Caudal",
         'graph_header': "📊 Gráfico de Rendimiento",
         'drawing_header': "📐 Dibujo Dimensional",
+        'selector_tab_label': "Selector por Punto de Trabajo",
+        'finder_tab_label': "Buscador por Modelo",
         'parts_list_header': "📋 Lista de Repuestos",
         'view_graph_button': "Visualizar Gráfico",
         'close_graph_button': "Cerrar Gráfico",
@@ -532,7 +538,7 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 # ===================================================================
 
 # Cria as duas abas para separar as formas de busca
-tab_seletor, tab_buscador = st.tabs(["Seletor por Ponto de Trabalho", "Buscador por Modelo"])
+tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
 # --- Aba 1: Seletor por Ponto de Trabalho ---
 with tab_seletor:
