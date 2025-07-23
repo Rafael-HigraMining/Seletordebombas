@@ -292,7 +292,7 @@ def carregar_e_processar_dados(caminho_arquivo):
 def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, limite_desempate_rendimento=3):
     if df is None: return pd.DataFrame()
 
-    # ETAPA 1: FILTRAGEM (mantida igual)
+    # ETAPA 1: FILTRAGEM (lógica preservada)
     cond_max = df['ROTORNUM'] == df['ROTOR_MAX_MODELO']
     cond_min = df['ROTORNUM'] == df['ROTOR_MIN_MODELO']
     df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.015, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
@@ -312,70 +312,62 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     if df_filtrado.empty: return pd.DataFrame()
     
     # ===================================================================
-    # ETAPA 3: LÓGICA DE ORDENAÇÃO CORRIGIDA (VERSÃO FINAL)
+    # ETAPA 3: LÓGICA DE ORDENAÇÃO CORRIGIDA
     # ===================================================================
     
-    # 1. Encontrar o menor erro de pressão absoluto
-    min_erro_pressao = df_filtrado["ERRO_PRESSAO_ABS"].min()
-    
-    # 2. Identificar bombas com erro de pressão dentro da faixa de 2 mca da melhor
-    df_elite = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] <= min_erro_pressao + 2].copy()
-    df_resto = df_filtrado[df_filtrado["ERRO_PRESSAO_ABS"] > min_erro_pressao + 2].copy()
+    # 1. Cria o "Grupo de Controle": A MELHOR bomba (menor erro de pressão) de CADA MODELO.
+    df_grupo_controle = df_filtrado.loc[df_filtrado.groupby('MODELO')['ERRO_PRESSAO_ABS'].idxmin()].copy()
 
-    if not df_elite.empty:
-        # CORREÇÃO FUNDAMENTAL: Verificar diferença em relação à MELHOR bomba em erro relativo
-        min_erro_rel = df_elite["ABS_ERRO_RELATIVO"].min()
-        
-        # Criar uma coluna com a diferença em relação ao melhor erro relativo
-        df_elite["DIF_ERRO_REL_MELHOR"] = df_elite["ABS_ERRO_RELATIVO"] - min_erro_rel
-        
-        # Separar em dois grupos:
-        #   - Grupo A: Bombas com erro relativo próximo do melhor (diferença <= 25 pontos)
-        #   - Grupo B: Bombas com erro relativo significativamente pior
-        grupo_erro_baixo = df_elite[df_elite["DIF_ERRO_REL_MELHOR"] <= 25].copy()
-        grupo_erro_alto = df_elite[df_elite["DIF_ERRO_REL_MELHOR"] > 25].copy()
-        
-        # Aplicar regra de rendimento APENAS ao grupo com erro relativo baixo
-        if not grupo_erro_baixo.empty:
-            # Encontrar o melhor rendimento neste grupo
-            max_rend = grupo_erro_baixo["RENDIMENTO (%)"].max()
-            grupo_erro_baixo["DIF_REND_MAX"] = max_rend - grupo_erro_baixo["RENDIMENTO (%)"]
-            
-            # Subgrupo A1: Bombas com rendimento próximo do melhor (diferença <= 3%)
-            sub_A = grupo_erro_baixo[grupo_erro_baixo["DIF_REND_MAX"] <= limite_desempate_rendimento].copy()
-            # Subgrupo A2: Demais bombas
-            sub_B = grupo_erro_baixo[grupo_erro_baixo["DIF_REND_MAX"] > limite_desempate_rendimento].copy()
-            
-            # Ordenar subgrupos:
-            sub_A = sub_A.sort_values(by="POTÊNCIA (HP)", ascending=True)  # Menor potência primeiro
-            sub_B = sub_B.sort_values(by="RENDIMENTO (%)", ascending=False)  # Maior rendimento primeiro
-            
-            # Recombinar grupo de erro baixo
-            grupo_erro_baixo = pd.concat([sub_A, sub_B])
-        
-        # Ordenar grupo de erro alto por erro relativo
-        grupo_erro_alto = grupo_erro_alto.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
-        
-        # Recombinar grupo elite: erro baixo (já ordenado) + erro alto
-        df_elite = pd.concat([grupo_erro_baixo, grupo_erro_alto])
+    if df_grupo_controle.empty: 
+        return pd.DataFrame()
+
+    # 2. Encontrar o melhor erro relativo no grupo de controle
+    min_erro_rel = df_grupo_controle["ABS_ERRO_RELATIVO"].min()
     
-    # Ordenar o restante por erro de pressão
-    df_resto = df_resto.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
+    # 3. Calcular a diferença em relação ao melhor erro relativo
+    df_grupo_controle["DIF_ERRO_REL"] = df_grupo_controle["ABS_ERRO_RELATIVO"] - min_erro_rel
     
-    # Juntar todos os resultados
-    df_resultado = pd.concat([df_elite, df_resto])
+    # 4. Criar grupos baseados na diferença de erro relativo
+    grupo_A = df_grupo_controle[df_grupo_controle["DIF_ERRO_REL"] <= 10].copy()
+    grupo_B = df_grupo_controle[df_grupo_controle["DIF_ERRO_REL"] > 10].copy()
     
-    # Remover colunas auxiliares
-    aux_cols = ["DIF_ERRO_REL_MELHOR", "DIF_REND_MAX"]
-    for col in aux_cols:
-        if col in df_resultado.columns:
-            df_resultado = df_resultado.drop(columns=col)
+    # 5. Ordenar grupo A por rendimento decrescente (maior rendimento primeiro)
+    grupo_A = grupo_A.sort_values(by="RENDIMENTO (%)", ascending=False)
+    
+    # 6. Aplicar desempate por rendimento similar dentro do grupo A
+    if not grupo_A.empty:
+        # Encontrar o melhor rendimento no grupo A
+        max_rend = grupo_A["RENDIMENTO (%)"].max()
+        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDIMENTO (%)"]
+        
+        # Criar subgrupos baseados na diferença de rendimento
+        subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= limite_desempate_rendimento].copy()
+        subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > limite_desempate_rendimento].copy()
+        
+        # Ordenar subgrupos
+        subgrupo_A1 = subgrupo_A1.sort_values(by="POTÊNCIA (HP)", ascending=True)
+        # Manter subgrupo_A2 já ordenado por rendimento (não precisa reordenar)
+        
+        # Recombinar grupo A: primeiro subgrupo A1 (ordenado por potência), depois A2 (ordenado por rendimento)
+        grupo_A = pd.concat([subgrupo_A1, subgrupo_A2])
+    
+    # 7. Ordenar grupo B por erro relativo
+    grupo_B = grupo_B.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
+    
+    # 8. Combinar todos os resultados: Grupo A primeiro, depois Grupo B
+    df_resultado = pd.concat([grupo_A, grupo_B])
+    
+    # 9. Selecionar apenas as top_n linhas
+    df_resultado = df_resultado.head(top_n)
+    
+    # 10. Remover colunas auxiliares
+    df_resultado = df_resultado.drop(columns=["DIF_ERRO_REL", "DIF_REND"], errors="ignore")
     
     colunas_finais = [
         'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
         'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)'
     ]
-    return df_resultado[colunas_finais].head(top_n)
+    return df_resultado[colunas_finais]
 
 def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
     resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n)
