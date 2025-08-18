@@ -305,8 +305,8 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, li
     # ETAPA 1: FILTRAGEM (lógica preservada)
     cond_max = df['ROTORNUM'] == df['ROTOR_MAX_MODELO']
     cond_min = df['ROTORNUM'] == df['ROTOR_MIN_MODELO']
-    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.001, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
-    df['margem_baixo'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.1, df['PRESSAO_MAX_MODELO'] * 0.001], default=df['PRESSAO_MAX_MODELO'] * 0.1)
+    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.01, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
+    df['margem_baixo'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.1, df['PRESSAO_MAX_MODELO'] * 0.01], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     pressao_min_aceita = pressao - df['margem_baixo']
     pressao_max_aceita = pressao + df['margem_cima']
     df_filtrado = df[(df["VAZÃO (M³/H)"] == vazao) & (df["PRESSÃO (MCA)"] >= pressao_min_aceita) & (df["PRESSÃO (MCA)"] <= pressao_max_aceita)].copy()
@@ -965,6 +965,7 @@ if st.session_state.resultado_busca:
                     st.info(T['quote_form_info'])
                     
     
+
 
 
 
