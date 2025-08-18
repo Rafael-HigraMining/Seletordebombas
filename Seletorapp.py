@@ -122,6 +122,7 @@ TRADUCOES = {
         'quote_form_warning': "Por favor, preencha seu nome e e-mail.",
         'quote_form_success': "Pedido pronto para ser enviado!",
         'download_drawing_button': "Baixar Desenho Dimensional",
+        'performance_note': "Nota: Nossos cálculos avançados para encontrar a bomba ideal podem levar alguns segundos. Agradecemos a sua paciência!",
         'drawing_unavailable': "Desenho dimensional indisponível. Entre em contato para receber.",
         'contact_button': "Contato",
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
@@ -181,6 +182,7 @@ TRADUCOES = {
         'download_drawing_button': "Download Dimensional Drawing",
         'drawing_unavailable': "Dimensional drawing unavailable. Please contact us to receive it.",
         'contact_button': "Contact",
+        'performance_note': "Note: Our advanced calculations to find the ideal pump may take a few seconds. We appreciate your patience!",
         'quote_form_email': "Your Email *",
         'quote_form_message': "Message (optional)",
         'quote_form_button': "Send Quote Request",
@@ -245,6 +247,7 @@ TRADUCOES = {
         'download_drawing_button': "Descargar Dibujo Dimensional",
         'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
         'contact_button': "Contacto",
+        'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal pueden tardar unos segundos. ¡Agradecemos su paciencia!",
         'quote_form_button': "Enviar Solicitud de Cotización",
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
@@ -533,6 +536,7 @@ T = TRADUCOES[st.session_state.lang]
 # Título e Mensagem de Boas-vindas
 st.title(T['main_title'])
 st.write(T['welcome_message'])
+st.info(T['performance_note'])
 st.divider()
 
 
