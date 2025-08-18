@@ -299,55 +299,20 @@ def carregar_e_processar_dados(caminho_arquivo):
     df["ABS_ERRO_RELATIVO"] = df["ERRO_RELATIVO"].abs()
     return df
 
-def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, limite_desempate_rendimento=3,
-                         margem_rotor_min_baixo=0.01, margem_rotor_min_cima=0.10,
-                         margem_rotor_max_baixo=0.10, margem_rotor_max_cima=0.01,
-                         margem_rotor_intermediario=0.10):
-    if df is None: 
-        return pd.DataFrame()
+def filtrar_e_classificar(df, vazao, pressao, top_n=5, fator_limitador=0.025, limite_desempate_rendimento=3):
+    if df is None: return pd.DataFrame()
 
-    # Definir condições para cada tipo de rotor
+    # ETAPA 1: FILTRAGEM (lógica preservada)
     cond_max = df['ROTORNUM'] == df['ROTOR_MAX_MODELO']
     cond_min = df['ROTORNUM'] == df['ROTOR_MIN_MODELO']
-    cond_inter = ~cond_max & ~cond_min
-    
-    # Calcular limites absolutos do modelo (fixos para todos os rotores)
-    limite_min_absoluto = df['PRESSAO_MIN_MODELO'] * (1 - margem_rotor_min_baixo)
-    limite_max_absoluto = df['PRESSAO_MAX_MODELO'] * (1 + margem_rotor_max_cima)
-
-    # Calcular margens dinâmicas baseadas na pressão desejada
-    df['margem_cima'] = np.select(
-        [cond_min, cond_max, cond_inter],
-        [pressao * margem_rotor_min_cima,
-         pressao * margem_rotor_max_cima,
-         pressao * margem_rotor_intermediario]
-    )
-    
-    df['margem_baixo'] = np.select(
-        [cond_min, cond_max, cond_inter],
-        [pressao * margem_rotor_min_baixo,
-         pressao * margem_rotor_max_baixo,
-         pressao * margem_rotor_intermediario]
-    )
-
-    # Calcular faixas aceitáveis
+    df['margem_cima'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.001, df['PRESSAO_MAX_MODELO'] * 0.1], default=df['PRESSAO_MAX_MODELO'] * 0.1)
+    df['margem_baixo'] = np.select([cond_max, cond_min], [df['PRESSAO_MAX_MODELO'] * 0.1, df['PRESSAO_MAX_MODELO'] * 0.001], default=df['PRESSAO_MAX_MODELO'] * 0.1)
     pressao_min_aceita = pressao - df['margem_baixo']
     pressao_max_aceita = pressao + df['margem_cima']
-    
-    # Aplicar filtros combinados
-    mascara = (
-        (df["VAZÃO (M³/H)"] == vazao) &
-        (df["PRESSÃO (MCA)"] >= pressao_min_aceita) &
-        (df["PRESSÃO (MCA)"] <= pressao_max_aceita) &
-        (df["PRESSÃO (MCA)"] >= limite_min_absoluto) &  # Respeita limite mínimo absoluto
-        (df["PRESSÃO (MCA)"] <= limite_max_absoluto)    # Respeita limite máximo absoluto
-    )
-    
-    df_filtrado = df[mascara].copy()
-    
-    # ... (seu código posterior de classificação) ...
-    
-    return df_filtrado
+    df_filtrado = df[(df["VAZÃO (M³/H)"] == vazao) & (df["PRESSÃO (MCA)"] >= pressao_min_aceita) & (df["PRESSÃO (MCA)"] <= pressao_max_aceita)].copy()
+    if not df_filtrado.empty:
+        df_filtrado = df_filtrado[~((df_filtrado['ROTORNUM'] == df_filtrado['ROTOR_MIN_MODELO']) & (pressao < df_filtrado["PRESSÃO (MCA)"] - df_filtrado['PRESSAO_MAX_MODELO'] * 0.03)) & ~((df_filtrado['ROTORNUM'] == df_filtrado['ROTOR_MAX_MODELO']) & (pressao > df_filtrado["PRESSÃO (MCA)"] + df_filtrado['PRESSAO_MAX_MODELO'] * 0.03))]
+    if df_filtrado.empty: return pd.DataFrame()
 
     # ETAPA 2: CÁLCULOS BÁSICOS
     df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
@@ -1000,6 +965,7 @@ if st.session_state.resultado_busca:
                     st.info(T['quote_form_info'])
                     
     
+
 
 
 
