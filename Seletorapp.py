@@ -415,7 +415,7 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
         subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= limite_desempate_rendimento].copy()
         subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > limite_desempate_rendimento].copy()
         
-        subgrupo_A1 = subgrupo_A1.sort_values(by="POTÊNCIA (HP)", ascending=True)
+        subgrupo_A1 = subgrupo_A1.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
         
         grupo_A = pd.concat([subgrupo_A1, subgrupo_A2])
     
@@ -1028,3 +1028,4 @@ if st.session_state.resultado_busca:
                     ''', unsafe_allow_html=True)
                     st.info(T['quote_form_info'])
                     
+
