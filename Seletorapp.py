@@ -271,8 +271,9 @@ def encontrar_motor_final(potencia_real):
     candidatos = MOTORES_PADRAO[MOTORES_PADRAO >= potencia_real]
     return candidatos.min() if len(candidatos) > 0 else np.nan
 
-# @st.cache_data # Removido para que o script seja executável fora do Streamlit
+@st.cache_data
 def carregar_e_processar_dados(caminho_arquivo):
+
     try:
         df = pd.read_excel(caminho_arquivo)
         df.columns = df.columns.str.strip().str.upper()
@@ -304,7 +305,49 @@ def carregar_e_processar_dados(caminho_arquivo):
     df["ERRO_RELATIVO"] = ((df["VAZÃO (M³/H)"] - df["VAZAO_CENTRO"]) / (df["max"] - df["min"] + 1e-9)) * 100
     df["ABS_ERRO_RELATIVO"] = df["ERRO_RELATIVO"].abs()
     return df
+# ===================================================================
+# NOVA FUNÇÃO OTIMIZADA PARA O BUSCADOR POR MODELO
+# ===================================================================
+def buscar_por_modelo_e_motor(df, modelo, motor):
+    """
+    Função rápida e simples para buscar a melhor bomba quando o modelo e o motor já são conhecidos.
+    """
+    if df is None or df.empty:
+        return pd.DataFrame()
 
+    # Filtro direto e rápido no DataFrame
+    df_filtrado = df[
+        (df['MODELO'] == modelo) &
+        (df['MOTOR PADRÃO (CV)'] == motor)
+    ]
+    
+    if df_filtrado.empty:
+        return pd.DataFrame()
+        
+    # Pega a melhor opção baseada no maior rendimento
+    melhor_opcao = df_filtrado.loc[df_filtrado['RENDIMENTO (%)'].idxmax()]
+    
+    # Formata o resultado para ser compatível com o resto da interface
+    resultado_df = pd.DataFrame([melhor_opcao])
+    
+    # Prepara as colunas finais
+    colunas_finais = [
+       'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
+       'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)'
+    ]
+    
+    # Renomeia 'MOTOR PADRÃO (CV)' para 'MOTOR FINAL (CV)' para consistência
+    resultado_df = resultado_df.rename(columns={'MOTOR PADRÃO (CV)': 'MOTOR FINAL (CV)'})
+
+    # Remove a coluna de texto 'ROTOR' e renomeia 'ROTORNUM'
+    if 'ROTOR' in resultado_df.columns:
+        resultado_df = resultado_df.drop(columns=['ROTOR'])
+    resultado_df = resultado_df.rename(columns={'ROTORNUM': 'ROTOR'})
+    
+    # Garante que apenas colunas existentes sejam retornadas
+    colunas_presentes = [col for col in colunas_finais if col in resultado_df.columns]
+    
+    return resultado_df[colunas_presentes]
 # ===================================================================
 # FUNÇÃO PRINCIPAL COM A LÓGICA DE FILTRAGEM CORRIGIDA
 # ===================================================================
@@ -627,6 +670,7 @@ with tab_buscador:
             key='freq_buscador'
         )
 
+    # Graças ao cache, esta linha agora é instantânea após a primeira execução
     caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
     df_buscador = carregar_e_processar_dados(caminho_buscador)
 
@@ -640,21 +684,26 @@ with tab_buscador:
             )
 
         with col_motor_busca:
+            motor_selecionado_buscador = None # Inicializa a variável para evitar erros
             if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
                 motores_unicos = df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
                 motores_disponiveis = sorted([motor for motor in motores_unicos if pd.notna(motor)])
                 
-                motor_selecionado_buscador = st.selectbox(
-                    T['motor_select_label'],
-                    motores_disponiveis,
-                    key='motor_buscador'
-                )
+                if motores_disponiveis:
+                    motor_selecionado_buscador = st.selectbox(
+                        T['motor_select_label'],
+                        motores_disponiveis,
+                        key='motor_buscador'
+                    )
+                else:
+                    st.selectbox(T['motor_select_label'], ["-"], disabled=True)
             else:
                 st.selectbox(T['motor_select_label'], ["-"], disabled=True)
 
-        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
+        # A lógica do botão agora chama a nova função rápida 'buscar_por_modelo_e_motor'
+        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
             if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
-                # Reseta todos os estados ao iniciar uma nova busca
+                # Reseta o estado da interface
                 st.session_state.resultado_busca = None
                 st.session_state.mostrar_grafico = False
                 st.session_state.mostrar_desenho = False
@@ -662,23 +711,17 @@ with tab_buscador:
                 st.session_state.mostrar_desenho_visualizacao = False
                 st.session_state.mostrar_lista_visualizacao = False
 
-                df_filtrado = df_buscador[
-                    (df_buscador['MODELO'] == modelo_selecionado_buscador) &
-                    (df_buscador['MOTOR PADRÃO (CV)'] == motor_selecionado_buscador)
-                ]
+                # Chama a nova função rápida, que não causa lentidão
+                resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                 
-            with st.spinner(T['spinner_text'].format(freq=frequencia_buscador)):
-                df_filtrado = df_buscador[
-                    (df_buscador['MODELO'] == modelo_selecionado_buscador) &
-                    (df_buscador['MOTOR PADRÃO (CV)'] == motor_selecionado_buscador)
-                ]
-                
-                if not df_filtrado.empty:
-                    # ... (lógica para encontrar a melhor opção) ...
-                    st.rerun()
+                if not resultado.empty:
+                    st.session_state.resultado_busca = {"resultado": resultado, "tipo": "unica"}
                 else:
+                    st.session_state.resultado_busca = None # Limpa o resultado se nada for encontrado
                     st.error(T['no_solution_error'])
-
+                
+                st.rerun()
+                
 # O bloco de exibição de resultados abaixo desta linha permanece o mesmo.
 # --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
 # A linha 'if st.session_state.resultado_busca:' já existe no seu código,
