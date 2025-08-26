@@ -125,6 +125,14 @@ TRADUCOES = {
         'performance_note': "Nota: Nossos cálculos avançados para encontrar a bomba ideal podem levar alguns segundos. Agradecemos a sua paciência!",
         'drawing_unavailable': "Desenho dimensional indisponível. Entre em contato para receber.",
         'contact_button': "Contato",
+        'system_type_single': "Única",
+        'system_type_parallel': "{} em Paralelo",
+        'system_type_series': "2 em Série",
+        'system_type_combined': "{} Bombas ({}x2)",
+        'system_type_header': "Tipo de Sistema",
+        'pressure_error_header': "Erro de Pressão",
+        'relative_error_header': "Erro Relativo",
+        'no_solution_found': "❌ Nenhuma bomba ou sistema de bombas foi encontrado para este ponto de trabalho. Tente outros valores ou entre em contato com nosso suporte.",
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
         'quote_form_info': "Seu programa de e-mail padrão será aberto com todas as informações preenchidas.",
         'email_subject': "Pedido de Orçamento via Seletor de Bombas - {nome}",
@@ -182,8 +190,16 @@ TRADUCOES = {
         'download_drawing_button': "Download Dimensional Drawing",
         'drawing_unavailable': "Dimensional drawing unavailable. Please contact us to receive it.",
         'contact_button': "Contact",
+        'pressure_error_header': "Pressure Error",
+        'relative_error_header': "Relative Error",
+        'system_type_header': "System Type",
+        'no_solution_found': "❌ No pump or pump system was found for this duty point. Try other values or contact our support.",
         'performance_note': "Note: Our advanced calculations to find the ideal pump may take a few seconds. We appreciate your patience!",
         'quote_form_email': "Your Email *",
+        'system_type_single': "Single",
+        'system_type_parallel': "{} in Parallel",
+        'system_type_series': "2 in Series",
+        'system_type_combined': "{} Pumps ({}x2)",
         'quote_form_message': "Message (optional)",
         'quote_form_button': "Send Quote Request",
         'quote_form_warning': "Please fill in your name and email.",
@@ -247,6 +263,14 @@ TRADUCOES = {
         'download_drawing_button': "Descargar Dibujo Dimensional",
         'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
         'contact_button': "Contacto",
+        'system_type_single': "Única",
+        'pressure_error_header': "Error de Presión",
+        'relative_error_header': "Error Relativo",
+        'system_type_parallel': "{} en Paralelo",
+        'system_type_series': "2 en Serie",
+        'system_type_combined': "{} Bombas ({}x2)",
+        'system_type_header': "Tipo de Sistema",
+        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
         'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal pueden tardar unos segundos. ¡Agradecemos su paciencia!",
         'quote_form_button': "Enviar Solicitud de Cotización",
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
@@ -304,6 +328,7 @@ def carregar_e_processar_dados(caminho_arquivo):
     # Adicionado + 1e-9 para evitar divisão por zero se min == max
     df["ERRO_RELATIVO"] = ((df["VAZÃO (M³/H)"] - df["VAZAO_CENTRO"]) / (df["max"] - df["min"] + 1e-9)) * 100
     df["ABS_ERRO_RELATIVO"] = df["ERRO_RELATIVO"].abs()
+    
     return df
 # ===================================================================
 # NOVA FUNÇÃO OTIMIZADA PARA O BUSCADOR POR MODELO
@@ -330,10 +355,18 @@ def buscar_por_modelo_e_motor(df, modelo, motor):
     # Formata o resultado para ser compatível com o resto da interface
     resultado_df = pd.DataFrame([melhor_opcao])
     
-    # Prepara as colunas finais
+    # --- CORRIGIDO ---
+    # Adiciona as colunas necessárias para compatibilidade com a nova exibição
+    resultado_df["TIPO_SISTEMA_CODE"] = "single"
+    resultado_df["N_TOTAL_BOMBAS"] = 1
+    # --- FIM DA CORREÇÃO ---
+    
+    # Prepara as colunas finais (agora usando TIPO_SISTEMA_CODE)
     colunas_finais = [
        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
-       'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)'
+       'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 
+       'TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS',  # Corrigido
+       'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO' 
     ]
     
     # Renomeia 'MOTOR PADRÃO (CV)' para 'MOTOR FINAL (CV)' para consistência
@@ -425,11 +458,11 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     df_resultado = df_resultado.head(top_n)
     df_resultado = df_resultado.drop(columns=["DIF_ERRO_REL", "DIF_REND"], errors="ignore")
     
+    # Substitua pela nova lista:
     colunas_finais = [
-       'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
-       'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)'
-    ]
-    
+        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
+        'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO'
+    ]    
     # CORREÇÃO: Para evitar o erro de coluna duplicada, removemos a coluna 'ROTOR' original (texto)
     # antes de renomear a coluna numérica 'ROTORNUM' para 'ROTOR'.
     if 'ROTOR' in df_resultado.columns:
@@ -443,16 +476,98 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     return df_resultado[colunas_presentes]
 
 def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
+    if df is None or df.empty:
+        return pd.DataFrame()
+
+    todos_resultados = []
+    
+    # === ETAPA 1: BUSCA POR SOLUÇÃO ÚNICA ===
     resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n)
-    if not resultado_unico.empty and resultado_unico.iloc[0]["RENDIMENTO (%)"] > 50:
-        return resultado_unico, "unica"
-    resultado_paralelo = filtrar_e_classificar(df, vazao_desejada / 2, pressao_desejada, top_n)
-    if not resultado_paralelo.empty:
-        return resultado_paralelo, "paralelo"
-    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_desejada / 2, top_n)
+    if not resultado_unico.empty and resultado_unico.iloc[0]["RENDIMENTO (%)"] >= 50:
+        resultado_unico["TIPO_SISTEMA_CODE"] = "single"
+        resultado_unico["N_TOTAL_BOMBAS"] = 1
+        resultado_unico["PRIORIDADE_TIPO"] = 1
+        return resultado_unico.head(top_n)
+
+    # Coleta a melhor opção de bomba única para comparar depois, mesmo que não seja ideal
+    if not resultado_unico.empty:
+        resultado_unico_melhor = resultado_unico.head(1).copy()
+        resultado_unico_melhor["TIPO_SISTEMA_CODE"] = "single"
+        resultado_unico_melhor["N_TOTAL_BOMBAS"] = 1
+        resultado_unico_melhor["PRIORIDADE_TIPO"] = 1
+        todos_resultados.append(resultado_unico_melhor)
+
+    # === ETAPA 2: BUSCA POR SOLUÇÕES MÚLTIPLAS ===
+    # Dicionário para armazenar a melhor opção de cada modelo (menor número de bombas)
+    melhores_por_modelo = {}
+    
+    # 2.1 - Bombas em Paralelo (2 a 5)
+    for num_paralelo in range(2, 6):
+        vazao_paralelo = vazao_desejada / num_paralelo
+        resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=1)
+        if not resultado_paralelo.empty:
+            melhor_paralelo = resultado_paralelo.head(1).copy()
+            modelo = melhor_paralelo['MODELO'].iloc[0]
+            
+            # Verifica se já temos uma opção para este modelo
+            if modelo not in melhores_por_modelo or num_paralelo < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
+                melhor_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
+                melhor_paralelo["N_TOTAL_BOMBAS"] = num_paralelo
+                melhor_paralelo["PRIORIDADE_TIPO"] = 2
+                melhores_por_modelo[modelo] = melhor_paralelo
+
+    # 2.2 - Bombas em Série (2)
+    pressao_serie = pressao_desejada / 2
+    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=1)
     if not resultado_serie.empty:
-        return resultado_serie, "serie"
-    return pd.DataFrame(), "nenhuma"
+        melhor_serie = resultado_serie.head(1).copy()
+        modelo = melhor_serie['MODELO'].iloc[0]
+        
+        # Só adiciona se for melhor que uma opção existente (menos bombas)
+        if modelo not in melhores_por_modelo or 2 < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
+            melhor_serie["TIPO_SISTEMA_CODE"] = "series"
+            melhor_serie["N_TOTAL_BOMBAS"] = 2
+            melhor_serie["PRIORIDADE_TIPO"] = 3
+            melhores_por_modelo[modelo] = melhor_serie
+
+    # 2.3 - Sistemas Mistos (Série em Paralelo) - 2 a 5 conjuntos
+    for num_conjuntos in range(2, 6):
+        vazao_misto = vazao_desejada / num_conjuntos
+        pressao_misto = pressao_desejada / 2
+        resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=1)
+        if not resultado_misto.empty:
+            melhor_misto = resultado_misto.head(1).copy()
+            modelo = melhor_misto['MODELO'].iloc[0]
+            total_bombas = num_conjuntos * 2
+            
+            # Só adiciona se for melhor que uma opção existente (menos bombas)
+            if modelo not in melhores_por_modelo or total_bombas < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
+                melhor_misto["TIPO_SISTEMA_CODE"] = "combined"
+                melhor_misto["N_TOTAL_BOMBAS"] = total_bombas
+                melhor_misto["N_PARALELO"] = num_conjuntos
+                melhor_misto["PRIORIDADE_TIPO"] = 4
+                melhores_por_modelo[modelo] = melhor_misto
+
+    # Adiciona todas as melhores opções por modelo à lista de resultados
+    for modelo, resultado in melhores_por_modelo.items():
+        todos_resultados.append(resultado)
+
+    if not todos_resultados:
+        return pd.DataFrame()
+    
+    # === ETAPA 3: CONSOLIDAÇÃO E RANKING FINAL ===
+    df_final = pd.concat(todos_resultados, ignore_index=True)
+    
+    # Ordenação final pela prioridade
+    df_final = df_final.sort_values(
+        by=["N_TOTAL_BOMBAS", "PRIORIDADE_TIPO", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
+        ascending=[True, True, False, True, True]
+    ).head(top_n)
+
+    # Drop colunas de cálculos intermediários
+    df_final = df_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
+
+    return df_final
 
 # ===================================================================
 # INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
@@ -650,9 +765,9 @@ with tab_seletor:
             st.session_state.mostrar_lista_visualizacao = False
             
             with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-                resultado, tipo = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
+                resultado = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
                 if not resultado.empty:
-                    st.session_state.resultado_busca = {"resultado": resultado, "tipo": tipo}
+                    st.session_state.resultado_busca = {"resultado": resultado}
                 else:
                     st.error(T['no_solution_error'])
             
@@ -730,302 +845,233 @@ with tab_buscador:
 if st.session_state.resultado_busca:
     st.divider()
     st.header(T['results_header'])
-    resultado_data = st.session_state.resultado_busca
-    resultado = resultado_data["resultado"]
-    tipo = resultado_data["tipo"]
-    if tipo == "unica": st.success(T['solution_unique'])
-    elif tipo == "paralelo": st.warning(T['solution_parallel']); st.info(T['solution_parallel_info'])
-    elif tipo == "serie": st.warning(T['solution_series']); st.info(T['solution_series_info'])
-        
-    resultado_formatado = resultado.copy()
-    for col in ['ERRO_PRESSAO', 'ERRO_RELATIVO', 'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'POTÊNCIA CORRIGIDA (HP)']:
-        if col in resultado_formatado.columns:
-                resultado_formatado[col] = resultado_formatado[col].map('{:,.2f}'.format)
-    st.dataframe(resultado_formatado, hide_index=True, use_container_width=True)
-    st.divider()
-        
-        # ===================================================================
-        # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (DENTRO DO BLOCO COM RESULTADOS)
-        # ===================================================================
-    st.divider()
-        # Corrigido para usar a tradução
-    st.header(T['graph_header']) 
-        
-        # Obtém o modelo selecionado
-    modelo_selecionado = resultado.iloc[0]['MODELO']
-    frequencia_str = frequencia_selecionada
-    caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
-        
-        # Botão estilizado para visualizar o gráfico
-    if st.button(
-        T['view_graph_button'],
-        key="btn_visualizar_grafico",
-        use_container_width=True,
-        type="primary",
-    ):
-        st.session_state.mostrar_grafico = True
-            
-    st.divider()
+    resultado = st.session_state.resultado_busca["resultado"]
+    
+    if resultado.empty:
+        st.error(T['no_solution_found'])
+    else:
+        resultado_exibicao = resultado.copy()
 
- # ===================================================================
-        # SEÇÃO DE DOWNLOAD DO DESENHO DIMENSIONAL (COM CAIXA EXPANSÍVEL)
-        # ===================================================================
-# ADICIONE AS 2 LINHAS ABAIXO
-        
-    st.header(T['drawing_header'])
-        
-        # 1. Botão principal que abre/fecha a seção do desenho
-    if st.button(T['dimensional_drawing_button'], use_container_width=True):
-        st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
+        # Traduz o código de tipo de sistema para o texto correto
+        def traduzir_tipo_sistema(row):
+            code = row['TIPO_SISTEMA_CODE']
+            if code == "single":
+                return T['system_type_single']
+            elif code == "parallel":
+                return T['system_type_parallel'].format(int(row.get('N_TOTAL_BOMBAS', 2)))
+            elif code == "series":
+                return T['system_type_series']
+            elif code == "combined":
+                return T['system_type_combined'].format(int(row.get('N_TOTAL_BOMBAS', 4)), int(row.get('N_PARALELO_BUSCA', 2)))
+            return ""
 
-        # 2. Container que só aparece quando o botão acima é clicado
-    if st.session_state.get('mostrar_desenho', False):
-        with st.container(border=True):
-                # Mensagem de aviso padrão
-            st.info(T['dimensional_drawing_warning'])
+        resultado_exibicao[T['system_type_header']] = resultado_exibicao.apply(traduzir_tipo_sistema, axis=1)
+        
+        # Remove a coluna de código após a tradução
+        resultado_exibicao = resultado_exibicao.drop(columns=['TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS', 'N_PARALELO_BUSCA'], errors='ignore')
+        
+        # Renomeia as colunas para exibição, incluindo as novas
+        resultado_exibicao = resultado_exibicao.rename(columns={
+            "RENDIMENTO (%)": "RENDIMENTO",
+            "POTÊNCIA (HP)": "POTÊNCIA",
+            "MOTOR FINAL (CV)": "MOTOR FINAL",
+            "ERRO_PRESSAO": T['pressure_error_header'],
+            "ERRO_RELATIVO": T['relative_error_header']
+        })
 
-                # A lógica de busca do arquivo (que já tínhamos) agora fica DENTRO do container
-                # -------------------------------------------------------------------------
-                
-                # a. Obter dados da bomba selecionada (top 1)
-            melhor_bomba = resultado.iloc[0]
-            modelo_selecionado = melhor_bomba['MODELO']
+        # Adiciona a coluna de ranking
+        resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
+
+        opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
+        selecao_ranking = st.radio(
+            "Selecione a bomba para visualizar os documentos:",
+            options=opcoes_ranking,
+            index=0,
+            horizontal=True,
+            label_visibility="collapsed",
+            key='radio_selecao_bomba'
+        )
+        
+        # Formata os valores numéricos
+        for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
+            if col in resultado_exibicao.columns:
+                resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
+        
+        # Exibe a tabela completa com as novas colunas
+        st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=[
+            'Ranking',
+            T['system_type_header'],
+            'MODELO',
+            'ROTOR',
+            'RENDIMENTO',
+            'POTÊNCIA',
+            'MOTOR FINAL',
+        ])
+
+        indice_selecionado = opcoes_ranking.index(selecao_ranking)
+        melhor_bomba = resultado.iloc[indice_selecionado]
+        modelo_selecionado = melhor_bomba['MODELO']
+        
+        try:
             motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
-
-                # b. Preparar para a busca na pasta "Desenhos"
-            desenho_base_path = Path("Desenhos")
-            caminho_desenho_final = None
-                
-                # c. Lógica de busca por motor mais próximo
-            if desenho_base_path.exists():
-                desenhos_candidatos = {} # Dicionário para guardar {motor_disponivel: caminho_completo}
-                for path_arquivo in desenho_base_path.glob(f"{modelo_selecionado}*.pdf"):
-                    nome_sem_ext = path_arquivo.stem
-                    partes = nome_sem_ext.split('_')
-                    if len(partes) == 2:
-                        try:
-                            motor_no_arquivo = int(partes[1])
-                            desenhos_candidatos[motor_no_arquivo] = path_arquivo
-                        except ValueError:
-                            continue
-                if desenhos_candidatos:
-                    motor_mais_proximo = min(
-                        desenhos_candidatos.keys(), 
-                        key=lambda motor: abs(motor - motor_alvo)
-                    )
-                    caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
-                
-                # d. Fallback para o nome geral
-            if not caminho_desenho_final:
-                caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
-                if caminho_geral.exists():
-                    caminho_desenho_final = caminho_geral
-
-# e. Exibe os botões e a visualização condicional
-            if caminho_desenho_final:
-                    # Botão para pré-visualizar o PDF como imagem
-                if st.button(T['view_drawing_button'], use_container_width=True, type="secondary"):
-                    st.session_state.mostrar_desenho_visualizacao = not st.session_state.get('mostrar_desenho_visualizacao', False)
-
-                    # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
-                if st.session_state.get('mostrar_desenho_visualizacao', False):
-                    mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
-                    if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
-                        st.session_state.mostrar_desenho_visualizacao = False
-                        st.rerun()
-                    
-                    # Botão para fazer o download do arquivo
-                with open(caminho_desenho_final, "rb") as pdf_file:
-                    st.download_button(
-                        label=T['download_drawing_button'],
-                        data=pdf_file,
-                        file_name=caminho_desenho_final.name,
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-            else:
-                st.warning(T['drawing_unavailable'])
-                    
-                # f. Exibe o botão de Contato em ambos os casos (arquivo encontrado ou não)
-            link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
-            st.markdown(f'''
-            <a href="{link_contato}" target="_blank" style="
-                display: block; 
-                padding: 0.5rem 1rem; 
-                background-color: {COR_PRIMARIA};
-                color: white; 
-                font-weight: bold; 
-                text-align: center;
-                text-decoration: none; 
-                border-radius: 8px; 
-                border: 2px solid {COR_PRIMARIA};
-                box-sizing: border-box;
-                margin-top: 10px;
-            ">
-                {T['contact_button']}
-            </a>
-            ''', unsafe_allow_html=True)
-                
-    st.divider()
-
-# Adiciona uma linha para separar as seções
+        except ValueError:
+            motor_alvo = 0
 
         # ===================================================================
-        # SEÇÃO LISTA DE PEÇAS
+        # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (O código abaixo permanece o mesmo)
         # ===================================================================
+        st.header(T['graph_header'])
+        frequencia_str = st.session_state.get('freq_seletor') or st.session_state.get('freq_buscador')
+        caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
         
-    st.header(T['parts_list_header'])
+        if st.button(
+            T['view_graph_button'],
+            key="btn_visualizar_grafico",
+            use_container_width=True,
+            type="primary",
+        ):
+            st.session_state.mostrar_grafico = True
         
-        # 1. Botão principal que abre/fecha a seção da lista de peças
-    if st.button(T['parts_list_button'], use_container_width=True):
-            # Inverte o estado atual (se era False, vira True, e vice-versa)
-        st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+        if st.session_state.get('mostrar_grafico', False):
+            with st.container(border=True):
+                st.subheader(f"Modelo: {modelo_selecionado}")
+                mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
+                if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
+                    st.session_state.mostrar_grafico = False
+                    st.rerun()
+        st.divider()
 
-        # 2. Container que só aparece quando o botão acima for clicado
-    if st.session_state.get('mostrar_lista_pecas', False):
-        with st.container(border=True):
-                # Lógica de busca do arquivo (simples, só por modelo, na pasta "Lista")
-            caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
+        # ===================================================================
+        # SEÇÃO DE DOWNLOAD DO DESENHO DIMENSIONAL (O código abaixo permanece o mesmo)
+        # ===================================================================
+        st.header(T['drawing_header'])
+        
+        if st.button(T['dimensional_drawing_button'], use_container_width=True):
+            st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
+
+        if st.session_state.get('mostrar_desenho', False):
+            with st.container(border=True):
+                st.info(T['dimensional_drawing_warning'])
+                desenho_base_path = Path("Desenhos")
+                caminho_desenho_final = None
                 
-                # Link de contato para o WhatsApp
-            link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
-            botao_contato_html = f'''
-            <a href="{link_contato_pecas}" target="_blank" style="
-                display: block; 
-                padding: 0.5rem 1rem; 
-                background-color: {COR_PRIMARIA};
-                color: white; 
-                font-weight: bold; 
-                text-align: center;
-                text-decoration: none; 
-                border-radius: 8px; 
-                border: 2px solid {COR_PRIMARIA};
-                box-sizing: border-box;
-                margin-top: 10px;
-            ">
-                {T['contact_button']}
-            </a>
-            '''
-
-# CASO A: O arquivo da lista de peças EXISTE
-            if caminho_lista_pecas.exists():
-                st.info(T['parts_list_warning']) # Mensagem de aviso
+                if desenho_base_path.exists():
+                    desenhos_candidatos = {}
+                    for path_arquivo in desenho_base_path.glob(f"{modelo_selecionado}*.pdf"):
+                        nome_sem_ext = path_arquivo.stem
+                        partes = nome_sem_ext.split('_')
+                        if len(partes) == 2:
+                            try:
+                                motor_no_arquivo = int(partes[1])
+                                desenhos_candidatos[motor_no_arquivo] = path_arquivo
+                            except ValueError:
+                                continue
                     
-                    # Botão para pré-visualizar a lista de peças
-                if st.button(T['view_parts_list_button'], use_container_width=True, type="secondary"):
-                    st.session_state.mostrar_lista_visualizacao = not st.session_state.get('mostrar_lista_visualizacao', False)
-
-                    # Se o botão de visualizar foi clicado, mostra a imagem e o botão de fechar
-                if st.session_state.get('mostrar_lista_visualizacao', False):
-                    mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
-                    if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
-                        st.session_state.mostrar_lista_visualizacao = False
-                        st.rerun()
-
-                    # Botão para fazer o download do arquivo
-                with open(caminho_lista_pecas, "rb") as pdf_file:
-                    st.download_button(
-                        label=T['download_parts_list_button'],
-                        data=pdf_file,
-                        file_name=caminho_lista_pecas.name,
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                    
-                    # Exibe o botão de contato logo abaixo
-                st.markdown(botao_contato_html, unsafe_allow_html=True)
-
-                # CASO B: O arquivo da lista de peças NÃO existe
-            else:
-                st.warning(T['parts_list_unavailable'])
-                    
-                    # Exibe apenas o botão de contato
-                st.markdown(botao_contato_html, unsafe_allow_html=True)
-                    
-        # Verifica se devemos mostrar o gráfico
-    if st.session_state.get('mostrar_grafico', False):
-            # O container e tudo dentro dele precisa estar INDENTADO (com mais espaços)
-            # para pertencer ao 'if' acima.
-        with st.container(border=True):
-            st.subheader(f"Modelo: {modelo_selecionado}")
-            mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
-
-                # O botão de fechar também deve aparecer junto com o gráfico
-            if st.button(T['close_graph_button'], key="btn_fechar_grafico", use_container_width=True):
-                st.session_state.mostrar_grafico = False
-                st.rerun() # Adicionado para fechar o gráfico instantaneamente
+                    if desenhos_candidatos:
+                        motor_mais_proximo = min(
+                            desenhos_candidatos.keys(),
+                            key=lambda motor: abs(motor - motor_alvo)
+                        )
+                        caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
                 
-        # O código do formulário de orçamento que já existe continua depois daqui....
+                if not caminho_desenho_final:
+                    caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
+                    if caminho_geral.exists():
+                        caminho_desenho_final = caminho_geral
                 
-        # Módulo de Orçamento
-        if ATIVAR_ORCAMENTO:
-            if st.button(T['quote_button_start'], use_container_width=True):
-                st.session_state.iniciar_orcamento = not st.session_state.iniciar_orcamento
-                st.session_state.mailto_link = None
-                st.session_state.opcionais_selecionados = None
+                if caminho_desenho_final:
+                    if st.button(T['view_drawing_button'], use_container_width=True, type="secondary"):
+                        st.session_state.mostrar_desenho_visualizacao = not st.session_state.get('mostrar_desenho_visualizacao', False)
 
-            if st.session_state.iniciar_orcamento:
-                with st.form("opcionais_form"):
-                    st.subheader(T['quote_options_header'])
-                    col_op1, col_op2 = st.columns(2)
-                    with col_op1:
-                        rotor_orc = st.selectbox("Material do Rotor", ["FOFO", "CA40", "INOX34"])
-                        difusor_orc = st.selectbox("Material do Difusor", ["FOFO", "CA40", "INOX34"])
-                        equalizador_orc = st.selectbox("Equalizador de Pressão", ["FILTRO EQUALIZADOR", "PISTÃO EQUALIZADOR"])
-                    with col_op2:
-                        sensor_motor_orc = st.selectbox("Sensor Temperatura do Motor", ["1 SENSOR", "3 SENSORES"])
-                        sensor_nivel_orc = st.selectbox("Sensor de Nível", ["NÃO", "SIM"])
-                        crivo_orc = st.selectbox("Crivo", ["SIM", "NÃO"])
-                    continuar_orcamento = st.form_submit_button(T['quote_continue_button'])
-                    if continuar_orcamento:
-                        st.session_state.opcionais_selecionados = {
-                            "Material do Rotor": rotor_orc,
-                            "Material do Difusor": difusor_orc,
-                            "Equalizador de Pressão": equalizador_orc,
-                            "Sensor Temperatura do Motor": sensor_motor_orc,
-                            "Sensor de Nível": sensor_nivel_orc,
-                            "Crivo": crivo_orc
-                        }
-
-                if st.session_state.opcionais_selecionados:
-                    with st.form("contato_form"):
-                        st.subheader(T['quote_contact_header'])
-                        nome_cliente = st.text_input(T['quote_form_name'])
-                        email_cliente = st.text_input(T['quote_form_email'])
-                        mensagem_cliente = st.text_area(T['quote_form_message'])
-                        enviar_orcamento = st.form_submit_button(T['quote_form_button'])
-                        if enviar_orcamento:
-                            if not nome_cliente or not email_cliente:
-                                st.warning(T['quote_form_warning'])
-                            else:
-                                opcionais_texto = "\n\nOPCIONAIS SELECIONADOS PARA O ORÇAMENTO:\n"
-                                for chave, valor in st.session_state.opcionais_selecionados.items():
-                                    opcionais_texto += f"- {chave}: {valor}\n"
-                                tabela_resultados_texto = resultado.to_string()
-                                corpo_email = T['email_body'].format(
-                                    nome=nome_cliente,
-                                    email=email_cliente,
-                                    mensagem=mensagem_cliente,
-                                    freq=frequencia_selecionada,
-                                    vazao=vazao_para_busca,
-                                    pressao=pressao_para_busca,
-                                    tabela_resultados=tabela_resultados_texto
-                                ) + opcionais_texto
-                                corpo_email_codificado = quote(corpo_email)
-                                assunto = quote(T['email_subject'].format(nome=nome_cliente))
-                                st.session_state.mailto_link = f"mailto:{EMAIL_DESTINO}?subject={assunto}&body={corpo_email_codificado}"
-
-                if st.session_state.mailto_link:
-                    st.success(T['quote_form_success'])
-                    st.markdown(f'''
-                        <a href="{st.session_state.mailto_link}" target="_blank" style="
-                            display: inline-block; padding: 12px 20px; background-color: {COR_SECUNDARIA};
-                            color: {COR_PRIMARIA}; font-weight: bold; text-align: center;
-                            text-decoration: none; border-radius: 8px; border: 2px solid {COR_PRIMARIA};
-                        ">
-                            {T['quote_form_click_here']}
-                        </a>
-                    ''', unsafe_allow_html=True)
-                    st.info(T['quote_form_info'])
+                    if st.session_state.get('mostrar_desenho_visualizacao', False):
+                        mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
+                            st.session_state.mostrar_desenho_visualizacao = False
+                            st.rerun()
                     
+                    with open(caminho_desenho_final, "rb") as pdf_file:
+                        st.download_button(
+                            label=T['download_drawing_button'],
+                            data=pdf_file,
+                            file_name=caminho_desenho_final.name,
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                else:
+                    st.warning(T['drawing_unavailable'])
+                
+                link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
+                st.markdown(f'''
+                <a href="{link_contato}" target="_blank" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    background-color: {COR_PRIMARIA};
+                    color: white;
+                    font-weight: bold;
+                    text-align: center;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                ''', unsafe_allow_html=True)
+        st.divider()
 
+        # ===================================================================
+        # SEÇÃO LISTA DE PEÇAS (O código abaixo permanece o mesmo)
+        # ===================================================================
+        st.header(T['parts_list_header'])
+        
+        if st.button(T['parts_list_button'], use_container_width=True):
+            st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+
+        if st.session_state.get('mostrar_lista_pecas', False):
+            with st.container(border=True):
+                caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
+                
+                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                botao_contato_html = f'''
+                <a href="{link_contato_pecas}" target="_blank" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    background-color: {COR_PRIMARIA};
+                    color: white;
+                    font-weight: bold;
+                    text-align: center;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                '''
+
+                if caminho_lista_pecas.exists():
+                    st.info(T['parts_list_warning'])
+                    if st.button(T['view_parts_list_button'], use_container_width=True, type="secondary"):
+                        st.session_state.mostrar_lista_visualizacao = not st.session_state.get('mostrar_lista_visualizacao', False)
+
+                    if st.session_state.get('mostrar_lista_visualizacao', False):
+                        mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
+                            st.session_state.mostrar_lista_visualizacao = False
+                            st.rerun()
+
+                    with open(caminho_lista_pecas, "rb") as pdf_file:
+                        st.download_button(
+                            label=T['download_parts_list_button'],
+                            data=pdf_file,
+                            file_name=caminho_lista_pecas.name,
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
+                    
+                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                else:
+                    st.warning(T['parts_list_unavailable'])
+                    st.markdown(botao_contato_html, unsafe_allow_html=True)
