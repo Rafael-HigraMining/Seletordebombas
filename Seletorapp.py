@@ -125,6 +125,12 @@ TRADUCOES = {
         'performance_note': "Nota: Nossos cálculos avançados para encontrar a bomba ideal podem levar alguns segundos. Agradecemos a sua paciência!",
         'drawing_unavailable': "Desenho dimensional indisponível. Entre em contato para receber.",
         'contact_button': "Contato",
+        'show_unique_button': "🔍 Mostrar Bombas Únicas",
+        'show_systems_button': "🔄 Mostrar Sistemas Múltiplos",
+        'view_mode_unique': "Modo de visualização: Bombas Únicas",
+        'view_mode_systems': "Modo de visualização: Sistemas Múltiplos",
+        'no_unique_pumps': "❌ Nenhuma bomba única encontrada para estes parâmetros.",
+        'no_systems_found': "❌ Nenhum sistema com múltiplas bombas encontrado para estes parâmetros.",
         'system_type_single': "Única",
         'system_type_parallel': "{} em Paralelo",
         'system_type_series': "2 em Série",
@@ -197,6 +203,12 @@ TRADUCOES = {
         'performance_note': "Note: Our advanced calculations to find the ideal pump may take a few seconds. We appreciate your patience!",
         'quote_form_email': "Your Email *",
         'system_type_single': "Single",
+        'show_unique_button': "🔍 Show Single Pumps",
+        'show_systems_button': "🔄 Show Multiple Systems",
+        'view_mode_unique': "Viewing mode: Single Pumps",
+        'view_mode_systems': "Viewing mode: Multiple Systems",
+        'no_unique_pumps': "❌ No single pump found for these parameters.",
+        'no_systems_found': "❌ No multiple pump system found for these parameters.",
         'system_type_parallel': "{} in Parallel",
         'system_type_series': "2 in Series",
         'system_type_combined': "{} Pumps ({}x2)",
@@ -264,6 +276,12 @@ TRADUCOES = {
         'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
         'contact_button': "Contacto",
         'system_type_single': "Única",
+        'show_unique_button': "🔍 Mostrar Bombas Únicas",
+        'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
+        'view_mode_unique': "Modo de visualización: Bombas Únicas",
+        'view_mode_systems': "Modo de visualización: Sistemas Múltiples",
+        'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
+        'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'pressure_error_header': "Error de Presión",
         'relative_error_header': "Error Relativo",
         'system_type_parallel': "{} en Paralelo",
@@ -475,101 +493,134 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     
     return df_resultado[colunas_presentes]
 
-def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=5):
+def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     if df is None or df.empty:
-        return pd.DataFrame()
+        # A atualização pede para retornar duas tabelas, mesmo que vazias
+        return pd.DataFrame(), pd.DataFrame()
 
-    todos_resultados = []
+    # === ETAPA 1: Buscar todas as opções possíveis (lógica original mantida) ===
+    todas_opcoes = []
     
-    # === ETAPA 1: BUSCA POR SOLUÇÃO ÚNICA ===
-    resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n)
-    if not resultado_unico.empty and resultado_unico.iloc[0]["RENDIMENTO (%)"] >= 50:
+    # 1.1 Bombas únicas
+    resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n=10)
+    if not resultado_unico.empty:
         resultado_unico["TIPO_SISTEMA_CODE"] = "single"
         resultado_unico["N_TOTAL_BOMBAS"] = 1
         resultado_unico["PRIORIDADE_TIPO"] = 1
-        return resultado_unico.head(top_n)
-
-    # Coleta a melhor opção de bomba única para comparar depois, mesmo que não seja ideal
-    if not resultado_unico.empty:
-        resultado_unico_melhor = resultado_unico.head(1).copy()
-        resultado_unico_melhor["TIPO_SISTEMA_CODE"] = "single"
-        resultado_unico_melhor["N_TOTAL_BOMBAS"] = 1
-        resultado_unico_melhor["PRIORIDADE_TIPO"] = 1
-        todos_resultados.append(resultado_unico_melhor)
-
-    # === ETAPA 2: BUSCA POR SOLUÇÕES MÚLTIPLAS ===
-    # Dicionário para armazenar a melhor opção de cada modelo (menor número de bombas)
-    melhores_por_modelo = {}
+        todas_opcoes.append(resultado_unico)
     
-    # 2.1 - Bombas em Paralelo (2 a 5)
+    # 1.2 Sistemas com múltiplas bombas
+    sistemas_multiplos = []
+    
+    # Paralelo (2 a 5 bombas)
     for num_paralelo in range(2, 6):
         vazao_paralelo = vazao_desejada / num_paralelo
-        resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=1)
+        resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=5)
         if not resultado_paralelo.empty:
-            melhor_paralelo = resultado_paralelo.head(1).copy()
-            modelo = melhor_paralelo['MODELO'].iloc[0]
-            
-            # Verifica se já temos uma opção para este modelo
-            if modelo not in melhores_por_modelo or num_paralelo < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
-                melhor_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
-                melhor_paralelo["N_TOTAL_BOMBAS"] = num_paralelo
-                melhor_paralelo["PRIORIDADE_TIPO"] = 2
-                melhores_por_modelo[modelo] = melhor_paralelo
-
-    # 2.2 - Bombas em Série (2)
+            resultado_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
+            resultado_paralelo["N_TOTAL_BOMBAS"] = num_paralelo
+            resultado_paralelo["PRIORIDADE_TIPO"] = 2
+            sistemas_multiplos.append(resultado_paralelo)
+    
+    # Série (2 bombas)
     pressao_serie = pressao_desejada / 2
-    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=1)
+    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=5)
     if not resultado_serie.empty:
-        melhor_serie = resultado_serie.head(1).copy()
-        modelo = melhor_serie['MODELO'].iloc[0]
-        
-        # Só adiciona se for melhor que uma opção existente (menos bombas)
-        if modelo not in melhores_por_modelo or 2 < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
-            melhor_serie["TIPO_SISTEMA_CODE"] = "series"
-            melhor_serie["N_TOTAL_BOMBAS"] = 2
-            melhor_serie["PRIORIDADE_TIPO"] = 3
-            melhores_por_modelo[modelo] = melhor_serie
-
-    # 2.3 - Sistemas Mistos (Série em Paralelo) - 2 a 5 conjuntos
+        resultado_serie["TIPO_SISTEMA_CODE"] = "series"
+        resultado_serie["N_TOTAL_BOMBAS"] = 2
+        resultado_serie["PRIORIDADE_TIPO"] = 3
+        sistemas_multiplos.append(resultado_serie)
+    
+    # Misto (série em paralelo)
     for num_conjuntos in range(2, 6):
         vazao_misto = vazao_desejada / num_conjuntos
         pressao_misto = pressao_desejada / 2
-        resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=1)
+        resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=5)
         if not resultado_misto.empty:
-            melhor_misto = resultado_misto.head(1).copy()
-            modelo = melhor_misto['MODELO'].iloc[0]
             total_bombas = num_conjuntos * 2
+            resultado_misto["TIPO_SISTEMA_CODE"] = "combined"
+            resultado_misto["N_TOTAL_BOMBAS"] = total_bombas
+            resultado_misto["N_PARALELO"] = num_conjuntos
+            resultado_misto["PRIORIDADE_TIPO"] = 4
+            sistemas_multiplos.append(resultado_misto)
+    
+    # Combinar todas as opções em suas respectivas categorias
+    if todas_opcoes:
+        df_unicas = pd.concat(todas_opcoes, ignore_index=True)
+    else:
+        df_unicas = pd.DataFrame()
+        
+    if sistemas_multiplos:
+        df_multiplas = pd.concat(sistemas_multiplos, ignore_index=True)
+        # Garantir apenas uma opção por modelo (a com menos bombas)
+        df_multiplas = df_multiplas.sort_values(
+            by=["MODELO", "N_TOTAL_BOMBAS", "RENDIMENTO (%)"], 
+            ascending=[True, True, False]
+        ).drop_duplicates(subset=["MODELO"], keep="first")
+    else:
+        df_multiplas = pd.DataFrame()
+    
+    # === ETAPA 2: Seleção em cascata para CADA CATEGORIA (ATUALIZAÇÃO) ===
+    
+    # 2.1 Processar bombas únicas
+    resultados_unicas_finais = []
+    if not df_unicas.empty:
+        candidatas_unicas = df_unicas.copy()
+        
+        for _ in range(top_n):
+            if candidatas_unicas.empty:
+                break
             
-            # Só adiciona se for melhor que uma opção existente (menos bombas)
-            if modelo not in melhores_por_modelo or total_bombas < melhores_por_modelo[modelo]['N_TOTAL_BOMBAS'].iloc[0]:
-                melhor_misto["TIPO_SISTEMA_CODE"] = "combined"
-                melhor_misto["N_TOTAL_BOMBAS"] = total_bombas
-                melhor_misto["N_PARALELO"] = num_conjuntos
-                melhor_misto["PRIORIDADE_TIPO"] = 4
-                melhores_por_modelo[modelo] = melhor_misto
-
-    # Adiciona todas as melhores opções por modelo à lista de resultados
-    for modelo, resultado in melhores_por_modelo.items():
-        todos_resultados.append(resultado)
-
-    if not todos_resultados:
-        return pd.DataFrame()
+            candidatas_unicas = candidatas_unicas.sort_values(
+                by=["RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
+                ascending=[False, True, True]
+            )
+            
+            melhor_unica = candidatas_unicas.head(1)
+            resultados_unicas_finais.append(melhor_unica)
+            
+            modelo_remover = melhor_unica["MODELO"].iloc[0]
+            candidatas_unicas = candidatas_unicas[candidatas_unicas["MODELO"] != modelo_remover]
     
-    # === ETAPA 3: CONSOLIDAÇÃO E RANKING FINAL ===
-    df_final = pd.concat(todos_resultados, ignore_index=True)
+    # 2.2 Processar sistemas múltiplos
+    resultados_multiplos_finais = []
+    if not df_multiplas.empty:
+        candidatas_multiplas = df_multiplas.copy()
+        
+        for _ in range(top_n):
+            if candidatas_multiplas.empty:
+                break
+            
+            candidatas_multiplas = candidatas_multiplas.sort_values(
+                by=["N_TOTAL_BOMBAS", "PRIORIDADE_TIPO", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
+                ascending=[True, True, False, True, True]
+            )
+            
+            melhor_multipla = candidatas_multiplas.head(1)
+            resultados_multiplos_finais.append(melhor_multipla)
+            
+            modelo_remover = melhor_multipla["MODELO"].iloc[0]
+            candidatas_multiplas = candidatas_multiplas[candidatas_multiplas["MODELO"] != modelo_remover]
     
-    # Ordenação final pela prioridade
-    df_final = df_final.sort_values(
-        by=["N_TOTAL_BOMBAS", "PRIORIDADE_TIPO", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
-        ascending=[True, True, False, True, True]
-    ).head(top_n)
+    # === ETAPA 3: Preparar e retornar os resultados finais (ATUALIZAÇÃO) ===
+    
+    # Prepara o DataFrame de bombas únicas
+    if resultados_unicas_finais:
+        df_unicas_final = pd.concat(resultados_unicas_finais, ignore_index=True)
+        df_unicas_final = df_unicas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
+    else:
+        df_unicas_final = pd.DataFrame()
 
-    # Drop colunas de cálculos intermediários
-    df_final = df_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
+    # Prepara o DataFrame de sistemas múltiplos
+    if resultados_multiplos_finais:
+        df_multiplas_final = pd.concat(resultados_multiplos_finais, ignore_index=True)
+        df_multiplas_final = df_multiplas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
+    else:
+        df_multiplas_final = pd.DataFrame()
+        
+    return df_unicas_final, df_multiplas_final
 
-    return df_final
-
-# ===================================================================
+    # ===================================================================
 # INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
 # ===================================================================
 
@@ -754,25 +805,34 @@ with tab_seletor:
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
     # Botão do SELETOR, agora dentro de sua própria aba
-    if df_processado is not None:
-        if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
-            # Reseta todos os estados ao iniciar uma nova busca
-            st.session_state.resultado_busca = None
-            st.session_state.mostrar_grafico = False
-            st.session_state.mostrar_desenho = False
-            st.session_state.mostrar_lista_pecas = False
-            st.session_state.mostrar_desenho_visualizacao = False
-            st.session_state.mostrar_lista_visualizacao = False
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
+        # Reseta todos os estados ao iniciar uma nova busca
+        st.session_state.resultado_busca = None
+        st.session_state.mostrar_grafico = False
+        st.session_state.mostrar_desenho = False
+        st.session_state.mostrar_lista_pecas = False
+        st.session_state.mostrar_desenho_visualizacao = False
+        st.session_state.mostrar_lista_visualizacao = False
+        
+        with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
+            bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
             
-            with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-                resultado = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
-                if not resultado.empty:
-                    st.session_state.resultado_busca = {"resultado": resultado}
-                else:
-                    st.error(T['no_solution_error'])
+            # Armazenar ambos os resultados na sessão
+            st.session_state.resultado_bombas_unicas = bombas_unicas
+            st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
             
-            st.rerun()
-
+            # Determinar o modo inicial com base na disponibilidade de resultados
+            if not bombas_unicas.empty:
+                st.session_state.modo_visualizacao = 'unicas'
+                st.session_state.resultado_busca = {"resultado": bombas_unicas}
+            elif not sistemas_multiplos.empty:
+                st.session_state.modo_visualizacao = 'multiplas'
+                st.session_state.resultado_busca = {"resultado": sistemas_multiplos}
+            else:
+                st.session_state.modo_visualizacao = 'unicas'
+                st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
+        
+        st.rerun()
 # --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
@@ -817,8 +877,11 @@ with tab_buscador:
 
         # A lógica do botão agora chama a nova função rápida 'buscar_por_modelo_e_motor'
         if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
+            # Substitua pelo bloco corrigido:
             if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
-                # Reseta o estado da interface
+                # Limpa todos os resultados anteriores para uma busca limpa
+                st.session_state.resultado_bombas_unicas = None
+                st.session_state.resultado_sistemas_multiplos = None
                 st.session_state.resultado_busca = None
                 st.session_state.mostrar_grafico = False
                 st.session_state.mostrar_desenho = False
@@ -826,13 +889,18 @@ with tab_buscador:
                 st.session_state.mostrar_desenho_visualizacao = False
                 st.session_state.mostrar_lista_visualizacao = False
 
-                # Chama a nova função rápida, que não causa lentidão
+                # Chama a função de busca por modelo
                 resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                 
                 if not resultado.empty:
-                    st.session_state.resultado_busca = {"resultado": resultado, "tipo": "unica"}
+                    # ATUALIZAÇÃO: Prepara o estado da sessão da maneira que a nova interface espera
+                    st.session_state.resultado_bombas_unicas = resultado
+                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame() # Cria uma tabela vazia para sistemas múltiplos
+                    st.session_state.modo_visualizacao = 'unicas' # Define o modo de visualização correto
+                    st.session_state.resultado_busca = {"resultado": resultado} # Mantém a variável antiga para ativar a exibição
                 else:
-                    st.session_state.resultado_busca = None # Limpa o resultado se nada for encontrado
+                    # Se não encontrar, limpa tudo e mostra o erro
+                    st.session_state.resultado_busca = None
                     st.error(T['no_solution_error'])
                 
                 st.rerun()
@@ -842,81 +910,97 @@ with tab_buscador:
 # A linha 'if st.session_state.resultado_busca:' já existe no seu código,
 # então a substituição termina antes dela.
 
-if st.session_state.resultado_busca:
+if st.session_state.resultado_busca is not None:
+    # Determina qual resultado exibir com base no modo atual
+    if st.session_state.get('modo_visualizacao') == 'multiplas':
+        resultado = st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame())
+    else:
+        resultado = st.session_state.get('resultado_bombas_unicas', pd.DataFrame())
+
     st.divider()
     st.header(T['results_header'])
-    resultado = st.session_state.resultado_busca["resultado"]
     
-    if resultado.empty:
-        st.error(T['no_solution_found'])
+    # Mostra o indicador do modo de visualização atual
+    if st.session_state.get('modo_visualizacao') == 'unicas':
+        st.info(T['view_mode_unique'])
     else:
+        st.info(T['view_mode_systems'])
+
+    # Botões de alternância - SEMPRE mostrados quando há resultados em qualquer modo
+    tem_unicas = st.session_state.get('resultado_bombas_unicas') is not None and not st.session_state.resultado_bombas_unicas.empty
+    tem_multiplas = st.session_state.get('resultado_sistemas_multiplos') is not None and not st.session_state.resultado_sistemas_multiplos.empty
+    
+    if tem_unicas or tem_multiplas:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(T['show_unique_button'], 
+                        use_container_width=True,
+                        disabled=not tem_unicas or st.session_state.modo_visualizacao == 'unicas',
+                        help="Exibir bombas únicas" if tem_unicas else "Nenhuma bomba única disponível"):
+                st.session_state.modo_visualizacao = 'unicas'
+                st.rerun()
+        with col2:
+            if st.button(T['show_systems_button'], 
+                        use_container_width=True,
+                        disabled=not tem_multiplas or st.session_state.modo_visualizacao == 'multiplas',
+                        help="Exibir sistemas múltiplos" if tem_multiplas else "Nenhum sistema múltiplo disponível"):
+                st.session_state.modo_visualizacao = 'multiplas'
+                st.rerun()
+
+    # Verifica se a tabela selecionada está vazia
+    if resultado.empty:
+        if st.session_state.get('modo_visualizacao') == 'unicas':
+            st.error(T['no_unique_pumps'])
+        else:
+            st.error(T['no_systems_found'])
+    else:
+        # Restante do código de exibição da tabela (mantido igual)
         resultado_exibicao = resultado.copy()
 
-        # Traduz o código de tipo de sistema para o texto correto
         def traduzir_tipo_sistema(row):
-            code = row['TIPO_SISTEMA_CODE']
-            if code == "single":
-                return T['system_type_single']
-            elif code == "parallel":
-                return T['system_type_parallel'].format(int(row.get('N_TOTAL_BOMBAS', 2)))
-            elif code == "series":
-                return T['system_type_series']
-            elif code == "combined":
-                return T['system_type_combined'].format(int(row.get('N_TOTAL_BOMBAS', 4)), int(row.get('N_PARALELO_BUSCA', 2)))
+            code = row.get('TIPO_SISTEMA_CODE', 'single')
+            if code == "single": return T['system_type_single']
+            if code == "parallel": return T['system_type_parallel'].format(int(row.get('N_TOTAL_BOMBAS', 2)))
+            if code == "series": return T['system_type_series']
+            if code == "combined": return T['system_type_combined'].format(int(row.get('N_TOTAL_BOMBAS', 4)), int(row.get('N_PARALELO', 2)))
             return ""
-
+            
         resultado_exibicao[T['system_type_header']] = resultado_exibicao.apply(traduzir_tipo_sistema, axis=1)
-        
-        # Remove a coluna de código após a tradução
-        resultado_exibicao = resultado_exibicao.drop(columns=['TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS', 'N_PARALELO_BUSCA'], errors='ignore')
-        
-        # Renomeia as colunas para exibição, incluindo as novas
+        resultado_exibicao = resultado_exibicao.drop(columns=['TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS', 'N_PARALELO'], errors='ignore')
         resultado_exibicao = resultado_exibicao.rename(columns={
-            "RENDIMENTO (%)": "RENDIMENTO",
-            "POTÊNCIA (HP)": "POTÊNCIA",
-            "MOTOR FINAL (CV)": "MOTOR FINAL",
-            "ERRO_PRESSAO": T['pressure_error_header'],
+            "RENDIMENTO (%)": "RENDIMENTO", 
+            "POTÊNCIA (HP)": "POTÊNCIA", 
+            "MOTOR FINAL (CV)": "MOTOR FINAL", 
+            "ERRO_PRESSAO": T['pressure_error_header'], 
             "ERRO_RELATIVO": T['relative_error_header']
         })
-
-        # Adiciona a coluna de ranking
-        resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
-
-        opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
-        selecao_ranking = st.radio(
-            "Selecione a bomba para visualizar os documentos:",
-            options=opcoes_ranking,
-            index=0,
-            horizontal=True,
-            label_visibility="collapsed",
-            key='radio_selecao_bomba'
-        )
         
-        # Formata os valores numéricos
+        resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
+        
+        # ... (o restante do código de exibição permanece igual)
+        opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
+        selecao_ranking = st.radio("Selecione a bomba:", options=opcoes_ranking, index=0, horizontal=True, label_visibility="collapsed", key=f'radio_selecao_{st.session_state.modo_visualizacao}')
         for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
             if col in resultado_exibicao.columns:
                 resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
         
-        # Exibe a tabela completa com as novas colunas
-        st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=[
-            'Ranking',
-            T['system_type_header'],
-            'MODELO',
-            'ROTOR',
-            'RENDIMENTO',
-            'POTÊNCIA',
-            'MOTOR FINAL',
-        ])
+        # 1. EXIBE A TABELA DE RESULTADOS
+        st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
+        
+        st.divider()
 
+
+        # Pega a bomba selecionada na tabela ATUAL para mostrar os documentos corretos
         indice_selecionado = opcoes_ranking.index(selecao_ranking)
         melhor_bomba = resultado.iloc[indice_selecionado]
         modelo_selecionado = melhor_bomba['MODELO']
-        
         try:
             motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
-        except ValueError:
+        except (ValueError, TypeError):
             motor_alvo = 0
-
+            
+        st.divider()
+            
         # ===================================================================
         # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (O código abaixo permanece o mesmo)
         # ===================================================================
