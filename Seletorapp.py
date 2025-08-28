@@ -14,14 +14,6 @@ if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho =
 if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.mostrar_desenho_visualizacao = False
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
 if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
-if 'seletor_vazao_bruta' not in st.session_state:
-    st.session_state.seletor_vazao_bruta = 100.0
-if 'seletor_pressao_bruta' not in st.session_state:
-    st.session_state.seletor_pressao_bruta = 100.0
-if 'seletor_unidade_vazao' not in st.session_state:
-    st.session_state.seletor_unidade_vazao = "m³/h"
-if 'seletor_unidade_pressao' not in st.session_state:
-    st.session_state.seletor_unidade_pressao = "mca"
 
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
@@ -778,7 +770,7 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 # Cria as duas abas para separar as formas de busca
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
-# --- Aba 1: Seletor por Ponto de Trabalho ---
+# --- Aba 1: Seletor por Ponto de Trabalho (VERSÃO CORRIGIDA COM FORMULÁRIO) ---
 with tab_seletor:
     st.markdown(f"#### {T['eletric_freq_title']}")
 
@@ -789,66 +781,52 @@ with tab_seletor:
             list(ARQUIVOS_DADOS.keys()), 
             horizontal=True, 
             label_visibility="collapsed",
-            key='freq_seletor_unique'
+            key='freq_seletor'
         )
 
-    # Carrega os dados para o SELETOR
+    # Carrega os dados para o SELETOR (isso pode ficar fora do form)
     caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
     df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
 
-    col_vazao, col_pressao = st.columns(2)
-    with col_vazao:
-        st.markdown(T['flow_header'])
-        sub_col_v1, sub_col_v2 = st.columns([2,1])
-        with sub_col_v1: 
-            vazao_bruta = st.number_input(
-                T['flow_value_label'], 
-                min_value=0.1, 
-                value=st.session_state.get('seletor_vazao_bruta', 100.0), 
-                step=10.0, 
-                label_visibility="collapsed", 
-                key='seletor_vazao_input_unique'
-            )
-            st.session_state.seletor_vazao_bruta = vazao_bruta
-        with sub_col_v2: 
-            unidade_vazao = st.selectbox(
-                T['flow_unit_label'], 
-                list(FATORES_VAZAO.keys()), 
-                index=list(FATORES_VAZAO.keys()).index(st.session_state.get('seletor_unidade_vazao', "m³/h")),
-                label_visibility="collapsed", 
-                key='seletor_unidade_vazao_unique'
-            )
-            st.session_state.seletor_unidade_vazao = unidade_vazao
-    with col_pressao:
-        st.markdown(T['pressure_header'])
-        sub_col_p1, sub_col_p2 = st.columns([2,1])
-        with sub_col_p1: 
-            pressao_bruta = st.number_input(
-                T['pressure_value_label'], 
-                min_value=0.1, 
-                value=st.session_state.get('seletor_pressao_bruta', 100.0), 
-                step=5.0, 
-                label_visibility="collapsed", 
-                key='seletor_pressao_input_unique'
-            )
-            st.session_state.seletor_pressao_bruta = pressao_bruta
-        with sub_col_p2: 
-            unidade_pressao = st.selectbox(
-                T['pressure_unit_label'], 
-                list(FATORES_PRESSAO.keys()), 
-                index=list(FATORES_PRESSAO.keys()).index(st.session_state.get('seletor_unidade_pressao', "mca")),
-                label_visibility="collapsed", 
-                key='seletor_unidade_pressao_unique'
-            )
-            st.session_state.seletor_unidade_pressao = unidade_pressao
+    # ===================================================================
+    # INÍCIO DA CORREÇÃO: Adicionando st.form
+    # ===================================================================
+    with st.form(key='seletor_form'):
+        col_vazao, col_pressao = st.columns(2)
+        with col_vazao:
+            st.markdown(T['flow_header'])
+            sub_col_v1, sub_col_v2 = st.columns([2,1])
+            with sub_col_v1: 
+                # O widget de input agora está dentro do formulário
+                vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_bruta')
+            with sub_col_v2: 
+                unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao')
+        
+        with col_pressao:
+            st.markdown(T['pressure_header'])
+            sub_col_p1, sub_col_p2 = st.columns([2,1])
+            with sub_col_p1: 
+                # O widget de input agora está dentro do formulário
+                pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
+            with sub_col_p2: 
+                unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
 
-    vazao_para_busca = round(st.session_state.seletor_vazao_bruta * FATORES_VAZAO[st.session_state.seletor_unidade_vazao])
-    pressao_para_busca = round(st.session_state.seletor_pressao_bruta * FATORES_PRESSAO[st.session_state.seletor_unidade_pressao])
-    st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
+        # O st.info com os valores convertidos precisa ser gerado dinamicamente
+        # após a entrada, mas para evitar o problema, exibimos após o submit
+        # ou usamos os valores da sessão se já existirem.
+        vazao_para_busca = round(st.session_state.vazao_bruta * FATORES_VAZAO[st.session_state.unidade_vazao])
+        pressao_para_busca = round(st.session_state.pressao_bruta * FATORES_PRESSAO[st.session_state.unidade_pressao])
+        st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
+        
+        # O botão de busca agora é um 'st.form_submit_button'
+        submitted = st.form_submit_button(T['search_button'], use_container_width=True)
+        
+        # A lógica de busca agora só executa se o formulário for enviado
+        if submitted:
+            # Recalculamos aqui para garantir que os valores mais recentes sejam usados
+            vazao_final = round(st.session_state.vazao_bruta * FATORES_VAZAO[st.session_state.unidade_vazao])
+            pressao_final = round(st.session_state.pressao_bruta * FATORES_PRESSAO[st.session_state.unidade_pressao])
 
-    # Botão do SELETOR, agora dentro de sua própria aba
-    if df_processado is not None:
-        if st.button(T['search_button'], use_container_width=True, key='btn_seletor_unique'):
             # Reseta todos os estados ao iniciar uma nova busca
             st.session_state.resultado_busca = None
             st.session_state.mostrar_grafico = False
@@ -858,7 +836,7 @@ with tab_seletor:
             st.session_state.mostrar_lista_visualizacao = False
             
             with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-                bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
+                bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_final, pressao_final, top_n=3)
                 
                 # Armazenar ambos os resultados na sessão
                 st.session_state.resultado_bombas_unicas = bombas_unicas
@@ -875,8 +853,12 @@ with tab_seletor:
                     st.session_state.modo_visualizacao = 'unicas'
                     st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
             
+            # O st.rerun() é chamado implicitamente ao submeter o formulário,
+            # mas podemos mantê-lo para garantir a atualização imediata.
             st.rerun()
-            
+    # ===================================================================
+    # FIM DA CORREÇÃO
+    # ===================================================================
 # --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
@@ -1203,5 +1185,3 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
-
-
