@@ -14,6 +14,25 @@ if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho =
 if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.mostrar_desenho_visualizacao = False
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
 if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
+# ===================================================================
+# INICIALIZAÇÃO DO ESTADO DA SESSÃO (ADICIONAR ESTE BLOCO)
+# ===================================================================
+# Garante que os valores dos widgets de entrada existam desde o início.
+# Isso evita erros e comportamentos inesperados no primeiro carregamento.
+if 'vazao_bruta' not in st.session_state:
+    st.session_state.vazao_bruta = 100.0
+if 'pressao_bruta' not in st.session_state:
+    st.session_state.pressao_bruta = 100.0
+if 'unidade_vazao' not in st.session_state:
+    st.session_state.unidade_vazao = 'm³/h'
+if 'unidade_pressao' not in st.session_state:
+    st.session_state.unidade_pressao = 'mca'
+
+# Estados para armazenar os valores já convertidos
+if 'vazao_convertida' not in st.session_state:
+    st.session_state.vazao_convertida = 0
+if 'pressao_convertida' not in st.session_state:
+    st.session_state.pressao_convertida = 0
 
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
@@ -348,6 +367,26 @@ def carregar_e_processar_dados(caminho_arquivo):
     df["ABS_ERRO_RELATIVO"] = df["ERRO_RELATIVO"].abs()
     
     return df
+# ===================================================================
+# FUNÇÃO DE CALLBACK PARA ATUALIZAÇÃO (ADICIONAR ESTA FUNÇÃO)
+# ===================================================================
+# Esta função será chamada sempre que um dos inputs de vazão/pressão mudar.
+# Ela calcula os valores convertidos e os armazena no estado da sessão ANTES
+# do resto da página recarregar, garantindo que os dados estejam sempre prontos.
+def atualizar_valores_convertidos():
+    """Lê os valores brutos da sessão, calcula a conversão e salva de volta na sessão."""
+    try:
+        vazao_bruta = st.session_state.vazao_bruta
+        unidade_vazao = st.session_state.unidade_vazao
+        st.session_state.vazao_convertida = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
+        
+        pressao_bruta = st.session_state.pressao_bruta
+        unidade_pressao = st.session_state.unidade_pressao
+        st.session_state.pressao_convertida = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
+    except Exception as e:
+        # Se algo der errado, zera os valores para evitar um crash
+        st.session_state.vazao_convertida = 0
+        st.session_state.pressao_convertida = 0
 # ===================================================================
 # NOVA FUNÇÃO OTIMIZADA PARA O BUSCADOR POR MODELO
 # ===================================================================
@@ -771,6 +810,7 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
 # --- Aba 1: Seletor por Ponto de Trabalho (VERSÃO CORRIGIDA COM FORMULÁRIO) ---
+# --- Aba 1: Seletor por Ponto de Trabalho (VERSÃO CORRIGIDA COM CALLBACKS) ---
 with tab_seletor:
     st.markdown(f"#### {T['eletric_freq_title']}")
 
@@ -778,158 +818,92 @@ with tab_seletor:
     with col_freq:
         frequencia_selecionada = st.radio(
             T['freq_header'], 
-            list(ARQUIVOS_DADOS.keys()), 
+            list(ARQUIS_DADOS.keys()), 
             horizontal=True, 
             label_visibility="collapsed",
             key='freq_seletor'
         )
 
-    # Carrega os dados para o SELETOR (isso pode ficar fora do form)
+    # Carrega os dados para o SELETOR
     caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
     df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
 
-    # ===================================================================
-    # INÍCIO DA CORREÇÃO: Adicionando st.form
-    # ===================================================================
-    with st.form(key='seletor_form'):
-        col_vazao, col_pressao = st.columns(2)
-        with col_vazao:
-            st.markdown(T['flow_header'])
-            sub_col_v1, sub_col_v2 = st.columns([2,1])
-            with sub_col_v1: 
-                # O widget de input agora está dentro do formulário
-                vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_bruta')
-            with sub_col_v2: 
-                unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao')
-        
-        with col_pressao:
-            st.markdown(T['pressure_header'])
-            sub_col_p1, sub_col_p2 = st.columns([2,1])
-            with sub_col_p1: 
-                # O widget de input agora está dentro do formulário
-                pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
-            with sub_col_p2: 
-                unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
-
-        # O st.info com os valores convertidos precisa ser gerado dinamicamente
-        # após a entrada, mas para evitar o problema, exibimos após o submit
-        # ou usamos os valores da sessão se já existirem.
-        vazao_para_busca = round(st.session_state.vazao_bruta * FATORES_VAZAO[st.session_state.unidade_vazao])
-        pressao_para_busca = round(st.session_state.pressao_bruta * FATORES_PRESSAO[st.session_state.unidade_pressao])
-        st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
-        
-        # O botão de busca agora é um 'st.form_submit_button'
-        submitted = st.form_submit_button(T['search_button'], use_container_width=True)
-        
-        # A lógica de busca agora só executa se o formulário for enviado
-        if submitted:
-            # Recalculamos aqui para garantir que os valores mais recentes sejam usados
-            vazao_final = round(st.session_state.vazao_bruta * FATORES_VAZAO[st.session_state.unidade_vazao])
-            pressao_final = round(st.session_state.pressao_bruta * FATORES_PRESSAO[st.session_state.unidade_pressao])
-
-            # Reseta todos os estados ao iniciar uma nova busca
-            st.session_state.resultado_busca = None
-            st.session_state.mostrar_grafico = False
-            st.session_state.mostrar_desenho = False
-            st.session_state.mostrar_lista_pecas = False
-            st.session_state.mostrar_desenho_visualizacao = False
-            st.session_state.mostrar_lista_visualizacao = False
-            
-            with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-                bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_final, pressao_final, top_n=3)
-                
-                # Armazenar ambos os resultados na sessão
-                st.session_state.resultado_bombas_unicas = bombas_unicas
-                st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
-                
-                # Determinar o modo inicial com base na disponibilidade de resultados
-                if not bombas_unicas.empty:
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.session_state.resultado_busca = {"resultado": bombas_unicas}
-                elif not sistemas_multiplos.empty:
-                    st.session_state.modo_visualizacao = 'multiplas'
-                    st.session_state.resultado_busca = {"resultado": sistemas_multiplos}
-                else:
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
-            
-            # O st.rerun() é chamado implicitamente ao submeter o formulário,
-            # mas podemos mantê-lo para garantir a atualização imediata.
-            st.rerun()
-    # ===================================================================
-    # FIM DA CORREÇÃO
-    # ===================================================================
-# --- Aba 2: Buscador por Modelo ---
-with tab_buscador:
-    col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
+    col_vazao, col_pressao = st.columns(2)
+    with col_vazao:
+        st.markdown(T['flow_header'])
+        sub_col_v1, sub_col_v2 = st.columns([2,1])
+        with sub_col_v1: 
+            st.number_input(
+                T['flow_value_label'], min_value=0.1, step=10.0, 
+                label_visibility="collapsed", 
+                key='vazao_bruta', 
+                on_change=atualizar_valores_convertidos  # <-- A MÁGICA ACONTECE AQUI
+            )
+        with sub_col_v2: 
+            st.selectbox(
+                T['flow_unit_label'], list(FATORES_VAZAO.keys()), 
+                label_visibility="collapsed", 
+                key='unidade_vazao', 
+                on_change=atualizar_valores_convertidos  # <-- E AQUI
+            )
     
-    with col_freq_busca:
-        frequencia_buscador = st.radio(
-            T['freq_header'], 
-            list(ARQUIVOS_DADOS.keys()), 
-            horizontal=True, 
-            key='freq_buscador'
-        )
-
-    # Graças ao cache, esta linha agora é instantânea após a primeira execução
-    caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
-    df_buscador = carregar_e_processar_dados(caminho_buscador)
-
-    if df_buscador is not None:
-        with col_modelo_busca:
-            lista_modelos = ["-"] + sorted(df_buscador['MODELO'].unique())
-            modelo_selecionado_buscador = st.selectbox(
-                T['model_select_label'],
-                lista_modelos,
-                key='modelo_buscador'
+    with col_pressao:
+        st.markdown(T['pressure_header'])
+        sub_col_p1, sub_col_p2 = st.columns([2,1])
+        with sub_col_p1: 
+            st.number_input(
+                T['pressure_value_label'], min_value=0.1, step=5.0, 
+                label_visibility="collapsed", 
+                key='pressao_bruta', 
+                on_change=atualizar_valores_convertidos  # <-- E AQUI
+            )
+        with sub_col_p2: 
+            st.selectbox(
+                T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), 
+                label_visibility="collapsed", 
+                key='unidade_pressao', 
+                on_change=atualizar_valores_convertidos  # <-- E AQUI
             )
 
-        with col_motor_busca:
-            motor_selecionado_buscador = None # Inicializa a variável para evitar erros
-            if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
-                motores_unicos = df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
-                motores_disponiveis = sorted([motor for motor in motores_unicos if pd.notna(motor)])
-                
-                if motores_disponiveis:
-                    motor_selecionado_buscador = st.selectbox(
-                        T['motor_select_label'],
-                        motores_disponiveis,
-                        key='motor_buscador'
-                    )
-                else:
-                    st.selectbox(T['motor_select_label'], ["-"], disabled=True)
+    # Chama a função uma vez no início para garantir que os valores sejam calculados
+    atualizar_valores_convertidos()
+    
+    # A caixa de informação agora lê os valores já calculados e seguros na sessão
+    st.info(T['converted_values_info'].format(vazao=st.session_state.vazao_convertida, pressao=st.session_state.pressao_convertida))
+
+    # A lógica do botão de busca permanece a mesma, mas agora usa os valores da sessão
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
+        # Reseta todos os estados ao iniciar uma nova busca
+        st.session_state.resultado_busca = None
+        st.session_state.mostrar_grafico = False
+        st.session_state.mostrar_desenho = False
+        st.session_state.mostrar_lista_pecas = False
+        st.session_state.mostrar_desenho_visualizacao = False
+        st.session_state.mostrar_lista_visualizacao = False
+        
+        with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
+            # Usa os valores convertidos que estão guardados na sessão
+            bombas_unicas, sistemas_multiplos = selecionar_bombas(
+                df_processado, 
+                st.session_state.vazao_convertida,  # <-- Valor seguro da sessão
+                st.session_state.pressao_convertida, # <-- Valor seguro da sessão
+                top_n=3
+            )
+            
+            st.session_state.resultado_bombas_unicas = bombas_unicas
+            st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
+            
+            if not bombas_unicas.empty:
+                st.session_state.modo_visualizacao = 'unicas'
+                st.session_state.resultado_busca = {"resultado": bombas_unicas}
+            elif not sistemas_multiplos.empty:
+                st.session_state.modo_visualizacao = 'multiplas'
+                st.session_state.resultado_busca = {"resultado": sistemas_multiplos}
             else:
-                st.selectbox(T['motor_select_label'], ["-"], disabled=True)
-
-        # A lógica do botão agora chama a nova função rápida 'buscar_por_modelo_e_motor'
-        if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
-            # Substitua pelo bloco corrigido:
-            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
-                # Limpa todos os resultados anteriores para uma busca limpa
-                st.session_state.resultado_bombas_unicas = None
-                st.session_state.resultado_sistemas_multiplos = None
-                st.session_state.resultado_busca = None
-                st.session_state.mostrar_grafico = False
-                st.session_state.mostrar_desenho = False
-                st.session_state.mostrar_lista_pecas = False
-                st.session_state.mostrar_desenho_visualizacao = False
-                st.session_state.mostrar_lista_visualizacao = False
-
-                # Chama a função de busca por modelo
-                resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
-                
-                if not resultado.empty:
-                    # ATUALIZAÇÃO: Prepara o estado da sessão da maneira que a nova interface espera
-                    st.session_state.resultado_bombas_unicas = resultado
-                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame() # Cria uma tabela vazia para sistemas múltiplos
-                    st.session_state.modo_visualizacao = 'unicas' # Define o modo de visualização correto
-                    st.session_state.resultado_busca = {"resultado": resultado} # Mantém a variável antiga para ativar a exibição
-                else:
-                    # Se não encontrar, limpa tudo e mostra o erro
-                    st.session_state.resultado_busca = None
-                    st.error(T['no_solution_error'])
-                
-                st.rerun()
+                st.session_state.modo_visualizacao = 'unicas'
+                st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
+        
+        st.rerun()
                 
 # O bloco de exibição de resultados abaixo desta linha permanece o mesmo.
 # --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
@@ -1185,3 +1159,4 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
