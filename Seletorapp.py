@@ -818,7 +818,7 @@ with tab_seletor:
     with col_freq:
         frequencia_selecionada = st.radio(
             T['freq_header'], 
-            list(ARQUIS_DADOS.keys()), 
+            list(ARQUIVOS_DADOS.keys()), 
             horizontal=True, 
             label_visibility="collapsed",
             key='freq_seletor'
@@ -1159,4 +1159,5 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
