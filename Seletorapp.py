@@ -14,6 +14,14 @@ if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho =
 if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.mostrar_desenho_visualizacao = False
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
 if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
+if 'vazao_bruta' not in st.session_state:
+    st.session_state.vazao_bruta = 100.0
+if 'pressao_bruta' not in st.session_state:
+    st.session_state.pressao_bruta = 100.0
+if 'unidade_vazao' not in st.session_state:
+    st.session_state.unidade_vazao = "m³/h"
+if 'unidade_pressao' not in st.session_state:
+    st.session_state.unidade_pressao = "mca"
 
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
@@ -792,17 +800,53 @@ with tab_seletor:
     with col_vazao:
         st.markdown(T['flow_header'])
         sub_col_v1, sub_col_v2 = st.columns([2,1])
-        with sub_col_v1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_bruta')
-        with sub_col_v2: unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao')
+        with sub_col_v1: 
+            vazao_bruta = st.number_input(
+                T['flow_value_label'], 
+                min_value=0.1, 
+                value=st.session_state.vazao_bruta, 
+                step=10.0, 
+                label_visibility="collapsed", 
+                key='vazao_bruta_input'
+            )
+            st.session_state.vazao_bruta = vazao_bruta
+        with sub_col_v2: 
+            unidade_vazao = st.selectbox(
+                T['flow_unit_label'], 
+                list(FATORES_VAZAO.keys()), 
+                index=list(FATORES_VAZAO.keys()).index(st.session_state.unidade_vazao),
+                label_visibility="collapsed", 
+                key='unidade_vazao_input'
+            )
+            st.session_state.unidade_vazao = unidade_vazao
     with col_pressao:
         st.markdown(T['pressure_header'])
         sub_col_p1, sub_col_p2 = st.columns([2,1])
-        with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
-        with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
+        with sub_col_p1: 
+            pressao_bruta = st.number_input(
+                T['pressure_value_label'], 
+                min_value=0.1, 
+                value=st.session_state.pressao_bruta, 
+                step=5.0, 
+                label_visibility="collapsed", 
+                key='pressao_bruta_input'
+            )
+            st.session_state.pressao_bruta = pressao_bruta
+        with sub_col_p2: 
+            unidade_pressao = st.selectbox(
+                T['pressure_unit_label'], 
+                list(FATORES_PRESSAO.keys()), 
+                index=list(FATORES_PRESSAO.keys()).index(st.session_state.unidade_pressao),
+                label_visibility="collapsed", 
+                key='unidade_pressao_input'
+            )
+            st.session_state.unidade_pressao = unidade_pressao
 
-    vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
-    pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
+    vazao_para_busca = round(st.session_state.vazao_bruta * FATORES_VAZAO[st.session_state.unidade_vazao])
+    pressao_para_busca = round(st.session_state.pressao_bruta * FATORES_PRESSAO[st.session_state.unidade_pressao])
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
+
+    
 
     # Botão do SELETOR, agora dentro de sua própria aba
     if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
@@ -1159,3 +1203,4 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
