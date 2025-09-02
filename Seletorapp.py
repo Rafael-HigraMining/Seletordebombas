@@ -807,6 +807,7 @@ with tab_seletor:
     # Botão do SELETOR, agora dentro de sua própria aba
     if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
         # Reseta todos os estados ao iniciar uma nova busca
+        st.session_state.last_used_freq = frequencia_selecionada
         st.session_state.resultado_busca = None
         st.session_state.mostrar_grafico = False
         st.session_state.mostrar_desenho = False
@@ -880,6 +881,7 @@ with tab_buscador:
             # Substitua pelo bloco corrigido:
             if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
                 # Limpa todos os resultados anteriores para uma busca limpa
+                st.session_state.last_used_freq = frequencia_buscador
                 st.session_state.resultado_bombas_unicas = None
                 st.session_state.resultado_sistemas_multiplos = None
                 st.session_state.resultado_busca = None
@@ -1159,3 +1161,4 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
