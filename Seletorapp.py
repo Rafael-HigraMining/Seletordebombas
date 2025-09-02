@@ -1007,7 +1007,7 @@ if st.session_state.resultado_busca is not None:
         # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (O código abaixo permanece o mesmo)
         # ===================================================================
         st.header(T['graph_header'])
-        frequencia_str = st.session_state.get('freq_seletor') or st.session_state.get('freq_buscador')
+        frequencia_str = st.session_state.get('last_used_freq', '60Hz') # Usa a última frequência da busca
         caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
         
         if st.button(
@@ -1161,4 +1161,5 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
