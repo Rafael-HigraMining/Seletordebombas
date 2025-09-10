@@ -493,12 +493,15 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     
     return df_resultado[colunas_presentes]
 
-def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
+def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     if df is None or df.empty:
-        # A atualização pede para retornar duas tabelas, mesmo que vazias
         return pd.DataFrame(), pd.DataFrame()
-
-    # === ETAPA 1: Buscar todas as opções possíveis (lógica original mantida) ===
+    
+    # NOVAS VARIÁVEIS PARA CONTROLAR O NÚMERO DE RESULTADOS
+    top_n_unicas = 3
+    top_n_multiplas = 5 # Ou o número que você preferir
+    
+    # === ETAPA 1: Buscar todas as opções possíveis ===
     todas_opcoes = []
     
     # 1.1 Bombas únicas
@@ -512,10 +515,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     # 1.2 Sistemas com múltiplas bombas
     sistemas_multiplos = []
     
-    # Paralelo (2 a 5 bombas)
-    for num_paralelo in range(2, 12):
+    # Paralelo (2 a 10 bombas)
+    for num_paralelo in range(2, 11):
         vazao_paralelo = vazao_desejada / num_paralelo
-        resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=5)
+        # Usa o novo valor top_n_multiplas
+        resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=top_n_multiplas)
         if not resultado_paralelo.empty:
             resultado_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
             resultado_paralelo["N_TOTAL_BOMBAS"] = num_paralelo
@@ -524,7 +528,8 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     
     # Série (2 bombas)
     pressao_serie = pressao_desejada / 2
-    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=5)
+    # Usa o novo valor top_n_multiplas
+    resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=top_n_multiplas)
     if not resultado_serie.empty:
         resultado_serie["TIPO_SISTEMA_CODE"] = "series"
         resultado_serie["N_TOTAL_BOMBAS"] = 2
@@ -535,7 +540,8 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     for num_conjuntos in range(2, 6):
         vazao_misto = vazao_desejada / num_conjuntos
         pressao_misto = pressao_desejada / 2
-        resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=5)
+        # Usa o novo valor top_n_multiplas
+        resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=top_n_multiplas)
         if not resultado_misto.empty:
             total_bombas = num_conjuntos * 2
             resultado_misto["TIPO_SISTEMA_CODE"] = "combined"
@@ -560,14 +566,14 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     else:
         df_multiplas = pd.DataFrame()
     
-    # === ETAPA 2: Seleção em cascata para CADA CATEGORIA (ATUALIZAÇÃO) ===
+    # === ETAPA 2: Seleção em cascata para CADA CATEGORIA ===
     
     # 2.1 Processar bombas únicas
     resultados_unicas_finais = []
     if not df_unicas.empty:
         candidatas_unicas = df_unicas.copy()
         
-        for _ in range(top_n):
+        for _ in range(top_n_unicas): # Usa a nova variável
             if candidatas_unicas.empty:
                 break
             
@@ -587,7 +593,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
     if not df_multiplas.empty:
         candidatas_multiplas = df_multiplas.copy()
         
-        for _ in range(top_n):
+        for _ in range(top_n_multiplas): # Usa a nova variável
             if candidatas_multiplas.empty:
                 break
             
@@ -602,7 +608,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
             modelo_remover = melhor_multipla["MODELO"].iloc[0]
             candidatas_multiplas = candidatas_multiplas[candidatas_multiplas["MODELO"] != modelo_remover]
     
-    # === ETAPA 3: Preparar e retornar os resultados finais (ATUALIZAÇÃO) ===
+    # === ETAPA 3: Preparar e retornar os resultados finais ===
     
     # Prepara o DataFrame de bombas únicas
     if resultados_unicas_finais:
@@ -610,7 +616,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada, top_n=3):
         df_unicas_final = df_unicas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
     else:
         df_unicas_final = pd.DataFrame()
-
+    
     # Prepara o DataFrame de sistemas múltiplos
     if resultados_multiplos_finais:
         df_multiplas_final = pd.concat(resultados_multiplos_finais, ignore_index=True)
@@ -1161,6 +1167,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
