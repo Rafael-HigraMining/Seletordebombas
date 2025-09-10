@@ -516,7 +516,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     sistemas_multiplos = []
     
     # Paralelo (2 a 10 bombas)
-    for num_paralelo in range(2, 11):
+    for num_paralelo in range(2, 16):
         vazao_paralelo = vazao_desejada / num_paralelo
         # Usa o novo valor top_n_multiplas
         resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=top_n_multiplas)
@@ -1167,6 +1167,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
