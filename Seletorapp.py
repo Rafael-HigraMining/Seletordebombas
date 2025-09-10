@@ -822,7 +822,7 @@ with tab_seletor:
         st.session_state.mostrar_lista_visualizacao = False
         
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
-            bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca, top_n=3)
+            bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca)
             
             # Armazenar ambos os resultados na sessão
             st.session_state.resultado_bombas_unicas = bombas_unicas
@@ -1167,6 +1167,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
