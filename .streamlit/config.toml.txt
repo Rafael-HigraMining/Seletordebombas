@@ -1,18 +1,7 @@
 [theme]
-# Cor dos elementos interativos, como botões e links.
-# HEX #134883
 primaryColor="#134883"
-
-# Cor de fundo da página principal.
-# HEX #ffffff
-backgroundColor="#ffffff"
-
-# Cor de fundo de containers e da barra lateral.
-# HEX #F8AC2E
-secondaryBackgroundColor="#F8AC2E"
-
-# Cor do texto do aplicativo.
-# HEX #6E7274
-textColor="#6E7274"
-
+backgroundColor="#F0F5FF"
+# Agora a cor do tipo 'secondary' será a cor principal da marca
+secondaryBackgroundColor="#134883"
+textColor="#333333"
 font="sans serif"
