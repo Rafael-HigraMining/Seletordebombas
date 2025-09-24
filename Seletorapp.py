@@ -978,7 +978,6 @@ if st.session_state.resultado_busca is not None:
             T['view_graph_button'],
             key="btn_visualizar_grafico",
             use_container_width=True,
-            type="primary",
         ):
             st.session_state.mostrar_grafico = True
         
@@ -1125,6 +1124,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
