@@ -643,6 +643,14 @@ if 'iniciar_orcamento' not in st.session_state: st.session_state.iniciar_orcamen
 if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_selecionados = None
 
 st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
+st.markdown(f"""
+<style>
+    .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
+    .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
+    .bandeira-container.selecionada {{ border: 2px solid #F8AC2E; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
+    .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
+</style>
+""", unsafe_allow_html=True)
 
 # --- ESTILOS CSS APRIMORADOS ---
 COR_PRIMARIA = "#134883"
@@ -1117,6 +1125,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
