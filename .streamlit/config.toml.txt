@@ -1,7 +1,10 @@
 [theme]
+# Esta linha faz com que o tema do Streamlit use o azul como cor principal
 primaryColor="#134883"
+# A cor de fundo da página principal
 backgroundColor="#F0F5FF"
-# Agora a cor do tipo 'secondary' será a cor principal da marca
+# Esta linha faz com que o tipo de botão 'secondary' seja azul
 secondaryBackgroundColor="#134883"
-textColor="#333333"
+# A cor do texto
+textColor="#6E7274"
 font="sans serif"
