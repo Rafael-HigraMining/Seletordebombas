@@ -1,10 +1,18 @@
 [theme]
-# Cor dos botões, links e elementos interativos.
+# Cor dos elementos interativos, como botões e links.
+# HEX #134883
 primaryColor="#134883"
-# Cor de fundo da página.
-backgroundColor="#F0F5FF"
-# Cor de fundo dos containers e da barra lateral.
+
+# Cor de fundo da página principal.
+# HEX #ffffff
+backgroundColor="#ffffff"
+
+# Cor de fundo de containers e da barra lateral.
+# HEX #F8AC2E
 secondaryBackgroundColor="#F8AC2E"
-# Cor do texto.
-textColor="#333333"
+
+# Cor do texto do aplicativo.
+# HEX #6E7274
+textColor="#6E7274"
+
 font="sans serif"
