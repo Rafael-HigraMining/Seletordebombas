@@ -1,6 +1,10 @@
 [theme]
+# Cor principal (botões, barra de progresso, etc.)
 primaryColor="#134883"
+# Cor de fundo do aplicativo
 backgroundColor="#F0F5FF"
-secondaryBackgroundColor="#6E7274"
+# Cor de fundo de containers e barra lateral
+secondaryBackgroundColor="#F8AC2E"
+# Cor do texto
 textColor="#333333"
 font="sans serif"
