@@ -643,6 +643,13 @@ if 'iniciar_orcamento' not in st.session_state: st.session_state.iniciar_orcamen
 if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_selecionados = None
 
 st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
+
+# --- ESTILOS CSS APRIMORADOS ---
+COR_PRIMARIA = "#134883"
+COR_SECUNDARIA = "#F8AC2E"
+COR_FUNDO = "#F0F5FF"
+COR_TEXTO = "#333333"
+
 st.markdown(f"""
 <style>
     /* Estilos gerais */
@@ -671,11 +678,6 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# --- ESTILOS CSS APRIMORADOS ---
-COR_PRIMARIA = "#134883"
-COR_SECUNDARIA = "#F8AC2E"
-COR_FUNDO = "#F0F5FF"
-COR_TEXTO = "#333333"
 
 # ===================================================================
 # CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA (VERSÃO ATUALIZADA)
@@ -1139,6 +1141,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
