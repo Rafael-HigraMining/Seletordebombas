@@ -786,7 +786,7 @@ with tab_seletor:
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
     # Botão do SELETOR, agora dentro de sua própria aba
-    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="secondary"):
         # Reseta todos os estados ao iniciar uma nova busca
         st.session_state.last_used_freq = frequencia_selecionada
         st.session_state.resultado_busca = None
@@ -1141,6 +1141,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
