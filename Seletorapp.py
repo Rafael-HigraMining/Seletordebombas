@@ -1004,9 +1004,8 @@ bandeiras = {
     "es": {"nome": "ES", "img": "espanha.png"}
 }
 
-col_logo, _, col_bandeiras = st.columns([4, 4, 2])
-with col_logo:
-    st.image("logo.png", width=300)
+# Mantém as bandeiras no canto direito superior
+_, col_bandeiras = st.columns([6, 2])
 with col_bandeiras:
     flag_cols = st.columns(len(bandeiras))
     for i, (lang_code, info) in enumerate(bandeiras.items()):
@@ -1024,10 +1023,16 @@ with col_bandeiras:
             </a>
             """, unsafe_allow_html=True)
 
+# Centraliza o Logo
+col1, col_logo_centro, col3 = st.columns([2, 3, 2])
+with col_logo_centro:
+    st.image("logo.png", width=500)
+
 T = TRADUCOES[st.session_state.lang]
 
-st.title(T['main_title'])
-st.write(T['welcome_message'])
+# Centraliza os Textos
+st.markdown(f"<h1 style='text-align: center;'>{T['main_title']}</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'>{T['welcome_message']}</p>", unsafe_allow_html=True)
 st.info(T['performance_note'])
 st.divider()
 
