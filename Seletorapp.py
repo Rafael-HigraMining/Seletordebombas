@@ -217,7 +217,6 @@ TRADUCOES = {
         'quote_form_warning': "Please fill in your name and email.",
         'quote_form_success': "Request ready to be sent!",
         'quote_form_click_here': "Click here to open and send the email",
-        'quote_form_info': "Your default email client will open with all the information pre-filled.",
         'email_subject': "Quote Request via Pump Selector - {nome}",
         'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     },
@@ -279,7 +278,7 @@ TRADUCOES = {
         'show_unique_button': "🔍 Mostrar Bombas Únicas",
         'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
         'view_mode_unique': "Modo de visualización: Bombas Únicas",
-        'view_mode_systems': "Modo de visualización: Sistemas Múltiples",
+        'view_mode_systems': "Modo de visualização: Sistemas Múltiples",
         'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
         'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'pressure_error_header': "Error de Presión",
@@ -294,9 +293,8 @@ TRADUCOES = {
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
-        'quote_form_info': "Su cliente de correo electrónico predeterminado se abrirá con toda la información completada.",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
+        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     }
 }
 
@@ -742,9 +740,6 @@ with col_bandeiras:
             </a>
             """, unsafe_allow_html=True)
 
-
-
-
 # Atualiza a variável de tradução APÓS a possível troca de idioma
 T = TRADUCOES[st.session_state.lang]
 
@@ -842,6 +837,7 @@ with tab_seletor:
         st.rerun()
 # --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
+    st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
     
     with col_freq_busca:
@@ -1124,7 +1120,7 @@ if st.session_state.resultado_busca is not None:
             with st.container(border=True):
                 caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
                 
-                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
                 botao_contato_html = f'''
                 <a href="{link_contato_pecas}" target="_blank" style="
                     display: block;
@@ -1167,9 +1163,3 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
-
-
-
-
-
-
