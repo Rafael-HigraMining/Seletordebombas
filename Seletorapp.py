@@ -213,6 +213,72 @@ TRADUCOES = {
         'quote_form_click_here': "Click here to open and send the email",
         'email_subject': "Quote Request via Pump Selector - {nome}",
         'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
+    },
+    'es': {
+        'page_title': "Selector Higra Mining",
+        'main_title': "Selector de Bombas Hidráulicas Higra Mining",
+        'welcome_message': "¡Bienvenido! Ingrese los datos de su punto de trabajo para encontrar la mejor solución.",
+        'input_header': "Parámetros de Entrada",
+        'eletric_freq_title': "Frecuencia Eléctrica",
+        'freq_header': "Frecuencia",
+        'flow_header': "**Caudal Deseado**",
+        'pressure_header': "**Altura Deseada**",
+        'show_finder_button': "🔎 Buscar por Modelo de Bomba",
+        'flow_value_label': "Valor del Caudal",
+        'graph_header': "📊 Gráfico de Rendimiento",
+        'drawing_header': "📐 Dibujo Dimensional",
+        'selector_tab_label': "Selector por Punto de Trabajo",
+        'finder_tab_label': "Buscador por Modelo",
+        'parts_list_header': "📋 Lista de Repuestos",
+        'view_graph_button': "Visualizar Gráfico",
+        'close_graph_button': "Cerrar Gráfico",
+        'view_drawing_button': "Visualizar Dibujo",
+        'view_parts_list_button': "Visualizar Lista de Repuestos",
+        'close_view_button': "Cerrar Visualización",
+        'pressure_value_label': "Valor de la Altura",
+        'finder_header': "Busque directamente por el modelo de la bomba",
+        'model_select_label': "1. Seleccione el Modelo",
+        'motor_select_label': "2. Seleccione el Motor (CV)",
+        'find_pump_button': "Buscar Bomba",
+        'flow_unit_label': "Unidad Caudal",
+        'parts_list_button': "Lista de Repuestos",
+        'parts_list_warning': "Atención: La lista de repuestos es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
+        'download_parts_list_button': "Descargar Lista de Repuestos",
+        'parts_list_unavailable': "Lista de repuestos no disponible. Por favor, póngase en contacto para recibirla.",
+        'pressure_unit_label': "Unidad Altura",
+        'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
+        'search_button': "Buscar Mejor Opción",
+        'dimensional_drawing_button': "Dibujo Dimensional",
+        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es um documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
+        'spinner_text': "Calculando las mejores opciones para {freq}...",
+        'results_header': "Resultados de la Búsqueda",
+        'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
+        'solution_parallel': "⚠️ Ninguna bomba única con buen rendimiento. Alternativa: **DOS BOMBAS EN PARALELO**:",
+        'solution_parallel_info': "El caudal y la potencia a continuación son POR BOMBA. Caudal total = 2x.",
+        'solution_series': "⚠️ Ninguna opción única o en paralelo. Alternativa: **DOS BOMBAS EN SERIE**:",
+        'solution_series_info': "La altura a continuación es POR BOMBA. Altura total = 2x.",
+        'no_solution_error': "❌ No se encontró ninguna bomba. Pruebe con otros valores.",
+        'quote_button_start': "Solicitar Cotización",
+        'quote_options_header': "Paso 1: Seleccione Opcionales de la Bomba",
+        'quote_continue_button': "Continuar al Siguiente Paso",
+        'quote_contact_header': "Paso 2: Sus Datos de Contacto",
+        'quote_form_name': "Su Nombre *",
+        'quote_form_email': "Su Correo Electrónico *",
+        'quote_form_message': "Mensaje (opcional)",
+        'download_drawing_button': "Descargar Dibujo Dimensional",
+        'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
+        'contact_button': "Contacto",
+        'pressure_error_header': "Error de Presión",
+        'relative_error_header': "Error Relativo",
+        'system_type_header': "Tipo de Sistema",
+        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
+        'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal pueden tardar unos segundos. ¡Agradecemos su paciencia!",
+        'quote_form_button': "Enviar Solicitud de Cotización",
+        'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
+        'quote_form_success': "¡Solicitud lista para ser enviada!",
+        'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
+        'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
+        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
 
@@ -341,7 +407,7 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     
     if not grupo_A.empty:
         max_rend = grupo_A["RENDIMENTO (%)"].max()
-        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDimento (%)"]
+        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDIMENTO (%)"]
         
         subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= limite_desempate_rendimento].copy()
         subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > limite_desempate_rendimento].copy()
@@ -486,50 +552,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
 # ===================================================================
 # INTERFACE STREAMLIT - VERSÃO COMPLETA E PROFISSIONAL
 # ===================================================================
-
-st.set_page_config(layout="wide", page_title=TRADUCOES['pt']['page_title'])
-
-# --- ESTILOS CSS APRIMORADOS ---
-COR_PRIMARIA = "#134883"
-COR_SECUNDARIA = "#F8AC2E"
-COR_FUNDO = "#F0F5FF"
-COR_TEXTO = "#333333"
-
-st.markdown(f"""
-<style>
-    .stApp {{ background-color: {COR_FUNDO}; color: {COR_TEXTO}; }}
-    h1, h2, h3, h4, h5, h6 {{ color: {COR_PRIMARIA}; }}
-    .stButton>button {{
-        border: 2px solid {COR_PRIMARIA};
-        background-color: {COR_PRIMARIA};
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-    }}
-    .stButton>button:hover {{
-        background-color: white;
-        color: {COR_PRIMARIA};
-    }}
-    .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
-    .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
-    .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
-    .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
-    .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
-    .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
-    .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
-    .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
-    .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
-    .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
-    div[data-baseweb="radio"] label > div:first-child {{
-        background-color: {COR_SECUNDARIA} !important;
-        border: 2px solid {COR_SECUNDARIA} !important;
-    }}
-</style>
-""", unsafe_allow_html=True)
-
-
-# --- INICIALIZAÇÃO DE ESTADOS ---
+# NOVO: Variáveis de estado e set_page_config são movidos para o início
 query_params = st.query_params
 if 'lang' in query_params:
     lang_from_url = query_params['lang']
@@ -540,6 +563,42 @@ if 'resultado_busca' not in st.session_state: st.session_state.resultado_busca =
 if 'mailto_link' not in st.session_state: st.session_state.mailto_link = None
 if 'iniciar_orcamento' not in st.session_state: st.session_state.iniciar_orcamento = False
 if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_selecionados = None
+
+st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
+
+# NOVO: Estilos CSS aprimorados e limpos
+st.markdown(f"""
+<style>
+    .stApp {{ background-color: #F0F5FF; color: #333333; }}
+    h1, h2, h3, h4, h5, h6 {{ color: #134883; }}
+    .stButton>button {{
+        border: 2px solid #134883;
+        background-color: #134883;
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }}
+    .stButton>button:hover {{
+        background-color: white;
+        color: #134883;
+    }}
+    .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
+    .stAlert-success {{ background-color: #e0f2f1; color: #134883; border-left: 5px solid #2ECC71; }}
+    .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid #F8AC2E; }}
+    .stAlert-info {{ background-color: #e3f2fd; color: #134883; border-left: 5px solid #134883; }}
+    .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
+    .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
+    .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
+    .bandeira-container.selecionada {{ border: 2px solid #F8AC2E; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
+    .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
+    .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
+    div[data-baseweb="radio"] label > div:first-child {{
+        background-color: #F8AC2E !important;
+        border: 2px solid #F8AC2E !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
 
 T = TRADUCOES[st.session_state.lang]
 
@@ -566,7 +625,7 @@ with col_bandeiras:
             img_base64 = image_to_base64(info["img"])
             st.markdown(f"""
             <a href="?lang={lang_code}" target="_self" style="text-decoration: none;">
-                <div style="display: flex; flex-direction: column; align-items: center; font-family: 'Source Sans Pro', sans-serif; font-weight: bold; color: {COR_PRIMARIA};">
+                <div style="display: flex; flex-direction: column; align-items: center; font-family: 'Source Sans Pro', sans-serif; font-weight: bold; color: #134883;">
                     <span>{info['nome']}</span>
                     <div class="bandeira-container {classe_css}">
                         <img src="data:image/png;base64,{img_base64}" class="bandeira-img">
@@ -581,18 +640,8 @@ st.info(T['performance_note'])
 st.divider()
 
 # ===================================================================
-# RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
-# ===================================================================
-
-EMAIL_DESTINO = "seu.email@higra.com.br"
-ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
-FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
-FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10.0 }
-
-# ===================================================================
 # SEÇÃO DE ENTRADAS (REESTRUTURADA COM BLOCOS VISUAIS)
 # ===================================================================
-
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
 with tab_seletor:
