@@ -774,6 +774,7 @@ with tab_seletor:
         st.rerun()
 
 with tab_buscador:
+    st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
     
     with col_freq_busca:
