@@ -51,7 +51,7 @@ def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
         img_bytes = pix.tobytes("png")
         image = Image.open(io.BytesIO(img_bytes))
         
-        # CORREÇÃO: Usa a legenda que foi passada como parâmetro
+        # Usa a legenda que foi passada como parâmetro
         st.image(image, caption=legenda, use_container_width=True)
         
     except FileNotFoundError:
@@ -251,9 +251,9 @@ TRADUCOES = {
         'parts_list_unavailable': "Lista de repuestos no disponible. Por favor, póngase en contacto para recibirla.",
         'pressure_unit_label': "Unidad Altura",
         'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
-        'search_button': "Buscar Mejor Opção",
+        'search_button': "Buscar Mejor Opción",
         'dimensional_drawing_button': "Dibujo Dimensional",
-        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
+        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es um documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
         'spinner_text': "Calculando las mejores opciones para {freq}...",
         'results_header': "Resultados de la Búsqueda",
         'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
@@ -272,11 +272,21 @@ TRADUCOES = {
         'download_drawing_button': "Descargar Dibujo Dimensional",
         'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
         'contact_button': "Contacto",
+        'system_type_single': "Única",
+        'show_unique_button': "🔍 Mostrar Bombas Únicas",
+        'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
+        'view_mode_unique': "Modo de visualização: Bombas Únicas",
+        'view_mode_systems': "Modo de visualização: Sistemas Múltiples",
+        'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
+        'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'pressure_error_header': "Error de Presión",
         'relative_error_header': "Error Relativo",
+        'system_type_parallel': "{} en Paralelo",
+        'system_type_series': "2 en Serie",
+        'system_type_combined': "{} Bombas ({}x2)",
         'system_type_header': "Tipo de Sistema",
         'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
-        'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal podem tardar unos segundos. ¡Agradecemos su paciencia!",
+        'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal pueden tardar unos segundos. ¡Agradecemos su paciencia!",
         'quote_form_button': "Enviar Solicitud de Cotización",
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
@@ -583,39 +593,39 @@ COR_TEXTO = "#333333"
 
 st.markdown(f"""
 <style>
-    /* Estilos gerais da app */
+    /* Configurações gerais */
     .stApp {{
         background-color: {COR_FUNDO};
         color: {COR_TEXTO};
     }}
     
-    /* Estilos de cabeçalhos */
+    /* Cabeçalhos */
     h1, h2, h3, h4, h5, h6 {{
         color: {COR_PRIMARIA};
     }}
     
-    /* Estilos de Botões */
+    /* Botões Principais (CORRIGIDO) */
     .stButton>button {{
-        border: 2px solid {COR_PRIMARIA};
-        background-color: {COR_PRIMARIA};
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border-radius: 8px;
+        border: 2px solid {COR_PRIMARIA} !important;
+        background-color: {COR_PRIMARIA} !important;
+        color: white !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+        border-radius: 8px !important;
     }}
     .stButton>button:hover {{
-        background-color: white;
-        color: {COR_PRIMARIA};
+        background-color: white !important;
+        color: {COR_PRIMARIA} !important;
     }}
     
-    /* Estilos de Alertas */
+    /* Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
     .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
     .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
     .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
     .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
 
-    /* Estilos de Bandeiras */
+    /* Container de bandeiras */
     .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
     .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
     .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
@@ -624,28 +634,10 @@ st.markdown(f"""
     /* Dataframe estilizado */
     .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
 
-    /* Estilo de botões de rádio */
+    /* Botões de Rádio da Frequência (NOVO) */
     div[data-baseweb="radio"] label > div:first-child {{
-        background-color: {COR_SECUNDARIA} !important;
+        background-color: {COR_SECUNDARIA} !important; /* Cor Amarela */
         border: 2px solid {COR_SECUNDARIA} !important;
-    }}
-    /* Estilo para links como botões */
-    .stLinkButton > a {{
-        border: 2px solid {COR_PRIMARIA};
-        background-color: {COR_PRIMARIA};
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        display: inline-block;
-        text-align: center;
-        padding: 0.5rem 1rem;
-        text-decoration: none;
-    }}
-    .stLinkButton > a:hover {{
-        background-color: white;
-        color: {COR_PRIMARIA};
-    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -654,6 +646,7 @@ st.markdown(f"""
 # CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA (VERSÃO ATUALIZADA)
 # ===================================================================
 
+# Mapeamento das bandeiras para idiomas
 bandeiras = {
     "pt": {"nome": "PT", "img": "brasil.png"},
     "en": {"nome": "EN", "img": "uk.png"},
@@ -669,12 +662,16 @@ with col_logo:
         st.warning("Logo não encontrada.")
 
 with col_bandeiras:
+    # Cria colunas para cada bandeira ficarem lado a lado
     flag_cols = st.columns(len(bandeiras))
     for i, (lang_code, info) in enumerate(bandeiras.items()):
         with flag_cols[i]:
             classe_css = "selecionada" if st.session_state.lang == lang_code else ""
             img_base64 = image_to_base64(info["img"])
 
+            # Unimos o texto e a imagem dentro de um único link (tag <a>).
+            # O href="?lang=..." instrui o Streamlit a recarregar a página com o novo idioma.
+            # O target="_self" garante que a página recarregue na mesma aba.
             st.markdown(f"""
             <a href="?lang={lang_code}" target="_self" style="text-decoration: none;">
                 <div style="display: flex; flex-direction: column; align-items: center; font-family: 'Source Sans Pro', sans-serif; font-weight: bold; color: {COR_PRIMARIA};">
@@ -686,12 +683,18 @@ with col_bandeiras:
             </a>
             """, unsafe_allow_html=True)
 
+
+
+
+# Atualiza a variável de tradução APÓS a possível troca de idioma
 T = TRADUCOES[st.session_state.lang]
 
+# Título e Mensagem de Boas-vindas
 st.title(T['main_title'])
 st.write(T['welcome_message'])
 st.info(T['performance_note'])
 st.divider()
+
 
 # ===================================================================
 # RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
@@ -706,10 +709,13 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 # SEÇÃO DE ENTRADAS (VERSÃO CORRIGIDA E REESTRUTURADA)
 # ===================================================================
 
+# Cria as duas abas para separar as formas de busca
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
+# --- Aba 1: Seletor por Ponto de Trabalho ---
 with tab_seletor:
     st.markdown(f"#### {T['eletric_freq_title']}")
+
     col_freq, col_vazio = st.columns([1, 3])
     with col_freq:
         frequencia_selecionada = st.radio(
@@ -719,8 +725,11 @@ with tab_seletor:
             label_visibility="collapsed",
             key='freq_seletor'
         )
+
+    # Carrega os dados para o SELETOR
     caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
     df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
+
     col_vazao, col_pressao = st.columns(2)
     with col_vazao:
         st.markdown(T['flow_header'])
@@ -732,11 +741,14 @@ with tab_seletor:
         sub_col_p1, sub_col_p2 = st.columns([2,1])
         with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
         with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
+
     vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
     pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
-    if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="primary"):
+    # Botão do SELETOR, agora dentro de sua própria aba
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
+        # Reseta todos os estados ao iniciar uma nova busca
         st.session_state.last_used_freq = frequencia_selecionada
         st.session_state.resultado_busca = None
         st.session_state.mostrar_grafico = False
@@ -748,9 +760,11 @@ with tab_seletor:
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
             bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca)
             
+            # Armazenar ambos os resultados na sessão
             st.session_state.resultado_bombas_unicas = bombas_unicas
             st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
             
+            # Determinar o modo inicial com base na disponibilidade de resultados
             if not bombas_unicas.empty:
                 st.session_state.modo_visualizacao = 'unicas'
                 st.session_state.resultado_busca = {"resultado": bombas_unicas}
@@ -762,7 +776,7 @@ with tab_seletor:
                 st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
         
         st.rerun()
-
+# --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
     st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
@@ -775,6 +789,7 @@ with tab_buscador:
             key='freq_buscador'
         )
 
+    # Graças ao cache, esta linha agora é instantânea após a primeira execução
     caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
     df_buscador = carregar_e_processar_dados(caminho_buscador)
 
@@ -788,7 +803,7 @@ with tab_buscador:
             )
 
         with col_motor_busca:
-            motor_selecionado_buscador = None
+            motor_selecionado_buscador = None # Inicializa a variável para evitar erros
             if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
                 motores_unicos = df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
                 motores_disponiveis = sorted([motor for motor in motores_unicos if pd.notna(motor)])
@@ -804,8 +819,11 @@ with tab_buscador:
             else:
                 st.selectbox(T['motor_select_label'], ["-"], disabled=True)
 
+        # A lógica do botão agora chama a nova função rápida 'buscar_por_modelo_e_motor'
         if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
-            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump', type="primary"):
+            # Substitua pelo bloco corrigido:
+            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
+                # Limpa todos os resultados anteriores para uma busca limpa
                 st.session_state.last_used_freq = frequencia_buscador
                 st.session_state.resultado_bombas_unicas = None
                 st.session_state.resultado_sistemas_multiplos = None
@@ -816,20 +834,29 @@ with tab_buscador:
                 st.session_state.mostrar_desenho_visualizacao = False
                 st.session_state.mostrar_lista_visualizacao = False
 
+                # Chama a função de busca por modelo
                 resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                 
                 if not resultado.empty:
+                    # ATUALIZAÇÃO: Prepara o estado da sessão da maneira que a nova interface espera
                     st.session_state.resultado_bombas_unicas = resultado
-                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame()
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.session_state.resultado_busca = {"resultado": resultado}
+                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame() # Cria uma tabela vazia para sistemas múltiplos
+                    st.session_state.modo_visualizacao = 'unicas' # Define o modo de visualização correto
+                    st.session_state.resultado_busca = {"resultado": resultado} # Mantém a variável antiga para ativar a exibição
                 else:
+                    # Se não encontrar, limpa tudo e mostra o erro
                     st.session_state.resultado_busca = None
                     st.error(T['no_solution_error'])
                 
                 st.rerun()
                 
+# O bloco de exibição de resultados abaixo desta linha permanece o mesmo.
+# --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
+# A linha 'if st.session_state.resultado_busca:' já existe no seu código,
+# então a substituição termina antes dela.
+
 if st.session_state.resultado_busca is not None:
+    # Determina qual resultado exibir com base no modo atual
     if st.session_state.get('modo_visualizacao') == 'multiplas':
         resultado = st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame())
     else:
@@ -838,11 +865,13 @@ if st.session_state.resultado_busca is not None:
     st.divider()
     st.header(T['results_header'])
     
+    # Mostra o indicador do modo de visualização atual
     if st.session_state.get('modo_visualizacao') == 'unicas':
         st.info(T['view_mode_unique'])
     else:
         st.info(T['view_mode_systems'])
 
+    # Botões de alternância - SEMPRE mostrados quando há resultados em qualquer modo
     tem_unicas = st.session_state.get('resultado_bombas_unicas') is not None and not st.session_state.resultado_bombas_unicas.empty
     tem_multiplas = st.session_state.get('resultado_sistemas_multiplos') is not None and not st.session_state.resultado_sistemas_multiplos.empty
     
@@ -863,12 +892,14 @@ if st.session_state.resultado_busca is not None:
                 st.session_state.modo_visualizacao = 'multiplas'
                 st.rerun()
 
+    # Verifica se a tabela selecionada está vazia
     if resultado.empty:
         if st.session_state.get('modo_visualizacao') == 'unicas':
             st.error(T['no_unique_pumps'])
         else:
             st.error(T['no_systems_found'])
     else:
+        # Restante do código de exibição da tabela (mantido igual)
         resultado_exibicao = resultado.copy()
 
         def traduzir_tipo_sistema(row):
