@@ -285,14 +285,14 @@ TRADUCOES = {
         'system_type_series': "2 en Serie",
         'system_type_combined': "{} Bombas ({}x2)",
         'system_type_header': "Tipo de Sistema",
-        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
+        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro suporte.",
         'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal podem tardar unos segundos. ¡Agradecemos su paciencia!",
         'quote_form_button': "Enviar Solicitud de Cotización",
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
+        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
 
@@ -567,7 +567,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         
     return df_unicas_final, df_multiplas_final
 
-    # ===================================================================
+# ===================================================================
 # INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
 # ===================================================================
 
