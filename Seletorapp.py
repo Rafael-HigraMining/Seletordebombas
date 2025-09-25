@@ -255,7 +255,7 @@ TRADUCOES = {
         'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
         'search_button': "Buscar Mejor Opción",
         'dimensional_drawing_button': "Dibujo Dimensional",
-        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
+        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
         'spinner_text': "Calculando las mejores opciones para {freq}...",
         'results_header': "Resultados de la Búsqueda",
         'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
@@ -278,7 +278,7 @@ TRADUCOES = {
         'show_unique_button': "🔍 Mostrar Bombas Únicas",
         'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
         'view_mode_unique': "Modo de visualización: Bombas Únicas",
-        'view_mode_systems': "Modo de visualización: Sistemas Múltiples",
+        'view_mode_systems': "Modo de visualização: Sistemas Múltiples",
         'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
         'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'pressure_error_header': "Error de Presión",
@@ -294,7 +294,7 @@ TRADUCOES = {
         'quote_form_success': "¡Solicitud lista para ser enviada!",
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
+        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
 
@@ -996,7 +996,6 @@ if st.session_state.resultado_busca is not None:
             T['view_graph_button'],
             key="btn_visualizar_grafico",
             use_container_width=True,
-            type="primary",
         ):
             st.session_state.mostrar_grafico = True
         
