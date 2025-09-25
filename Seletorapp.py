@@ -217,7 +217,6 @@ TRADUCOES = {
         'quote_form_warning': "Please fill in your name and email.",
         'quote_form_success': "Request ready to be sent!",
         'quote_form_click_here': "Click here to open and send the email",
-        'quote_form_info': "Your default email client will open with all the information pre-filled.",
         'email_subject': "Quote Request via Pump Selector - {nome}",
         'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     },
@@ -294,9 +293,8 @@ TRADUCOES = {
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
-        'quote_form_info': "Su cliente de correo electrónico predeterminado se abrirá con toda la información completada.",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
+        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     }
 }
 
@@ -644,6 +642,40 @@ if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_
 
 st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
 
+# --- ESTILOS CSS APRIMORADOS ---
+COR_PRIMARIA = "#134883"
+COR_SECUNDARIA = "#F8AC2E"
+COR_FUNDO = "#F0F5FF"
+COR_TEXTO = "#333333"
+
+st.markdown(f"""
+<style>
+    /* Estilos gerais */
+    .stApp {{
+        background-color: {COR_FUNDO};
+        color: {COR_TEXTO};
+    }}
+    
+    /* Cabeçalhos */
+    h1, h2, h3, h4, h5, h6 {{
+        color: {COR_PRIMARIA};
+    }}
+    
+    /* Alertas */
+    .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
+    .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
+    .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
+    .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
+    .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
+
+    /* Container de bandeiras */
+    .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
+    .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
+    .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
+    .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
+</style>
+""", unsafe_allow_html=True)
+
 
 # ===================================================================
 # CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA (VERSÃO ATUALIZADA)
@@ -964,6 +996,7 @@ if st.session_state.resultado_busca is not None:
             T['view_graph_button'],
             key="btn_visualizar_grafico",
             use_container_width=True,
+            type="primary",
         ):
             st.session_state.mostrar_grafico = True
         
@@ -1036,8 +1069,23 @@ if st.session_state.resultado_busca is not None:
                     st.warning(T['drawing_unavailable'])
                 
                 link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
-st.link_button(T['contact_button'], link_contato, use_container_width=True, type="secondary")
-               
+                st.markdown(f'''
+                <a href="{link_contato}" target="_blank" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    background-color: {COR_PRIMARIA};
+                    color: white;
+                    font-weight: bold;
+                    text-align: center;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                ''', unsafe_allow_html=True)
         st.divider()
 
         # ===================================================================
@@ -1052,7 +1100,24 @@ st.link_button(T['contact_button'], link_contato, use_container_width=True, type
             with st.container(border=True):
                 caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
                 
-                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                botao_contato_html = f'''
+                <a href="{link_contato_pecas}" target="_blank" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    background-color: {COR_PRIMARIA};
+                    color: white;
+                    font-weight: bold;
+                    text-align: center;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    border: 2px solid {COR_PRIMARIA};
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                ">
+                    {T['contact_button']}
+                </a>
+                '''
 
                 if caminho_lista_pecas.exists():
                     st.info(T['parts_list_warning'])
@@ -1078,19 +1143,3 @@ st.link_button(T['contact_button'], link_contato, use_container_width=True, type
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
