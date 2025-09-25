@@ -217,6 +217,7 @@ TRADUCOES = {
         'quote_form_warning': "Please fill in your name and email.",
         'quote_form_success': "Request ready to be sent!",
         'quote_form_click_here': "Click here to open and send the email",
+        'quote_form_info': "Your default email client will open with all the information pre-filled.",
         'email_subject': "Quote Request via Pump Selector - {nome}",
         'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     },
@@ -255,7 +256,7 @@ TRADUCOES = {
         'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
         'search_button': "Buscar Mejor Opción",
         'dimensional_drawing_button': "Dibujo Dimensional",
-        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
+        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
         'spinner_text': "Calculando las mejores opciones para {freq}...",
         'results_header': "Resultados de la Búsqueda",
         'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
@@ -278,7 +279,7 @@ TRADUCOES = {
         'show_unique_button': "🔍 Mostrar Bombas Únicas",
         'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
         'view_mode_unique': "Modo de visualización: Bombas Únicas",
-        'view_mode_systems': "Modo de visualização: Sistemas Múltiples",
+        'view_mode_systems': "Modo de visualización: Sistemas Múltiples",
         'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
         'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'pressure_error_header': "Error de Presión",
@@ -293,6 +294,7 @@ TRADUCOES = {
         'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
         'quote_form_success': "¡Solicitud lista para ser enviada!",
         'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
+        'quote_form_info': "Su cliente de correo electrónico predeterminado se abrirá con toda la información completada.",
         'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
         'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
     }
@@ -650,7 +652,7 @@ COR_TEXTO = "#333333"
 
 st.markdown(f"""
 <style>
-    /* Estilos gerais */
+    /* Configurações gerais */
     .stApp {{
         background-color: {COR_FUNDO};
         color: {COR_TEXTO};
@@ -659,6 +661,20 @@ st.markdown(f"""
     /* Cabeçalhos */
     h1, h2, h3, h4, h5, h6 {{
         color: {COR_PRIMARIA};
+    }}
+    
+    /* Botões Principais (CORRIGIDO) */
+    .stButton>button {{
+        border: 2px solid {COR_PRIMARIA} !important;
+        background-color: {COR_PRIMARIA} !important;
+        color: white !important;
+        font-weight: bold !important;
+        transition: all 0.3s ease !important;
+        border-radius: 8px !important;
+    }}
+    .stButton>button:hover {{
+        background-color: white !important;
+        color: {COR_PRIMARIA} !important;
     }}
     
     /* Alertas */
@@ -673,6 +689,14 @@ st.markdown(f"""
     .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
     .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
     .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
+
+    /* Dataframe estilizado */
+    .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
+
+    /* Botões de Rádio da Frequência (NOVO) */
+    div[data-baseweb="radio"] label > div:first-child {{
+        background-color: {COR_SECUNDARIA} !important; /* Cor Amarela */
+        border: 2px solid {COR_SECUNDARIA} !important;
 </style>
 """, unsafe_allow_html=True)
 
@@ -718,6 +742,9 @@ with col_bandeiras:
             </a>
             """, unsafe_allow_html=True)
 
+
+
+
 # Atualiza a variável de tradução APÓS a possível troca de idioma
 T = TRADUCOES[st.session_state.lang]
 
@@ -751,8 +778,7 @@ tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_labe
 
 # --- Aba 1: Seletor por Ponto de Trabalho ---
 with tab_seletor:
-    with st.container(border=True):
-        st.markdown(f"#### {T['eletric_freq_title']}")
+    st.markdown(f"#### {T['eletric_freq_title']}")
 
     col_freq, col_vazio = st.columns([1, 3])
     with col_freq:
@@ -785,7 +811,7 @@ with tab_seletor:
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
     # Botão do SELETOR, agora dentro de sua própria aba
-    if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="secondary"):
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
         # Reseta todos os estados ao iniciar uma nova busca
         st.session_state.last_used_freq = frequencia_selecionada
         st.session_state.resultado_busca = None
@@ -816,8 +842,6 @@ with tab_seletor:
         st.rerun()
 # --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
-    with st.container(border=True):
-        st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
     
     with col_freq_busca:
@@ -996,6 +1020,7 @@ if st.session_state.resultado_busca is not None:
             T['view_graph_button'],
             key="btn_visualizar_grafico",
             use_container_width=True,
+            type="primary",
         ):
             st.session_state.mostrar_grafico = True
         
@@ -1099,7 +1124,7 @@ if st.session_state.resultado_busca is not None:
             with st.container(border=True):
                 caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
                 
-                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
+                link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%20pe%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
                 botao_contato_html = f'''
                 <a href="{link_contato_pecas}" target="_blank" style="
                     display: block;
@@ -1142,3 +1167,9 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
+
+
+
+
+
