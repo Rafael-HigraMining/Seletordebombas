@@ -642,8 +642,6 @@ st.markdown(f"""
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         position: relative;
     }}
-
-    /* Linha AMARELA abaixo da aba SELECIONADA (MODIFICADO) */
     [data-baseweb="tab-list"] button[aria-selected="true"]::after {{
         content: '';
         position: absolute;
@@ -651,16 +649,15 @@ st.markdown(f"""
         left: 5%;
         width: 90%;
         height: 4px;
-        background-color: {COR_SECUNDARIA}; /* MUDOU DE VERMELHO PARA AMARELO */
+        background-color: {COR_SECUNDARIA};
         border-radius: 2px;
     }}
     
-    /* ============================================================== */
-    /* NOVO: Estilização dos campos de entrada para Vazão e Pressão   */
-    /* ============================================================== */
-    /* Alvo para st.number_input e st.selectbox */
-    div[data-testid="stNumberInput"] > div > div, 
-    div[data-testid="stSelectbox"] > div {{
+    /* ========================================================================= */
+    /* MODIFICADO: Estilização aplicada APENAS aos campos de ENTRADA NUMÉRICA    */
+    /* ========================================================================= */
+    /* Alvo exclusivo para st.number_input */
+    div[data-testid="stNumberInput"] > div > div {{
         border: 2px solid {COR_PRIMARIA} !important; /* Borda azul permanente */
         background-color: white !important;
         border-radius: 8px !important;
@@ -940,5 +937,6 @@ if st.session_state.resultado_busca is not None:
                     mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
                 else:
                     st.warning(T['parts_list_unavailable'])
+
 
 
