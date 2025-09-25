@@ -107,6 +107,14 @@ TRADUCOES = {
         'quote_continue_button': "Continuar para o Próximo Passo",
         'quote_contact_header': "Passo 2: Seus Dados de Contato",
         'quote_form_name': "Seu Nome *",
+        'pipe_material_cs': "Aço Carbono",
+        'pipe_material_ss': "Aço Inox",
+        'pipe_material_di': "Ferro Dúctil",
+        'pipe_material_ci': "Ferro Fundido",
+        'pipe_material_pvc': "PVC",
+        'search_with_data_button': "Buscar Bombas com Estes Dados",
+        'search_done_message': "Busca concluída! Os resultados estão na aba 'Seletor por Ponto de Trabalho'.",
+        'pipe_material_hdpe': "HDPE (PEAD)",
         'quote_form_email': "Seu E-mail *",
         'quote_form_message': "Mensagem (opcional)",
         'quote_form_button': "Enviar Pedido de Orçamento",
@@ -129,6 +137,31 @@ TRADUCOES = {
         'system_type_header': "Tipo de Sistema",
         'pressure_error_header': "Erro de Pressão",
         'relative_error_header': "Erro Relativo",
+        'calculator_tab_label': "Calculadora de Sistema",
+        'calculator_header': "Calculadora de Ponto de Trabalho",
+        'calculator_intro': "Preencha os dados do seu sistema hidráulico para calcular a vazão e a pressão (altura manométrica) necessárias para o seu projeto.",
+        'section_general_data': "Dados Gerais do Projeto",
+        'desired_flow_rate': "Vazão Requerida",
+        'fluid_temperature': "Temperatura do Fluido (°C)",
+        'section_piping': "Detalhes da Tubulação",
+        'pipe_material': "Material da Tubulação",
+        'pipe_diameter': "Diâmetro Interno (mm)",
+        'pipe_length': "Comprimento Reto Total (m)",
+        'section_elevation': "Elevação (Desnível Geométrico)",
+        'suction_elevation': "Altura de Sucção (m)",
+        'discharge_elevation': "Altura de Recalque (m)",
+        'elevation_help': "Sucção: distância vertical do nível da água até o eixo da bomba. Recalque: distância vertical do eixo da bomba até o ponto de entrega final.",
+        'section_fittings': "Acessórios e Perdas Localizadas",
+        'elbow_90': "Cotovelo 90°",
+        'elbow_45': "Cotovelo 45°",
+        'gate_valve': "Válvula Gaveta (Aberta)",
+        'check_valve': "Válvula de Retenção",
+        'entry_loss': "Perda de Carga na Entrada (Sucção)",
+        'exit_loss': "Perda de Carga na Saída (Recalque)",
+        'calculate_button': "Calcular Ponto de Trabalho",
+        'results_header_calculator': "Resultado do Cálculo",
+        'calculated_head': "Altura Manométrica Total Calculada",
+        'use_data_button': "Usar estes dados para Buscar a Bomba",
         'no_solution_found': "❌ Nenhuma bomba ou sistema de bombas foi encontrado para este ponto de trabalho. Tente outros valores ou entre em contato com nosso suporte.",
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
         'quote_form_info': "Seu programa de e-mail padrão será aberto com todas as informações preenchidas.",
@@ -164,6 +197,39 @@ TRADUCOES = {
         'view_parts_list_button': "View Parts List",
         'close_view_button': "Close View",
         'parts_list_button': "Parts List",
+        'calculator_tab_label': "System Calculator",
+        'calculator_header': "Duty Point Calculator",
+        'calculator_intro': "Fill in your hydraulic system data to calculate the required flow rate and pressure (total dynamic head) for your project.",
+        'section_general_data': "General Project Data",
+        'desired_flow_rate': "Required Flow Rate",
+        'fluid_temperature': "Fluid Temperature (°C)",
+        'section_piping': "Piping Details",
+        'pipe_material': "Pipe Material",
+        'pipe_material_cs': "Carbon Steel",
+        'pipe_material_ss': "Stainless Steel",
+        'pipe_material_di': "Ductile Iron",
+        'pipe_material_ci': "Cast Iron",
+        'pipe_material_pvc': "PVC",
+        'search_with_data_button': "Find Pumps with This Data",
+        'search_done_message': "Search complete! The results are on the 'Selector by Duty Point' tab.",
+        'pipe_material_hdpe': "HDPE",
+        'pipe_diameter': "Internal Diameter (mm)",
+        'pipe_length': "Total Straight Length (m)",
+        'section_elevation': "Elevation (Geometric Head)",
+        'suction_elevation': "Suction Head (m)",
+        'discharge_elevation': "Discharge Head (m)",
+        'elevation_help': "Suction: vertical distance from water level to pump centerline. Discharge: vertical distance from pump centerline to final delivery point.",
+        'section_fittings': "Fittings and Minor Losses",
+        'elbow_90': "90° Elbow",
+        'elbow_45': "45° Elbow",
+        'gate_valve': "Gate Valve (Open)",
+        'check_valve': "Check Valve",
+        'entry_loss': "Entrance Loss (Suction)",
+        'exit_loss': "Exit Loss (Discharge)",
+        'calculate_button': "Calculate Duty Point",
+        'results_header_calculator': "Calculation Result",
+        'calculated_head': "Calculated Total Dynamic Head",
+        'use_data_button': "Use this Data to Find a Pump",
         'parts_list_warning': "Attention: The parts list is a reference document and may contain variations. If in doubt or for more detailed confirmation, please contact us.",
         'download_parts_list_button': "Download Parts List",
         'parts_list_unavailable': "Parts list unavailable. Please contact us to receive it.",
@@ -238,6 +304,39 @@ TRADUCOES = {
         'model_select_label': "1. Seleccione el Modelo",
         'motor_select_label': "2. Seleccione el Motor (CV)",
         'find_pump_button': "Buscar Bomba",
+        'search_with_data_button': "Buscar Bombas con Estos Datos",
+        'search_done_message': "¡Búsqueda completa! Los resultados están en la pestaña 'Selector por Punto de Trabajo'.",
+        'calculator_tab_label': "Calculadora de Sistema",
+        'calculator_header': "Calculadora de Punto de Trabajo",
+        'calculator_intro': "Complete los datos de su sistema hidráulico para calcular el caudal y la presión (altura manométrica total) necesarios para su proyecto.",
+        'section_general_data': "Datos Generales del Proyecto",
+        'desired_flow_rate': "Caudal Requerido",
+        'fluid_temperature': "Temperatura del Fluido (°C)",
+        'section_piping': "Detalles de la Tubería",
+        'pipe_material': "Material de la Tubería",
+        'pipe_diameter': "Diámetro Interno (mm)",
+        'pipe_length': "Longitud Recta Total (m)",
+        'section_elevation': "Elevación (Altura Geométrica)",
+        'suction_elevation': "Altura de Succión (m)",
+        'discharge_elevation': "Altura de Descarga (m)",
+        'elevation_help': "Succión: distancia vertical desde el nivel del agua hasta el eje de la bomba. Descarga: distancia vertical desde el eje de la bomba hasta el punto de entrega final.",
+        'section_fittings': "Accesorios y Pérdidas Menores",
+        'elbow_90': "Codo 90°",
+        'elbow_45': "Codo 45°",
+        'pipe_material_cs': "Acero al Carbono",
+        'pipe_material_ss': "Acero Inoxidable",
+        'pipe_material_di': "Hierro Dúctil",
+        'pipe_material_ci': "Hierro Fundido",
+        'pipe_material_pvc': "PVC",
+        'pipe_material_hdpe': "HDPE (PEAD)",
+        'gate_valve': "Válvula de Compuerta (Abierta)",
+        'check_valve': "Válvula de Retención",
+        'entry_loss': "Pérdida de Entrada (Succión)",
+        'exit_loss': "Pérdida de Salida (Descarga)",
+        'calculate_button': "Calcular Punto de Trabajo",
+        'results_header_calculator': "Resultado del Cálculo",
+        'calculated_head': "Altura Manométrica Total Calculada",
+        'use_data_button': "Usar estos datos para Buscar la Bomba",
         'flow_unit_label': "Unidad Caudal",
         'parts_list_button': "Lista de Repuestos",
         'parts_list_warning': "Atención: La lista de repuestos es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
@@ -290,6 +389,105 @@ TRADUCOES = {
         'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
+
+# ===================================================================
+# LÓGICA DA CALCULADORA DE PONTO DE TRABALHO
+# ===================================================================
+import math
+
+# --- DADOS DE ENGENHARIA ---
+# Rugosidade Absoluta (ε) em metros para diferentes materiais
+RUGOSIDADE_MATERIAL = {
+    'cs': 0.000046,   # Aço Carbono
+    'ss': 0.000002,   # Aço Inox
+    'di': 0.00024,    # Ferro Dúctil
+    'ci': 0.00026,    # Ferro Fundido
+    'pvc': 0.0000015, # PVC
+    'hdpe': 0.0000015 # HDPE (PEAD)
+}
+
+# Coeficientes de Perda Localizada (K) para acessórios comuns
+COEFICIENTE_K_ACESSORIOS = {
+    'cotovelo_90': 0.9,
+    'cotovelo_45': 0.4,
+    'valvula_gaveta': 0.2,
+    'valvula_retencao': 2.5
+}
+
+# Propriedades da Água (Viscosidade Cinemática ν em m²/s) por Temperatura (°C)
+# Tabela simplificada para interpolação linear
+VISCOSIDADE_AGUA = {
+    0: 1.787e-6,
+    10: 1.307e-6,
+    20: 1.004e-6,
+    30: 0.801e-6,
+    40: 0.658e-6,
+    50: 0.553e-6,
+    60: 0.474e-6,
+    70: 0.413e-6,
+    80: 0.365e-6,
+    90: 0.326e-6,
+    100: 0.294e-6
+}
+
+def obter_viscosidade(temp_c):
+    """Calcula a viscosidade cinemática da água por interpolação linear."""
+    temps = sorted(VISCOSIDADE_AGUA.keys())
+    if temp_c <= temps[0]: return VISCOSIDADE_AGUA[temps[0]]
+    if temp_c >= temps[-1]: return VISCOSIDADE_AGUA[temps[-1]]
+    
+    for i, t_upper in enumerate(temps):
+        if temp_c < t_upper:
+            t_lower = temps[i-1]
+            v_lower = VISCOSIDADE_AGUA[t_lower]
+            v_upper = VISCOSIDADE_AGUA[t_upper]
+            # Interpolação
+            return v_lower + (v_upper - v_lower) * (temp_c - t_lower) / (t_upper - t_lower)
+
+def calcular_ponto_trabalho(dados):
+    """
+    Função principal que calcula a Altura Manométrica Total (AMT).
+    Todos os dados de entrada já devem estar no Sistema Internacional (m, m³/s, etc.).
+    """
+    g = 9.81 # Aceleração da gravidade (m/s²)
+    
+    # 1. Propriedades do Sistema e Fluido
+    vazao_m3s = dados['vazao_m3h'] / 3600
+    diametro_m = dados['diametro_mm'] / 1000
+    comprimento_m = dados['comprimento_m']
+    rugosidade_m = RUGOSIDADE_MATERIAL[dados['material_key']]
+    viscosidade_m2s = obter_viscosidade(dados['temperatura_c'])
+
+    # 2. Cálculos Hidráulicos Básicos
+    area_m2 = math.pi * (diametro_m ** 2) / 4
+    velocidade_ms = vazao_m3s / area_m2
+    reynolds = (velocidade_ms * diametro_m) / viscosidade_m2s
+
+    # 3. Fator de Atrito (f) - Usando a fórmula de Swamee-Jain (precisa e não-iterativa)
+    # Válida para 5000 < Re < 10^8 e 10^-6 < ε/D < 10^-2
+    rugosidade_relativa = rugosidade_m / diametro_m
+    fator_atrito = 0.25 / (math.log10((rugosidade_relativa / 3.7) + (5.74 / (reynolds ** 0.9))))**2
+
+    # 4. Cálculo das Perdas de Carga
+    # a) Perda de Carga Contínua (Darcy-Weisbach)
+    perda_continua_m = fator_atrito * (comprimento_m / diametro_m) * (velocidade_ms ** 2) / (2 * g)
+
+    # b) Perda de Carga Localizada
+    k_total = (
+        dados['qtd_cotovelo90'] * COEFICIENTE_K_ACESSORIOS['cotovelo_90'] +
+        dados['qtd_cotovelo45'] * COEFICIENTE_K_ACESSORIOS['cotovelo_45'] +
+        dados['qtd_valv_gaveta'] * COEFICIENTE_K_ACESSORIOS['valvula_gaveta'] +
+        dados['qtd_valv_retencao'] * COEFICIENTE_K_ACESSORIOS['valvula_retencao']
+    )
+    perda_localizada_m = k_total * (velocidade_ms ** 2) / (2 * g)
+
+    # 5. Altura Geométrica
+    altura_geometrica_m = dados['alt_recalque_m'] + dados['alt_succao_m']
+
+    # 6. Altura Manométrica Total (AMT)
+    amt_mca = altura_geometrica_m + perda_continua_m + perda_localizada_m
+    
+    return amt_mca, vazao_m3s * 3600 # Retorna AMT em mca e vazão em m³/h
 
 # -------------------------------------------------------------------
 # Funções de Lógica e Processamento de Dados
@@ -553,6 +751,129 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         
     return df_unicas_final, df_multiplas_final
 
+# ===================================================================
+# NOVA FUNÇÃO PARA EXIBIR RESULTADOS DE BUSCA (EVITA REPETIÇÃO)
+# ===================================================================
+def exibir_resultados_busca(T, key_prefix):
+    """Função dedicada a exibir a tabela de resultados e documentos da busca de bombas."""
+    resultado = (st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame()) 
+                 if st.session_state.get('modo_visualizacao') == 'multiplas' 
+                 else st.session_state.get('resultado_bombas_unicas', pd.DataFrame()))
+
+    st.header(T['results_header'])
+    
+    with st.container(border=True):
+        tem_unicas = not st.session_state.get('resultado_bombas_unicas', pd.DataFrame()).empty
+        tem_multiplas = not st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame()).empty
+        
+        if tem_unicas or tem_multiplas:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(T['show_unique_button'], use_container_width=True, disabled=not tem_unicas or st.session_state.modo_visualizacao == 'unicas', key=f"{key_prefix}_btn_unicas"):
+                    st.session_state.modo_visualizacao = 'unicas'
+                    st.rerun()
+            with col2:
+                if st.button(T['show_systems_button'], use_container_width=True, disabled=not tem_multiplas or st.session_state.modo_visualizacao == 'multiplas', key=f"{key_prefix}_btn_multiplas"):
+                    st.session_state.modo_visualizacao = 'multiplas'
+                    st.rerun()
+
+        if resultado.empty:
+            if st.session_state.get('modo_visualizacao') == 'unicas': st.error(T['no_unique_pumps'])
+            else: st.error(T['no_systems_found'])
+        else:
+            resultado_exibicao = resultado.copy()
+            def traduzir_tipo_sistema(row):
+                code = row.get('TIPO_SISTEMA_CODE', 'single')
+                if code == "single": return T['system_type_single']
+                if code == "parallel": return T['system_type_parallel'].format(int(row.get('N_TOTAL_BOMBAS', 2)))
+                if code == "series": return T['system_type_series']
+                if code == "combined": return T['system_type_combined'].format(int(row.get('N_TOTAL_BOMBAS', 4)), int(row.get('N_PARALELO', 2)))
+                return ""
+            
+            resultado_exibicao[T['system_type_header']] = resultado_exibicao.apply(traduzir_tipo_sistema, axis=1)
+            resultado_exibicao.drop(columns=['TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS', 'N_PARALELO'], errors='ignore', inplace=True)
+            resultado_exibicao.rename(columns={
+                "RENDIMENTO (%)": "RENDIMENTO", "POTÊNCIA (HP)": "POTÊNCIA", "MOTOR FINAL (CV)": "MOTOR FINAL",
+                "ERRO_PRESSAO": T['pressure_error_header'], "ERRO_RELATIVO": T['relative_error_header']
+            }, inplace=True)
+            
+            resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
+            
+            opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
+            st.radio("Selecione a bomba:", options=opcoes_ranking, index=0, horizontal=True, label_visibility="collapsed", key=f'radio_selecao_{key_prefix}_{st.session_state.modo_visualizacao}')
+            
+            for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
+                if col in resultado_exibicao.columns:
+                    resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
+            
+            st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
+    
+    if not resultado.empty:
+        st.subheader("Documentação Técnica")
+        
+        indice_selecionado = opcoes_ranking.index(st.session_state[f'radio_selecao_{key_prefix}_{st.session_state.modo_visualizacao}'])
+        bomba_selecionada = resultado.iloc[indice_selecionado]
+        modelo_selecionado = bomba_selecionada['MODELO']
+        try:
+            motor_alvo = int(bomba_selecionada['MOTOR FINAL (CV)'])
+        except (ValueError, TypeError):
+            motor_alvo = 0
+
+        col_grafico, col_desenho = st.columns(2)
+
+        with col_grafico:
+            with st.container(border=True):
+                st.header(T['graph_header'])
+                frequencia_str = st.session_state.get('last_used_freq', '60Hz')
+                caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+                
+                if st.button(T['view_graph_button'], key=f"btn_grafico_{key_prefix}", use_container_width=True):
+                    st.session_state.mostrar_grafico = not st.session_state.get('mostrar_grafico', False)
+                
+                if st.session_state.get('mostrar_grafico', False):
+                    mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
+        
+        with col_desenho:
+            with st.container(border=True):
+                st.header(T['drawing_header'])
+                
+                if st.button(T['dimensional_drawing_button'], key=f"btn_desenho_{key_prefix}", use_container_width=True):
+                    st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
+
+                if st.session_state.get('mostrar_desenho', False):
+                    desenho_base_path = Path("Desenhos")
+                    caminho_desenho_final = None
+                    if desenho_base_path.exists():
+                        desenhos_candidatos = {int(p.stem.split('_')[1]): p for p in desenho_base_path.glob(f"{modelo_selecionado}*.pdf") if len(p.stem.split('_')) == 2 and p.stem.split('_')[1].isdigit()}
+                        if desenhos_candidatos:
+                            motor_mais_proximo = min(desenhos_candidatos.keys(), key=lambda m: abs(m - motor_alvo))
+                            caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
+                        else:
+                            caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
+                            if caminho_geral.exists():
+                                caminho_desenho_final = caminho_geral
+                    
+                    if caminho_desenho_final:
+                        with open(caminho_desenho_final, "rb") as pdf_file:
+                            st.download_button(label=T['download_drawing_button'], data=pdf_file, file_name=caminho_desenho_final.name, mime="application/pdf", use_container_width=True)
+                        mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
+                    else:
+                        st.warning(T['drawing_unavailable'])
+        
+        with st.container(border=True):
+            st.header(T['parts_list_header'])
+            if st.button(T['parts_list_button'], key=f"btn_lista_{key_prefix}", use_container_width=True):
+                st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+
+            if st.session_state.get('mostrar_lista_pecas', False):
+                caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
+                if caminho_lista_pecas.exists():
+                    st.info(T['parts_list_warning'])
+                    with open(caminho_lista_pecas, "rb") as pdf_file:
+                        st.download_button(label=T['download_parts_list_button'], data=pdf_file, file_name=caminho_lista_pecas.name, mime="application/pdf", use_container_width=True)
+                    mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
+                else:
+                    st.warning(T['parts_list_unavailable'])
 
 # ===================================================================
 # INTERFACE STREAMLIT (COM DESIGN E LAYOUT REESTRUTURADOS)
@@ -561,6 +882,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
 # --- 1. Configurações Iniciais da Página e Estilos ---
 if 'lang' not in st.session_state: st.session_state.lang = 'pt'
 if 'resultado_busca' not in st.session_state: st.session_state.resultado_busca = None
+if 'search_source' not in st.session_state: st.session_state.search_source = None # Para controlar a origem da busca
 
 st.set_page_config(layout="wide", page_title="Seletor Higra Mining")
 
@@ -652,53 +974,22 @@ st.markdown(f"""
         background-color: {COR_SECUNDARIA};
         border-radius: 2px;
     }}
-    
-    /* Estilização para campos de ENTRADA NUMÉRICA */
-    div[data-testid="stNumberInput"] > div > div {{
-        border: 2px solid {COR_PRIMARIA} !important;
-        background-color: white !important;
+
+    /* ========================================================================= */
+    /* NOVO: Estilos específicos para os campos da CALCULADORA DE SISTEMA        */
+    /* ========================================================================= */
+    .calculator-container div[data-testid="stNumberInput"] > div > div,
+    .calculator-container div[data-testid="stSelectbox"] > div {{
+        background-color: #FFF9E9 !important; /* Fundo amarelo clarinho */
+        border: 1px solid #F8AC2E !important; /* Borda amarela sutil */
         border-radius: 8px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }}
-    div[data-testid="stNumberInput"] input {{
-        border: none !important;
+
+    .calculator-container div[data-testid="stNumberInput"] input {{
         background-color: transparent !important;
-    }}
-
-    /* ========================================================================= */
-    /* NOVO: Estilização para o seletor de Frequência (st.radio)               */
-    /* ========================================================================= */
-    /* Container geral do st.radio para criar um "card" */
-    div[data-testid="stRadio"] {{
-        padding: 12px;
-        border: 1px solid #d0d7de;
-        border-radius: 8px;
-        background-color: #fcfdff;
-    }}
-
-    /* Círculo externo de todas as opções */
-    div[data-testid="stRadio"] div[data-baseweb="radio"] > div:first-child {{
-        width: 22px !important;
-        height: 22px !important;
-        border-width: 3px !important;
-    }}
-
-    /* Cor do círculo externo da opção SELECIONADA */
-    div[data-testid="stRadio"] div[data-baseweb="radio"] input:checked + div {{
-        border-color: {COR_PRIMARIA} !important; /* Borda AZUL */
-    }}
-
-    /* Círculo interno (ponto) da opção SELECIONADA */
-    div[data-testid="stRadio"] div[data-baseweb="radio"] input:checked + div::after {{
-        background-color: {COR_SECUNDARIA} !important; /* Ponto AMARELO */
-        width: 10px !important;
-        height: 10px !important;
-        left: 3px;
-        top: 3px;
     }}
 </style>
 """, unsafe_allow_html=True)
-
 
 # --- 2. Cabeçalho com Logo e Seleção de Idioma ---
 query_params = st.query_params
@@ -743,30 +1034,27 @@ st.divider()
 
 # --- 3. Bloco de Entradas do Usuário ---
 with st.container(border=True):
-    tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
+    tab_seletor, tab_buscador, tab_calculadora = st.tabs([
+        T['selector_tab_label'], T['finder_tab_label'], T['calculator_tab_label']
+    ])
 
-    # Constantes
     ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
     FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
     FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10.0 }
     
+    # Aba 1: Seletor por Ponto de Trabalho
     with tab_seletor:
         st.subheader(T['input_header'])
         
         col_freq, col_vazao, col_pressao = st.columns(3)
         with col_freq:
             st.markdown(f"**{T['eletric_freq_title']}**")
-            frequencia_selecionada = st.radio(
-                T['freq_header'], list(ARQUIVOS_DADOS.keys()), horizontal=True, 
-                label_visibility="collapsed", key='freq_seletor'
-            )
-        
+            frequencia_selecionada = st.radio(T['freq_header'], list(ARQUIVOS_DADOS.keys()), horizontal=True, label_visibility="collapsed", key='freq_seletor')
         with col_vazao:
             st.markdown(T['flow_header'])
             v_col1, v_col2 = st.columns([2,1])
             with v_col1: vazao_bruta = st.number_input(T['flow_value_label'], min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_bruta')
             with v_col2: unidade_vazao = st.selectbox(T['flow_unit_label'], list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao')
-
         with col_pressao:
             st.markdown(T['pressure_header'])
             p_col1, p_col2 = st.columns([2,1])
@@ -779,26 +1067,24 @@ with st.container(border=True):
         st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
         if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="primary"):
+            st.session_state.search_source = 'seletor'
+            st.session_state.resultado_calculadora = None # Limpa resultado da outra aba
             df_processado = carregar_e_processar_dados(ARQUIVOS_DADOS[frequencia_selecionada])
             st.session_state.last_used_freq = frequencia_selecionada
-            st.session_state.resultado_busca = None
-            
             with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
                 bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca)
                 st.session_state.resultado_bombas_unicas = bombas_unicas
                 st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
-                
-                if not bombas_unicas.empty:
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.session_state.resultado_busca = {"resultado": bombas_unicas}
-                elif not sistemas_multiplos.empty:
-                    st.session_state.modo_visualizacao = 'multiplas'
-                    st.session_state.resultado_busca = {"resultado": sistemas_multiplos}
-                else:
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
+                if not bombas_unicas.empty: st.session_state.modo_visualizacao = 'unicas'
+                elif not sistemas_multiplos.empty: st.session_state.modo_visualizacao = 'multiplas'
+                else: st.session_state.modo_visualizacao = 'unicas'
+                st.session_state.resultado_busca = True 
             st.rerun()
+        
+        if st.session_state.search_source == 'seletor' and st.session_state.get('resultado_busca'):
+            exibir_resultados_busca(T, key_prefix='seletor')
 
+    # Aba 2: Buscador por Modelo
     with tab_buscador:
         st.subheader(T['finder_header'])
         col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
@@ -828,143 +1114,154 @@ with st.container(border=True):
             st.divider()
             if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
                 if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump', type="primary"):
+                    st.session_state.search_source = 'buscador'
+                    st.session_state.resultado_calculadora = None # Limpa resultado da outra aba
                     st.session_state.last_used_freq = frequencia_buscador
                     resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                     if not resultado.empty:
                         st.session_state.resultado_bombas_unicas = resultado
                         st.session_state.resultado_sistemas_multiplos = pd.DataFrame()
                         st.session_state.modo_visualizacao = 'unicas'
-                        st.session_state.resultado_busca = {"resultado": resultado}
+                        st.session_state.resultado_busca = True
                     else:
                         st.session_state.resultado_busca = None
                         st.error(T['no_solution_error'])
                     st.rerun()
 
-# --- 4. Bloco de Exibição de Resultados ---
-if st.session_state.resultado_busca is not None:
-    resultado = (st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame()) 
-                 if st.session_state.get('modo_visualizacao') == 'multiplas' 
-                 else st.session_state.get('resultado_bombas_unicas', pd.DataFrame()))
+        if st.session_state.search_source == 'buscador' and st.session_state.get('resultado_busca'):
+            exibir_resultados_busca(T, key_prefix='buscador')
 
-    st.header(T['results_header'])
-    
-    with st.container(border=True):
-        tem_unicas = not st.session_state.get('resultado_bombas_unicas', pd.DataFrame()).empty
-        tem_multiplas = not st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame()).empty
+    # Aba 3: Calculadora de Sistema
+    with tab_calculadora:
+        st.subheader(T['calculator_header'])
+        st.write(T['calculator_intro'])
+        st.write("---")
         
-        if tem_unicas or tem_multiplas:
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button(T['show_unique_button'], use_container_width=True, disabled=not tem_unicas or st.session_state.modo_visualizacao == 'unicas'):
-                    st.session_state.modo_visualizacao = 'unicas'
-                    st.rerun()
-            with col2:
-                if st.button(T['show_systems_button'], use_container_width=True, disabled=not tem_multiplas or st.session_state.modo_visualizacao == 'multiplas'):
-                    st.session_state.modo_visualizacao = 'multiplas'
-                    st.rerun()
+        if 'resultado_calculadora' not in st.session_state:
+            st.session_state.resultado_calculadora = None
 
-        if resultado.empty:
-            if st.session_state.get('modo_visualizacao') == 'unicas': st.error(T['no_unique_pumps'])
-            else: st.error(T['no_systems_found'])
-        else:
-            resultado_exibicao = resultado.copy()
-            def traduzir_tipo_sistema(row):
-                code = row.get('TIPO_SISTEMA_CODE', 'single')
-                if code == "single": return T['system_type_single']
-                if code == "parallel": return T['system_type_parallel'].format(int(row.get('N_TOTAL_BOMBAS', 2)))
-                if code == "series": return T['system_type_series']
-                if code == "combined": return T['system_type_combined'].format(int(row.get('N_TOTAL_BOMBAS', 4)), int(row.get('N_PARALELO', 2)))
-                return ""
-            
-            resultado_exibicao[T['system_type_header']] = resultado_exibicao.apply(traduzir_tipo_sistema, axis=1)
-            resultado_exibicao.drop(columns=['TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS', 'N_PARALELO'], errors='ignore', inplace=True)
-            resultado_exibicao.rename(columns={
-                "RENDIMENTO (%)": "RENDIMENTO", "POTÊNCIA (HP)": "POTÊNCIA", "MOTOR FINAL (CV)": "MOTOR FINAL",
-                "ERRO_PRESSAO": T['pressure_error_header'], "ERRO_RELATIVO": T['relative_error_header']
-            }, inplace=True)
-            
-            resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
-            
-            opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
-            st.radio("Selecione a bomba:", options=opcoes_ranking, index=0, horizontal=True, label_visibility="collapsed", key=f'radio_selecao_{st.session_state.modo_visualizacao}')
-            
-            for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
-                if col in resultado_exibicao.columns:
-                    resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
-            
-            st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
-    
-    # --- 5. Bloco de Documentação Técnica ---
-    if not resultado.empty:
-        st.subheader("Documentação Técnica")
-        
-        # Seleciona a bomba com base no radio button
-        indice_selecionado = opcoes_ranking.index(st.session_state[f'radio_selecao_{st.session_state.modo_visualizacao}'])
-        bomba_selecionada = resultado.iloc[indice_selecionado]
-        modelo_selecionado = bomba_selecionada['MODELO']
-        try:
-            motor_alvo = int(bomba_selecionada['MOTOR FINAL (CV)'])
-        except (ValueError, TypeError):
-            motor_alvo = 0
+        FATORES_TEMP = {"°C": 1.0, "°F": 0.5556}
+        FATORES_COMPRIMENTO = {"m": 1.0, "ft": 0.3048}
+        FATORES_DIAMETRO = {"mm": 1.0, "in": 25.4}
 
-        # Layout em duas colunas para os documentos
-        col_grafico, col_desenho = st.columns(2)
-
-        with col_grafico:
-            with st.container(border=True):
-                st.header(T['graph_header'])
-                frequencia_str = st.session_state.get('last_used_freq', '60Hz')
-                caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
-                
-                if st.button(T['view_graph_button'], key="btn_visualizar_grafico", use_container_width=True):
-                    st.session_state.mostrar_grafico = not st.session_state.get('mostrar_grafico', False)
-                
-                if st.session_state.get('mostrar_grafico', False):
-                    mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
-        
-        with col_desenho:
-            with st.container(border=True):
-                st.header(T['drawing_header'])
-                
-                if st.button(T['dimensional_drawing_button'], use_container_width=True):
-                    st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
-
-                if st.session_state.get('mostrar_desenho', False):
-                    desenho_base_path = Path("Desenhos")
-                    caminho_desenho_final = None
-                    if desenho_base_path.exists():
-                        desenhos_candidatos = {int(p.stem.split('_')[1]): p for p in desenho_base_path.glob(f"{modelo_selecionado}*.pdf") if len(p.stem.split('_')) == 2 and p.stem.split('_')[1].isdigit()}
-                        if desenhos_candidatos:
-                            motor_mais_proximo = min(desenhos_candidatos.keys(), key=lambda m: abs(m - motor_alvo))
-                            caminho_desenho_final = desenhos_candidatos[motor_mais_proximo]
-                        else:
-                            caminho_geral = desenho_base_path / f"{modelo_selecionado}.pdf"
-                            if caminho_geral.exists():
-                                caminho_desenho_final = caminho_geral
-                    
-                    if caminho_desenho_final:
-                        with open(caminho_desenho_final, "rb") as pdf_file:
-                            st.download_button(label=T['download_drawing_button'], data=pdf_file, file_name=caminho_desenho_final.name, mime="application/pdf", use_container_width=True)
-                        mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
-                    else:
-                        st.warning(T['drawing_unavailable'])
-        
-        # Bloco da Lista de Peças abaixo das colunas
         with st.container(border=True):
-            st.header(T['parts_list_header'])
-            if st.button(T['parts_list_button'], use_container_width=True):
-                st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
+            st.markdown(f"**{T['section_general_data']}**")
+            col_freq_calc, col_vazao_calc, col_temp_calc = st.columns(3)
+            with col_freq_calc:
+                 st.markdown(f"**{T['eletric_freq_title']}**")
+                 frequencia_calculadora = st.radio(T['freq_header'], list(ARQUIVOS_DADOS.keys()), horizontal=True, label_visibility="collapsed", key='freq_calc')
+            with col_vazao_calc:
+                st.markdown(T['desired_flow_rate'])
+                c1, c2 = st.columns([2,1])
+                with c1: vazao_req_bruta = st.number_input("Vazão", min_value=0.1, value=100.0, step=10.0, label_visibility="collapsed", key='vazao_req_bruta')
+                with c2: unidade_vazao_req = st.selectbox("Unidade Vazão", list(FATORES_VAZAO.keys()), label_visibility="collapsed", key='unidade_vazao_req')
+            with col_temp_calc:
+                st.markdown(T['fluid_temperature'])
+                c1, c2 = st.columns([2,1])
+                with c1: temp_fluido_bruta = st.number_input("Temperatura", value=20, label_visibility="collapsed", key='temp_fluido_bruta')
+                with c2: unidade_temp = st.selectbox("Unidade Temp", ["°C", "°F"], label_visibility="collapsed", key='unidade_temp')
 
-            if st.session_state.get('mostrar_lista_pecas', False):
-                caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
-                if caminho_lista_pecas.exists():
-                    st.info(T['parts_list_warning'])
-                    with open(caminho_lista_pecas, "rb") as pdf_file:
-                        st.download_button(label=T['download_parts_list_button'], data=pdf_file, file_name=caminho_lista_pecas.name, mime="application/pdf", use_container_width=True)
-                    mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
-                else:
-                    st.warning(T['parts_list_unavailable'])
+        with st.container(border=True):
+            st.markdown(f"**{T['section_piping']}**")
+            col_mat, col_diam, col_comp = st.columns(3)
+            with col_mat:
+                st.markdown(T['pipe_material'])
+                materiais_map = {
+                    T['pipe_material_cs']: 'cs', T['pipe_material_ss']: 'ss',
+                    T['pipe_material_di']: 'di', T['pipe_material_ci']: 'ci',
+                    T['pipe_material_pvc']: 'pvc', T['pipe_material_hdpe']: 'hdpe',
+                }
+                material_display = st.selectbox("Material", options=list(materiais_map.keys()), label_visibility="collapsed", key='mat_tubo')
+                material_tubo_key = materiais_map[material_display]
+            with col_diam:
+                st.markdown(T['pipe_diameter'])
+                c1, c2 = st.columns([2,1])
+                with c1: diametro_tubo_bruto = st.number_input("Diâmetro", min_value=1.0, value=150.0, step=1.0, label_visibility="collapsed", key='diam_tubo_bruto')
+                with c2: unidade_diametro = st.selectbox("Unidade Diâmetro", list(FATORES_DIAMETRO.keys()), label_visibility="collapsed", key='unidade_diam')
+            with col_comp:
+                st.markdown(T['pipe_length'])
+                c1, c2 = st.columns([2,1])
+                with c1: comprimento_tubo_bruto = st.number_input("Comprimento", min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='comp_tubo_bruto')
+                with c2: unidade_comprimento = st.selectbox("Unidade Comprimento", list(FATORES_COMPRIMENTO.keys()), label_visibility="collapsed", key='unidade_comp')
 
+        with st.container(border=True):
+            st.markdown(f"**{T['section_elevation']}**")
+            col_succao, col_recalque = st.columns(2)
+            with col_succao:
+                st.markdown(T['suction_elevation'])
+                c1, c2 = st.columns([2,1])
+                with c1: alt_succao_bruta = st.number_input("Sucção", value=2.0, step=0.5, label_visibility="collapsed", key='alt_succao_bruta')
+                with c2: unidade_alt_succao = st.selectbox("Unidade Altura Sucção", list(FATORES_COMPRIMENTO.keys()), label_visibility="collapsed", key='unidade_alt_s')
+            with col_recalque:
+                st.markdown(T['discharge_elevation'])
+                c1, c2 = st.columns([2,1])
+                with c1: alt_recalque_bruta = st.number_input("Recalque", value=30.0, step=1.0, label_visibility="collapsed", key='alt_recalque_bruta')
+                with c2: unidade_alt_recalque = st.selectbox("Unidade Altura Recalque", list(FATORES_COMPRIMENTO.keys()), label_visibility="collapsed", key='unidade_alt_r')
+            st.caption(T['elevation_help'])
 
+        with st.container(border=True):
+            st.markdown(f"**{T['section_fittings']}**")
+            col_ac1, col_ac2, col_ac3, col_ac4 = st.columns(4)
+            with col_ac1:
+                qtd_cotovelo90 = st.number_input(T['elbow_90'], min_value=0, value=0, step=1, key='qtd_c90')
+            with col_ac2:
+                qtd_cotovelo45 = st.number_input(T['elbow_45'], min_value=0, value=0, step=1, key='qtd_c45')
+            with col_ac3:
+                qtd_valv_gaveta = st.number_input(T['gate_valve'], min_value=0, value=1, step=1, key='qtd_vg')
+            with col_ac4:
+                qtd_valv_retencao = st.number_input(T['check_valve'], min_value=0, value=1, step=1, key='qtd_vr')
 
+        st.write("") 
+        
+        if st.button(T['calculate_button'], use_container_width=True, key='btn_calc', type="primary"):
+            st.session_state.search_source = 'calculadora'
+            st.session_state.resultado_busca = None
 
+            temp_c = (temp_fluido_bruta - 32) * FATORES_TEMP[unidade_temp] if unidade_temp == '°F' else temp_fluido_bruta
+            dados_para_calculo = {
+                'vazao_m3h': vazao_req_bruta * FATORES_VAZAO[unidade_vazao_req],
+                'temperatura_c': temp_c, 'material_key': material_tubo_key,
+                'diametro_mm': diametro_tubo_bruto * FATORES_DIAMETRO[unidade_diametro],
+                'comprimento_m': comprimento_tubo_bruto * FATORES_COMPRIMENTO[unidade_comprimento],
+                'alt_succao_m': alt_succao_bruta * FATORES_COMPRIMENTO[unidade_alt_succao],
+                'alt_recalque_m': alt_recalque_bruta * FATORES_COMPRIMENTO[unidade_alt_recalque],
+                'qtd_cotovelo90': qtd_cotovelo90, 'qtd_cotovelo45': qtd_cotovelo45,
+                'qtd_valv_gaveta': qtd_valv_gaveta, 'qtd_valv_retencao': qtd_valv_retencao
+            }
+            try:
+                amt_calculada, vazao_calculada = calcular_ponto_trabalho(dados_para_calculo)
+                st.session_state.resultado_calculadora = {"vazao": vazao_calculada, "pressao": amt_calculada}
+            except Exception as e:
+                st.error(f"Ocorreu um erro no cálculo: {e}")
+                st.session_state.resultado_calculadora = None
+            st.rerun()
+
+        if st.session_state.search_source == 'calculadora' and st.session_state.resultado_calculadora:
+            st.write("---")
+            st.subheader(T['results_header_calculator'])
+            resultado = st.session_state.resultado_calculadora
+            
+            col1, col2 = st.columns(2)
+            col1.metric(label=T['flow_header'].replace('*',''), value=f"{resultado['vazao']:.2f} m³/h")
+            col2.metric(label=T['pressure_header'].replace('*',''), value=f"{resultado['pressao']:.2f} mca")
+
+            if st.button(T['search_with_data_button'], use_container_width=True, key="btn_calc_search"):
+                df_processado = carregar_e_processar_dados(ARQUIVOS_DADOS[frequencia_calculadora])
+                vazao_para_busca = round(resultado['vazao'])
+                pressao_para_busca = round(resultado['pressao'])
+                st.session_state.last_used_freq = frequencia_calculadora
+                
+                with st.spinner(T['spinner_text'].format(freq=frequencia_calculadora)):
+                    bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca)
+                    st.session_state.resultado_bombas_unicas = bombas_unicas
+                    st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
+                    if not bombas_unicas.empty: st.session_state.modo_visualizacao = 'unicas'
+                    elif not sistemas_multiplos.empty: st.session_state.modo_visualizacao = 'multiplas'
+                    else: st.session_state.modo_visualizacao = 'unicas'
+                    st.session_state.resultado_busca = True
+                st.rerun()
+        
+        if st.session_state.search_source == 'calculadora' and st.session_state.get('resultado_busca'):
+             exibir_resultados_busca(T, key_prefix='calculadora')
+             
+            
