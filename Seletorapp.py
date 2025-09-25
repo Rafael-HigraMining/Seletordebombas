@@ -50,7 +50,15 @@ def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
     except Exception as e:
         st.error(f"Não foi possível exibir o PDF: {e}")
 
+# ===================================================================
+# DICIONÁRIO DE TRADUÇÕES E VARIÁVEIS DE COR (COMBINADOS E LIMPOS)
+# ===================================================================
 ATIVAR_ORCAMENTO = False
+
+COR_PRIMARIA = "#134883"
+COR_SECUNDARIA = "#F8AC2E"
+COR_FUNDO = "#F0F5FF"
+COR_TEXTO = "#333333"
 
 TRADUCOES = {
     'pt': {
@@ -184,8 +192,8 @@ TRADUCOES = {
         'contact_button': "Contact",
         'pressure_error_header': "Pressure Error",
         'relative_error_header': "Relative Error",
-        'system_type_header': "System Type",
-        'no_solution_found': "❌ No pump or pump system was found for this duty point. Try other values or contact our support.",
+        'system_type_header': "Tipo de Sistema",
+        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
         'performance_note': "Note: Our advanced calculations to find the ideal pump may take a few seconds. We appreciate your patience!",
         'quote_form_email': "Your Email *",
         'system_type_single': "Single",
@@ -193,10 +201,8 @@ TRADUCOES = {
         'show_systems_button': "🔄 Show Multiple Systems",
         'view_mode_unique': "Viewing mode: Single Pumps",
         'view_mode_systems': "Viewing mode: Multiple Systems",
-        'no_unique_pumps': "❌ No single pump found for these parameters.",
-        'no_systems_found': "❌ No multiple pump system found for these parameters.",
-        'pressure_error_header': "Pressure Error",
-        'relative_error_header': "Relative Error",
+        'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
+        'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
         'system_type_parallel': "{} in Parallel",
         'system_type_series': "2 in Series",
         'system_type_combined': "{} Pumps ({}x2)",
@@ -207,88 +213,9 @@ TRADUCOES = {
         'quote_form_click_here': "Click here to open and send the email",
         'email_subject': "Quote Request via Pump Selector - {nome}",
         'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
-    },
-    'es': {
-        'page_title': "Selector Higra Mining",
-        'main_title': "Selector de Bombas Hidráulicas Higra Mining",
-        'welcome_message': "¡Bienvenido! Ingrese los datos de su punto de trabajo para encontrar la mejor solución.",
-        'input_header': "Parámetros de Entrada",
-        'eletric_freq_title': "Frecuencia Eléctrica",
-        'freq_header': "Frecuencia",
-        'flow_header': "**Caudal Deseado**",
-        'pressure_header': "**Altura Deseada**",
-        'show_finder_button': "🔎 Buscar por Modelo de Bomba",
-        'flow_value_label': "Valor del Caudal",
-        'graph_header': "📊 Gráfico de Rendimiento",
-        'drawing_header': "📐 Dibujo Dimensional",
-        'selector_tab_label': "Selector por Punto de Trabajo",
-        'finder_tab_label': "Buscador por Modelo",
-        'parts_list_header': "📋 Lista de Repuestos",
-        'view_graph_button': "Visualizar Gráfico",
-        'close_graph_button': "Cerrar Gráfico",
-        'view_drawing_button': "Visualizar Dibujo",
-        'view_parts_list_button': "Visualizar Lista de Repuestos",
-        'close_view_button': "Cerrar Visualización",
-        'pressure_value_label': "Valor de la Altura",
-        'finder_header': "Busque directamente por el modelo de la bomba",
-        'model_select_label': "1. Seleccione el Modelo",
-        'motor_select_label': "2. Seleccione el Motor (CV)",
-        'find_pump_button': "Buscar Bomba",
-        'flow_unit_label': "Unidad Caudal",
-        'parts_list_button': "Lista de Repuestos",
-        'parts_list_warning': "Atención: La lista de repuestos es un documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, póngase en contacto.",
-        'download_parts_list_button': "Descargar Lista de Repuestos",
-        'parts_list_unavailable': "Lista de repuestos no disponible. Por favor, póngase en contacto para recibirla.",
-        'pressure_unit_label': "Unidad Altura",
-        'converted_values_info': "Valores convertidos para la búsqueda: **Caudal: {vazao} m³/h** | **Altura: {pressao} mca**",
-        'search_button': "Buscar Mejor Opción",
-        'dimensional_drawing_button': "Dibujo Dimensional",
-        'dimensional_drawing_warning': "Atención: El Dibujo Dimensional es um documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
-        'spinner_text': "Calculando las mejores opciones para {freq}...",
-        'results_header': "Resultados de la Búsqueda",
-        'solution_unique': "✅ Solución encontrada con **BOMBA ÚNICA**:",
-        'solution_parallel': "⚠️ Ninguna bomba única con buen rendimiento. Alternativa: **DOS BOMBAS EN PARALELO**:",
-        'solution_parallel_info': "El caudal y la potencia a continuación son POR BOMBA. Caudal total = 2x.",
-        'solution_series': "⚠️ Ninguna opción única o en paralelo. Alternativa: **DOS BOMBAS EN SERIE**:",
-        'solution_series_info': "La altura a continuación es POR BOMBA. Altura total = 2x.",
-        'no_solution_error': "❌ No se encontró ninguna bomba. Pruebe con otros valores.",
-        'quote_button_start': "Solicitar Cotización",
-        'quote_options_header': "Paso 1: Seleccione Opcionales de la Bomba",
-        'quote_continue_button': "Continuar al Siguiente Paso",
-        'quote_contact_header': "Paso 2: Sus Datos de Contacto",
-        'quote_form_name': "Su Nombre *",
-        'quote_form_email': "Su Correo Electrónico *",
-        'quote_form_message': "Mensaje (opcional)",
-        'download_drawing_button': "Descargar Dibujo Dimensional",
-        'drawing_unavailable': "Dibujo dimensional no disponible. Contáctenos para recibirlo.",
-        'contact_button': "Contacto",
-        'system_type_single': "Única",
-        'show_unique_button': "🔍 Mostrar Bombas Únicas",
-        'show_systems_button': "🔄 Mostrar Sistemas Múltiples",
-        'view_mode_unique': "Modo de visualização: Bombas Únicas",
-        'view_mode_systems': "Modo de visualização: Sistemas Múltiples",
-        'no_unique_pumps': "❌ No se encontraron bombas únicas para estos parámetros.",
-        'no_systems_found': "❌ No se encontraron sistemas de bombas múltiples para estos parámetros.",
-        'pressure_error_header': "Error de Presión",
-        'relative_error_header': "Error Relativo",
-        'system_type_parallel': "{} en Paralelo",
-        'system_type_series': "2 en Serie",
-        'system_type_combined': "{} Bombas ({}x2)",
-        'system_type_header': "Tipo de Sistema",
-        'no_solution_found': "❌ No se encontró ninguna bomba o sistema de bombas para este punto de trabajo. Intente otros valores o póngase en contacto con nuestro soporte.",
-        'performance_note': "Nota: Nuestros cálculos avanzados para encontrar la bomba ideal pueden tardar unos segundos. ¡Agradecemos su paciencia!",
-        'quote_form_button': "Enviar Solicitud de Cotización",
-        'quote_form_warning': "Por favor, complete su nombre y correo electrónico.",
-        'quote_form_success': "¡Solicitud lista para ser enviada!",
-        'quote_form_click_here': "Haga clic aquí para abrir y enviar el correo",
-        'email_subject': "Solicitud de Cotización vía Selector de Bombas - {nome}",
-        'email_body': """Hola,\n\nSe ha generado una nueva solicitud de cotización a través del Selector de Bombas.\n\nDATOS DEL CLIENTE:\n- Nombre: {nome}\n- Correo Electrónico: {email}\n\nMENSAJE:\n{mensagem}\n\n---------------------------------\nPARÁMETROS DE BÚSQUEDA:\n- Frecuencia: {freq}\n- Caudal: {vazao} m³/h\n- Altura: {pressao} mca\n\n---------------------------------\nRESULTS ENCONTRADOS:\n{tabela_resultados}"""
     }
 }
 
-# ===================================================================
-# FUNÇÕES GLOBAIS E CONSTANTES (ORIGINAL DO SEU CÓDIGO)
-# ===================================================================
 MOTORES_PADRAO = np.array([
     15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200, 250, 300,
     350, 400, 450, 500, 550, 600
@@ -301,7 +228,6 @@ def encontrar_motor_final(potencia_real):
 
 @st.cache_data
 def carregar_e_processar_dados(caminho_arquivo):
-
     try:
         df = pd.read_excel(caminho_arquivo)
         df.columns = df.columns.str.strip().str.upper()
@@ -415,7 +341,7 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     
     if not grupo_A.empty:
         max_rend = grupo_A["RENDIMENTO (%)"].max()
-        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDIMENTO (%)"]
+        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDimento (%)"]
         
         subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= limite_desempate_rendimento].copy()
         subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > limite_desempate_rendimento].copy()
@@ -561,9 +487,9 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
 # INTERFACE STREAMLIT - VERSÃO COMPLETA E PROFISSIONAL
 # ===================================================================
 
-# --- CONFIGURAÇÕES E ESTILOS INICIAIS (COMBINADOS E LIMPOS) ---
-st.set_page_config(layout="wide", page_title="Seletor Higra Mining")
+st.set_page_config(layout="wide", page_title=TRADUCOES['pt']['page_title'])
 
+# --- ESTILOS CSS APRIMORADOS ---
 COR_PRIMARIA = "#134883"
 COR_SECUNDARIA = "#F8AC2E"
 COR_FUNDO = "#F0F5FF"
@@ -571,18 +497,8 @@ COR_TEXTO = "#333333"
 
 st.markdown(f"""
 <style>
-    /* Estilos gerais da app */
-    .stApp {{
-        background-color: {COR_FUNDO};
-        color: {COR_TEXTO};
-    }}
-    
-    /* Estilos de cabeçalhos */
-    h1, h2, h3, h4, h5, h6 {{
-        color: {COR_PRIMARIA};
-    }}
-    
-    /* Estilos de Botões */
+    .stApp {{ background-color: {COR_FUNDO}; color: {COR_TEXTO}; }}
+    h1, h2, h3, h4, h5, h6 {{ color: {COR_PRIMARIA}; }}
     .stButton>button {{
         border: 2px solid {COR_PRIMARIA};
         background-color: {COR_PRIMARIA};
@@ -595,44 +511,19 @@ st.markdown(f"""
         background-color: white;
         color: {COR_PRIMARIA};
     }}
-    
-    /* Estilos de Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
     .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
     .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
     .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
     .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
-
-    /* Estilos de Bandeiras */
     .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
     .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
     .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
     .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
-
-    /* Dataframe estilizado */
     .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
-
-    /* Estilo de botões de rádio */
     div[data-baseweb="radio"] label > div:first-child {{
         background-color: {COR_SECUNDARIA} !important;
         border: 2px solid {COR_SECUNDARIA} !important;
-    }}
-    /* Estilo para links como botões */
-    .stLinkButton > a {{
-        border: 2px solid {COR_PRIMARIA};
-        background-color: {COR_PRIMARIA};
-        color: white;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        display: inline-block;
-        text-align: center;
-        padding: 0.5rem 1rem;
-        text-decoration: none;
-    }}
-    .stLinkButton > a:hover {{
-        background-color: white;
-        color: {COR_PRIMARIA};
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -690,13 +581,22 @@ st.info(T['performance_note'])
 st.divider()
 
 # ===================================================================
+# RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
+# ===================================================================
+
+EMAIL_DESTINO = "seu.email@higra.com.br"
+ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
+FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
+FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10.0 }
+
+# ===================================================================
 # SEÇÃO DE ENTRADAS (REESTRUTURADA COM BLOCOS VISUAIS)
 # ===================================================================
 
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
 with tab_seletor:
-    with st.container(border=True):
+    with st.container(border=True): # NOVO BLOCO VISUAL
         st.markdown(f"#### {T['eletric_freq_title']}")
         col_freq, col_vazio = st.columns([1, 3])
         with col_freq:
@@ -719,7 +619,7 @@ with tab_seletor:
             st.markdown(T['pressure_header'])
             sub_col_p1, sub_col_p2 = st.columns([2,1])
             with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
-            with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
+            with sub_col_v2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
         vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
         pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
         st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
@@ -817,7 +717,7 @@ with tab_buscador:
                         st.error(T['no_solution_error'])
                     
                     st.rerun()
-                
+
 if st.session_state.resultado_busca is not None:
     with st.container(border=True): # NOVO: Container para agrupar resultados e botões
         if st.session_state.get('modo_visualizacao') == 'multiplas':
