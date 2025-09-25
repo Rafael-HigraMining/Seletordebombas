@@ -1,10 +1,12 @@
 [theme]
-# Esta linha faz com que o tema do Streamlit use o azul como cor principal
 primaryColor="#134883"
-# A cor de fundo da página principal
 backgroundColor="#F0F5FF"
-# Esta linha faz com que o tipo de botão 'secondary' seja azul
-secondaryBackgroundColor="#134883"
-# A cor do texto
+secondaryBackgroundColor="#F8AC2E"
 textColor="#6E7274"
 font="sans serif"
+
+[button]
+font_weight = "bold"
+border_radius = "8px"
+border_width = "2px"
+border_color = "#134883"
