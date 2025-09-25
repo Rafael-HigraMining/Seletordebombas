@@ -616,16 +616,12 @@ st.markdown(f"""
     .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
     .bandeira-img {{ width: 45px; height: 30px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }}
 
-    /* ================================================= */
-    /* NOVO: Estilização das Abas (st.tabs)              */
-    /* ================================================= */
+    /* Estilização das Abas (st.tabs) */
     [data-baseweb="tab-list"] {{
-        gap: 8px; /* Espaço entre os "botões" da aba */
-        border-bottom: none !important; /* Remove a linha cinza padrão de baixo */
-        margin-bottom: 10px; /* Adiciona espaço abaixo das abas */
+        gap: 8px;
+        border-bottom: none !important;
+        margin-bottom: 10px;
     }}
-
-    /* Estilo para TODAS as abas (selecionada e não selecionada) */
     [data-baseweb="tab-list"] button {{
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
@@ -633,36 +629,48 @@ st.markdown(f"""
         font-weight: bold;
         border: none !important;
     }}
-
-    /* Estilo para a aba NÃO selecionada */
     [data-baseweb="tab-list"] button[aria-selected="false"] {{
-        background-color: #e3f2fd !important; /* Azul bem claro */
+        background-color: #e3f2fd !important;
         color: {COR_PRIMARIA} !important;
     }}
-
-    /* Efeito hover para a aba NÃO selecionada */
     [data-baseweb="tab-list"] button[aria-selected="false"]:hover {{
         background-color: #d1e9fc !important;
     }}
-    
-    /* Estilo para a aba SELECIONADA */
     [data-baseweb="tab-list"] button[aria-selected="true"] {{
-        background-color: {COR_PRIMARIA} !important; /* Azul primário */
+        background-color: {COR_PRIMARIA} !important;
         color: white !important;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        position: relative; /* Necessário para a linha vermelha */
+        position: relative;
     }}
 
-    /* Linha vermelha abaixo da aba SELECIONADA */
+    /* Linha AMARELA abaixo da aba SELECIONADA (MODIFICADO) */
     [data-baseweb="tab-list"] button[aria-selected="true"]::after {{
         content: '';
         position: absolute;
-        bottom: -5px; /* Posição da linha um pouco abaixo do botão */
-        left: 5%; /* Começa um pouco para dentro */
-        width: 90%; /* Deixa a linha com 90% da largura do botão */
+        bottom: -5px;
+        left: 5%;
+        width: 90%;
         height: 4px;
-        background-color: #E74C3C; /* Vermelho */
+        background-color: {COR_SECUNDARIA}; /* MUDOU DE VERMELHO PARA AMARELO */
         border-radius: 2px;
+    }}
+    
+    /* ============================================================== */
+    /* NOVO: Estilização dos campos de entrada para Vazão e Pressão   */
+    /* ============================================================== */
+    /* Alvo para st.number_input e st.selectbox */
+    div[data-testid="stNumberInput"] > div > div, 
+    div[data-testid="stSelectbox"] > div {{
+        border: 2px solid {COR_PRIMARIA} !important; /* Borda azul permanente */
+        background-color: white !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }}
+
+    /* Remove a borda padrão do input numérico interno para não haver borda dupla */
+    div[data-testid="stNumberInput"] input {{
+        border: none !important;
+        background-color: transparent !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -932,4 +940,5 @@ if st.session_state.resultado_busca is not None:
                     mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
                 else:
                     st.warning(T['parts_list_unavailable'])
+
 
