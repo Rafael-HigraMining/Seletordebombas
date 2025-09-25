@@ -17,7 +17,7 @@ if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_b
 
 if 'mostrar_grafico' not in st.session_state:
     st.session_state.mostrar_grafico = False
-# Esta função garante que as imagens sejam carregadas de forma segura.
+
 @st.cache_data
 def image_to_base64(img_path):
     """Converte um arquivo de imagem para string base64."""
@@ -28,9 +28,7 @@ def image_to_base64(img_path):
     except FileNotFoundError:
         # Retorna um pixel transparente se a imagem não for encontrada
         return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-# ===================================================================
-# NOVA FUNÇÃO PARA EXIBIR PDF
-# ===================================================================
+
 def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
     """Exibe a primeira página de um PDF como imagem diretamente no Streamlit."""
     try:
@@ -64,7 +62,7 @@ def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
 # ===================================================================
 # 1. DICIONÁRIO DE TRADUÇÕES (IDÊNTICO AO SEU ORIGINAL)
 # ===================================================================
-ATIVAR_ORCAMENTO = False # Mude para False se quiser desativar
+ATIVAR_ORCAMENTO = False
 
 TRADUCOES = {
     'pt': {
@@ -142,7 +140,7 @@ TRADUCOES = {
         'quote_form_click_here': "Clique aqui para abrir e enviar o e-mail",
         'quote_form_info': "Seu programa de e-mail padrão será aberto com todas as informações preenchidas.",
         'email_subject': "Pedido de Orçamento via Seletor de Bombas - {nome}",
-        'email_body': """Olá,\n\nUm novo pedido de orçamento foi gerado através do Seletor de Bombas.\n\nDADOS DO CLIENTE:\n- Nome: {nome}\n- E-mail: {email}\n\nMENSAGEM:\n{mensagem}\n\n---------------------------------\nPARÂMETROS DA BUSCA:\n- Frequência: {freq}\n- Vazão: {vazao} m³/h\n- Pressão: {pressao} mca\n\n---------------------------------\nRESULTADOS ENCONTRADOS:\n{tabela_resultados}"""
+        'email_body': """Olá,\n\nUm novo pedido de orçamento foi gerado através do Seletor de Bombas.\n\nDADOS DO CLIENTE:\n- Nome: {nome}\n- E-mail: {email}\n\nMENSAGEM:\n{mensagem}\n\n---------------------------------\nPARÂMETROS DA BUSCA:\n- Frequência: {freq}\n- Vazão: {vazao} m³/h\n- Pressão: {pressao} mca\n\n---------------------------------\nRESULTS ENCONTRADOS:\n{tabela_resultados}"""
     },
     'en': {
         'page_title': "Higra Mining Selector",
@@ -318,11 +316,9 @@ def carregar_e_processar_dados(caminho_arquivo):
         df = pd.read_excel(caminho_arquivo)
         df.columns = df.columns.str.strip().str.upper()
     except FileNotFoundError:
-        # st.error(f"Erro: Arquivo '{caminho_arquivo}' não encontrado.")
         print(f"Erro: Arquivo '{caminho_arquivo}' não encontrado.")
         return None
     except Exception as e:
-        # st.error(f"Ocorreu um erro ao ler o Excel: {e}")
         print(f"Ocorreu um erro ao ler o Excel: {e}")
         return None
         
@@ -341,14 +337,11 @@ def carregar_e_processar_dados(caminho_arquivo):
     intervalos_vazao = df.groupby(["MODELO", "ROTOR"])["VAZÃO (M³/H)"].agg(["min", "max"]).reset_index()
     df = pd.merge(df, intervalos_vazao, on=["MODELO", "ROTOR"], how="left", suffixes=("", "_range"))
     df["VAZAO_CENTRO"] = (df["min"] + df["max"]) / 2
-    # Adicionado + 1e-9 para evitar divisão por zero se min == max
     df["ERRO_RELATIVO"] = ((df["VAZÃO (M³/H)"] - df["VAZAO_CENTRO"]) / (df["max"] - df["min"] + 1e-9)) * 100
     df["ABS_ERRO_RELATIVO"] = df["ERRO_RELATIVO"].abs()
     
     return df
-# ===================================================================
-# NOVA FUNÇÃO OTIMIZADA PARA O BUSCADOR POR MODELO
-# ===================================================================
+
 def buscar_por_modelo_e_motor(df, modelo, motor):
     """
     Função rápida e simples para buscar a melhor bomba quando o modelo e o motor já são conhecidos.
@@ -356,7 +349,6 @@ def buscar_por_modelo_e_motor(df, modelo, motor):
     if df is None or df.empty:
         return pd.DataFrame()
 
-    # Filtro direto e rápido no DataFrame
     df_filtrado = df[
         (df['MODELO'] == modelo) &
         (df['MOTOR PADRÃO (CV)'] == motor)
@@ -365,59 +357,45 @@ def buscar_por_modelo_e_motor(df, modelo, motor):
     if df_filtrado.empty:
         return pd.DataFrame()
         
-    # Pega a melhor opção baseada no maior rendimento
     melhor_opcao = df_filtrado.loc[df_filtrado['RENDIMENTO (%)'].idxmax()]
     
-    # Formata o resultado para ser compatível com o resto da interface
     resultado_df = pd.DataFrame([melhor_opcao])
     
-    # --- CORRIGIDO ---
-    # Adiciona as colunas necessárias para compatibilidade com a nova exibição
     resultado_df["TIPO_SISTEMA_CODE"] = "single"
     resultado_df["N_TOTAL_BOMBAS"] = 1
-    # --- FIM DA CORREÇÃO ---
     
-    # Prepara as colunas finais (agora usando TIPO_SISTEMA_CODE)
     colunas_finais = [
        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
        'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 
-       'TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS',  # Corrigido
+       'TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS',
        'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO' 
     ]
     
-    # Renomeia 'MOTOR PADRÃO (CV)' para 'MOTOR FINAL (CV)' para consistência
     resultado_df = resultado_df.rename(columns={'MOTOR PADRÃO (CV)': 'MOTOR FINAL (CV)'})
 
-    # Remove a coluna de texto 'ROTOR' e renomeia 'ROTORNUM'
     if 'ROTOR' in resultado_df.columns:
         resultado_df = resultado_df.drop(columns=['ROTOR'])
     resultado_df = resultado_df.rename(columns={'ROTORNUM': 'ROTOR'})
     
-    # Garante que apenas colunas existentes sejam retornadas
     colunas_presentes = [col for col in colunas_finais if col in resultado_df.columns]
     
     return resultado_df[colunas_presentes]
-# ===================================================================
-# FUNÇÃO PRINCIPAL COM A LÓGICA DE FILTRAGEM CORRIGIDA
-# ===================================================================
+
 def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimento=3):
     if df is None or df.empty: 
         return pd.DataFrame()
 
-    # 1. Filtro inicial por vazão (mais eficiente)
     mask_vazao = df["VAZÃO (M³/H)"] == vazao
     if not mask_vazao.any():
         return pd.DataFrame()
 
     df_vazao = df.loc[mask_vazao].copy()
     
-    # 2. Calcular pressões min/max por modelo sem múltiplos merges
     min_max = df_vazao.groupby('MODELO')['PRESSÃO (MCA)'].agg(['min', 'max']).reset_index()
     min_max.columns = ['MODELO', 'PRESSAO_DO_ROTOR_MIN', 'PRESSAO_DO_ROTOR_MAX']
     
     df_vazao = df_vazao.merge(min_max, on='MODELO', how='left')
     
-    # 3. Calcular limites e filtrar de forma vetorizada
     limite_inferior = df_vazao['PRESSAO_DO_ROTOR_MIN'] * 0.99
     limite_superior = df_vazao['PRESSAO_DO_ROTOR_MAX'] * 1.01
     
@@ -427,24 +405,12 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     if df_filtrado.empty:
         return pd.DataFrame()
 
-    # Restante do seu código (preservado)
-    df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
-    df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
-    df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
-    
-
-    # ===================================================================
-    # A PARTIR DAQUI, O SEU CÓDIGO ORIGINAL É PRESERVADO
-    # ===================================================================
-
-    # ETAPA 2: CÁLCULOS BÁSICOS
     df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
     df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
     df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
     
     if df_filtrado.empty: return pd.DataFrame()
     
-    # ETAPA 3: LÓGICA DE ORDENAÇÃO
     df_grupo_controle = df_filtrado.loc[df_filtrado.groupby('MODELO')['ERRO_PRESSAO_ABS'].idxmin()].copy()
 
     if df_grupo_controle.empty: return pd.DataFrame()
@@ -474,17 +440,14 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     df_resultado = df_resultado.head(top_n)
     df_resultado = df_resultado.drop(columns=["DIF_ERRO_REL", "DIF_REND"], errors="ignore")
     
-    # Substitua pela nova lista:
     colunas_finais = [
         'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
         'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO'
     ]    
-    # CORREÇÃO: Para evitar o erro de coluna duplicada, removemos a coluna 'ROTOR' original (texto)
-    # antes de renomear a coluna numérica 'ROTORNUM' para 'ROTOR'.
+    
     if 'ROTOR' in df_resultado.columns:
         df_resultado = df_resultado.drop(columns=['ROTOR'])
         
-    # Renomeando ROTORNUM para ROTOR para corresponder à sua saída desejada
     df_resultado = df_resultado.rename(columns={'ROTORNUM': 'ROTOR'})
     
     colunas_presentes = [col for col in colunas_finais if col in df_resultado.columns]
@@ -495,14 +458,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     if df is None or df.empty:
         return pd.DataFrame(), pd.DataFrame()
     
-    # NOVAS VARIÁVEIS PARA CONTROLAR O NÚMERO DE RESULTADOS
     top_n_unicas = 3
-    top_n_multiplas = 5 # Ou o número que você preferir
+    top_n_multiplas = 5
     
-    # === ETAPA 1: Buscar todas as opções possíveis ===
     todas_opcoes = []
     
-    # 1.1 Bombas únicas
     resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n=10)
     if not resultado_unico.empty:
         resultado_unico["TIPO_SISTEMA_CODE"] = "single"
@@ -510,13 +470,10 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         resultado_unico["PRIORIDADE_TIPO"] = 1
         todas_opcoes.append(resultado_unico)
     
-    # 1.2 Sistemas com múltiplas bombas
     sistemas_multiplos = []
     
-    # Paralelo (2 a 10 bombas)
     for num_paralelo in range(2, 16):
         vazao_paralelo = vazao_desejada / num_paralelo
-        # Usa o novo valor top_n_multiplas
         resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=top_n_multiplas)
         if not resultado_paralelo.empty:
             resultado_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
@@ -524,9 +481,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             resultado_paralelo["PRIORIDADE_TIPO"] = 2
             sistemas_multiplos.append(resultado_paralelo)
     
-    # Série (2 bombas)
     pressao_serie = pressao_desejada / 2
-    # Usa o novo valor top_n_multiplas
     resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=top_n_multiplas)
     if not resultado_serie.empty:
         resultado_serie["TIPO_SISTEMA_CODE"] = "series"
@@ -534,11 +489,9 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         resultado_serie["PRIORIDADE_TIPO"] = 3
         sistemas_multiplos.append(resultado_serie)
     
-    # Misto (série em paralelo)
     for num_conjuntos in range(2, 6):
         vazao_misto = vazao_desejada / num_conjuntos
         pressao_misto = pressao_desejada / 2
-        # Usa o novo valor top_n_multiplas
         resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=top_n_multiplas)
         if not resultado_misto.empty:
             total_bombas = num_conjuntos * 2
@@ -548,7 +501,6 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             resultado_misto["PRIORIDADE_TIPO"] = 4
             sistemas_multiplos.append(resultado_misto)
     
-    # Combinar todas as opções em suas respectivas categorias
     if todas_opcoes:
         df_unicas = pd.concat(todas_opcoes, ignore_index=True)
     else:
@@ -556,7 +508,6 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         
     if sistemas_multiplos:
         df_multiplas = pd.concat(sistemas_multiplos, ignore_index=True)
-        # Garantir apenas uma opção por modelo (a com menos bombas)
         df_multiplas = df_multiplas.sort_values(
             by=["MODELO", "N_TOTAL_BOMBAS", "RENDIMENTO (%)"], 
             ascending=[True, True, False]
@@ -564,14 +515,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     else:
         df_multiplas = pd.DataFrame()
     
-    # === ETAPA 2: Seleção em cascata para CADA CATEGORIA ===
-    
-    # 2.1 Processar bombas únicas
     resultados_unicas_finais = []
     if not df_unicas.empty:
         candidatas_unicas = df_unicas.copy()
         
-        for _ in range(top_n_unicas): # Usa a nova variável
+        for _ in range(top_n_unicas):
             if candidatas_unicas.empty:
                 break
             
@@ -586,12 +534,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             modelo_remover = melhor_unica["MODELO"].iloc[0]
             candidatas_unicas = candidatas_unicas[candidatas_unicas["MODELO"] != modelo_remover]
     
-    # 2.2 Processar sistemas múltiplos
     resultados_multiplos_finais = []
     if not df_multiplas.empty:
         candidatas_multiplas = df_multiplas.copy()
         
-        for _ in range(top_n_multiplas): # Usa a nova variável
+        for _ in range(top_n_multiplas):
             if candidatas_multiplas.empty:
                 break
             
@@ -606,16 +553,12 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             modelo_remover = melhor_multipla["MODELO"].iloc[0]
             candidatas_multiplas = candidatas_multiplas[candidatas_multiplas["MODELO"] != modelo_remover]
     
-    # === ETAPA 3: Preparar e retornar os resultados finais ===
-    
-    # Prepara o DataFrame de bombas únicas
     if resultados_unicas_finais:
         df_unicas_final = pd.concat(resultados_unicas_finais, ignore_index=True)
         df_unicas_final = df_unicas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
     else:
         df_unicas_final = pd.DataFrame()
     
-    # Prepara o DataFrame de sistemas múltiplos
     if resultados_multiplos_finais:
         df_multiplas_final = pd.concat(resultados_multiplos_finais, ignore_index=True)
         df_multiplas_final = df_multiplas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
@@ -624,7 +567,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         
     return df_unicas_final, df_multiplas_final
 
-    # ===================================================================
+# ===================================================================
 # INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
 # ===================================================================
 
@@ -642,7 +585,7 @@ if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_
 
 st.set_page_config(layout="wide", page_title=TRADUCOES[st.session_state.lang]['page_title'])
 
-# --- ESTILOS CSS APRIMORADOS ---
+# --- ESTILOS CSS APRIMORADOS (NOVO BLOCO DE ESTILO) ---
 COR_PRIMARIA = "#134883"
 COR_SECUNDARIA = "#F8AC2E"
 COR_FUNDO = "#F0F5FF"
@@ -650,39 +593,39 @@ COR_TEXTO = "#333333"
 
 st.markdown(f"""
 <style>
-    /* Configurações gerais */
+    /* Estilos gerais da app */
     .stApp {{
         background-color: {COR_FUNDO};
         color: {COR_TEXTO};
     }}
     
-    /* Cabeçalhos */
+    /* Estilos de cabeçalhos */
     h1, h2, h3, h4, h5, h6 {{
         color: {COR_PRIMARIA};
     }}
     
-    /* Botões Principais (CORRIGIDO) */
+    /* Estilos de Botões */
     .stButton>button {{
-        border: 2px solid {COR_PRIMARIA} !important;
-        background-color: {COR_PRIMARIA} !important;
-        color: white !important;
-        font-weight: bold !important;
-        transition: all 0.3s ease !important;
-        border-radius: 8px !important;
+        border: 2px solid {COR_PRIMARIA};
+        background-color: {COR_PRIMARIA};
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border-radius: 8px;
     }}
     .stButton>button:hover {{
-        background-color: white !important;
-        color: {COR_PRIMARIA} !important;
+        background-color: white;
+        color: {COR_PRIMARIA};
     }}
     
-    /* Alertas */
+    /* Estilos de Alertas */
     .stAlert > div {{ border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 15px 20px; }}
     .stAlert-success {{ background-color: #e0f2f1; color: {COR_PRIMARIA}; border-left: 5px solid #2ECC71; }}
     .stAlert-warning {{ background-color: #fff8e1; color: #c08b2c; border-left: 5px solid {COR_SECUNDARIA}; }}
     .stAlert-info {{ background-color: #e3f2fd; color: {COR_PRIMARIA}; border-left: 5px solid {COR_PRIMARIA}; }}
     .stAlert-error {{ background-color: #ffebee; color: #b71c1c; border-left: 5px solid #E74C3C; }}
 
-    /* Container de bandeiras */
+    /* Estilos de Bandeiras */
     .bandeira-container {{ cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 8px; padding: 5px; margin-top: 10px; border: 2px solid transparent; }}
     .bandeira-container:hover {{ transform: scale(1.1); background-color: rgba(19, 72, 131, 0.1); }}
     .bandeira-container.selecionada {{ border: 2px solid {COR_SECUNDARIA}; box-shadow: 0 0 10px rgba(248, 172, 46, 0.5); }}
@@ -691,10 +634,28 @@ st.markdown(f"""
     /* Dataframe estilizado */
     .stDataFrame {{ border: 1px solid #d0d7de; border-radius: 8px; }}
 
-    /* Botões de Rádio da Frequência (NOVO) */
+    /* Estilo de botões de rádio */
     div[data-baseweb="radio"] label > div:first-child {{
-        background-color: {COR_SECUNDARIA} !important; /* Cor Amarela */
+        background-color: {COR_SECUNDARIA} !important;
         border: 2px solid {COR_SECUNDARIA} !important;
+    }}
+    /* Estilo para links como botões */
+    .stLinkButton > a {{
+        border: 2px solid {COR_PRIMARIA};
+        background-color: {COR_PRIMARIA};
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        display: inline-block;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+    }}
+    .stLinkButton > a:hover {{
+        background-color: white;
+        color: {COR_PRIMARIA};
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -703,7 +664,6 @@ st.markdown(f"""
 # CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA (VERSÃO ATUALIZADA)
 # ===================================================================
 
-# Mapeamento das bandeiras para idiomas
 bandeiras = {
     "pt": {"nome": "PT", "img": "brasil.png"},
     "en": {"nome": "EN", "img": "uk.png"},
@@ -719,16 +679,12 @@ with col_logo:
         st.warning("Logo não encontrada.")
 
 with col_bandeiras:
-    # Cria colunas para cada bandeira ficarem lado a lado
     flag_cols = st.columns(len(bandeiras))
     for i, (lang_code, info) in enumerate(bandeiras.items()):
         with flag_cols[i]:
             classe_css = "selecionada" if st.session_state.lang == lang_code else ""
             img_base64 = image_to_base64(info["img"])
 
-            # Unimos o texto e a imagem dentro de um único link (tag <a>).
-            # O href="?lang=..." instrui o Streamlit a recarregar a página com o novo idioma.
-            # O target="_self" garante que a página recarregue na mesma aba.
             st.markdown(f"""
             <a href="?lang={lang_code}" target="_self" style="text-decoration: none;">
                 <div style="display: flex; flex-direction: column; align-items: center; font-family: 'Source Sans Pro', sans-serif; font-weight: bold; color: {COR_PRIMARIA};">
@@ -740,15 +696,12 @@ with col_bandeiras:
             </a>
             """, unsafe_allow_html=True)
 
-# Atualiza a variável de tradução APÓS a possível troca de idioma
 T = TRADUCOES[st.session_state.lang]
 
-# Título e Mensagem de Boas-vindas
 st.title(T['main_title'])
 st.write(T['welcome_message'])
 st.info(T['performance_note'])
 st.divider()
-
 
 # ===================================================================
 # RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
@@ -763,18 +716,10 @@ FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10
 # SEÇÃO DE ENTRADAS (VERSÃO CORRIGIDA E REESTRUTURADA)
 # ===================================================================
 
-# --- Parte 1: Seletor por Ponto de Trabalho (VERSÃO CORRIGIDA) ---
-# ===================================================================
-# SEÇÃO DE ENTRADAS REESTRUTURADA COM ABAS (VERSÃO CORRIGIDA)
-# ===================================================================
-
-# Cria as duas abas para separar as formas de busca
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
-# --- Aba 1: Seletor por Ponto de Trabalho ---
 with tab_seletor:
     st.markdown(f"#### {T['eletric_freq_title']}")
-
     col_freq, col_vazio = st.columns([1, 3])
     with col_freq:
         frequencia_selecionada = st.radio(
@@ -784,11 +729,8 @@ with tab_seletor:
             label_visibility="collapsed",
             key='freq_seletor'
         )
-
-    # Carrega os dados para o SELETOR
     caminho_arquivo_selecionado = ARQUIVOS_DADOS[frequencia_selecionada]
     df_processado = carregar_e_processar_dados(caminho_arquivo_selecionado)
-
     col_vazao, col_pressao = st.columns(2)
     with col_vazao:
         st.markdown(T['flow_header'])
@@ -800,14 +742,11 @@ with tab_seletor:
         sub_col_p1, sub_col_p2 = st.columns([2,1])
         with sub_col_p1: pressao_bruta = st.number_input(T['pressure_value_label'], min_value=0.1, value=100.0, step=5.0, label_visibility="collapsed", key='pressao_bruta')
         with sub_col_p2: unidade_pressao = st.selectbox(T['pressure_unit_label'], list(FATORES_PRESSAO.keys()), label_visibility="collapsed", key='unidade_pressao')
-
     vazao_para_busca = round(vazao_bruta * FATORES_VAZAO[unidade_vazao])
     pressao_para_busca = round(pressao_bruta * FATORES_PRESSAO[unidade_pressao])
     st.info(T['converted_values_info'].format(vazao=vazao_para_busca, pressao=pressao_para_busca))
 
-    # Botão do SELETOR, agora dentro de sua própria aba
-    if st.button(T['search_button'], use_container_width=True, key='btn_seletor'):
-        # Reseta todos os estados ao iniciar uma nova busca
+    if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="primary"):
         st.session_state.last_used_freq = frequencia_selecionada
         st.session_state.resultado_busca = None
         st.session_state.mostrar_grafico = False
@@ -819,11 +758,9 @@ with tab_seletor:
         with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
             bombas_unicas, sistemas_multiplos = selecionar_bombas(df_processado, vazao_para_busca, pressao_para_busca)
             
-            # Armazenar ambos os resultados na sessão
             st.session_state.resultado_bombas_unicas = bombas_unicas
             st.session_state.resultado_sistemas_multiplos = sistemas_multiplos
             
-            # Determinar o modo inicial com base na disponibilidade de resultados
             if not bombas_unicas.empty:
                 st.session_state.modo_visualizacao = 'unicas'
                 st.session_state.resultado_busca = {"resultado": bombas_unicas}
@@ -835,9 +772,8 @@ with tab_seletor:
                 st.session_state.resultado_busca = {"resultado": pd.DataFrame()}
         
         st.rerun()
-# --- Aba 2: Buscador por Modelo ---
+
 with tab_buscador:
-    st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
     
     with col_freq_busca:
@@ -848,7 +784,6 @@ with tab_buscador:
             key='freq_buscador'
         )
 
-    # Graças ao cache, esta linha agora é instantânea após a primeira execução
     caminho_buscador = ARQUIVOS_DADOS[frequencia_buscador]
     df_buscador = carregar_e_processar_dados(caminho_buscador)
 
@@ -862,7 +797,7 @@ with tab_buscador:
             )
 
         with col_motor_busca:
-            motor_selecionado_buscador = None # Inicializa a variável para evitar erros
+            motor_selecionado_buscador = None
             if modelo_selecionado_buscador and modelo_selecionado_buscador != "-":
                 motores_unicos = df_buscador[df_buscador['MODELO'] == modelo_selecionado_buscador]['MOTOR PADRÃO (CV)'].unique()
                 motores_disponiveis = sorted([motor for motor in motores_unicos if pd.notna(motor)])
@@ -878,11 +813,8 @@ with tab_buscador:
             else:
                 st.selectbox(T['motor_select_label'], ["-"], disabled=True)
 
-        # A lógica do botão agora chama a nova função rápida 'buscar_por_modelo_e_motor'
         if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
-            # Substitua pelo bloco corrigido:
-            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump'):
-                # Limpa todos os resultados anteriores para uma busca limpa
+            if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump', type="primary"):
                 st.session_state.last_used_freq = frequencia_buscador
                 st.session_state.resultado_bombas_unicas = None
                 st.session_state.resultado_sistemas_multiplos = None
@@ -893,29 +825,20 @@ with tab_buscador:
                 st.session_state.mostrar_desenho_visualizacao = False
                 st.session_state.mostrar_lista_visualizacao = False
 
-                # Chama a função de busca por modelo
                 resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                 
                 if not resultado.empty:
-                    # ATUALIZAÇÃO: Prepara o estado da sessão da maneira que a nova interface espera
                     st.session_state.resultado_bombas_unicas = resultado
-                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame() # Cria uma tabela vazia para sistemas múltiplos
-                    st.session_state.modo_visualizacao = 'unicas' # Define o modo de visualização correto
-                    st.session_state.resultado_busca = {"resultado": resultado} # Mantém a variável antiga para ativar a exibição
+                    st.session_state.resultado_sistemas_multiplos = pd.DataFrame()
+                    st.session_state.modo_visualizacao = 'unicas'
+                    st.session_state.resultado_busca = {"resultado": resultado}
                 else:
-                    # Se não encontrar, limpa tudo e mostra o erro
                     st.session_state.resultado_busca = None
                     st.error(T['no_solution_error'])
                 
                 st.rerun()
                 
-# O bloco de exibição de resultados abaixo desta linha permanece o mesmo.
-# --- Parte 3: Exibição dos Resultados (o código abaixo permanece o mesmo) ---
-# A linha 'if st.session_state.resultado_busca:' já existe no seu código,
-# então a substituição termina antes dela.
-
 if st.session_state.resultado_busca is not None:
-    # Determina qual resultado exibir com base no modo atual
     if st.session_state.get('modo_visualizacao') == 'multiplas':
         resultado = st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame())
     else:
@@ -924,13 +847,11 @@ if st.session_state.resultado_busca is not None:
     st.divider()
     st.header(T['results_header'])
     
-    # Mostra o indicador do modo de visualização atual
     if st.session_state.get('modo_visualizacao') == 'unicas':
         st.info(T['view_mode_unique'])
     else:
         st.info(T['view_mode_systems'])
 
-    # Botões de alternância - SEMPRE mostrados quando há resultados em qualquer modo
     tem_unicas = st.session_state.get('resultado_bombas_unicas') is not None and not st.session_state.resultado_bombas_unicas.empty
     tem_multiplas = st.session_state.get('resultado_sistemas_multiplos') is not None and not st.session_state.resultado_sistemas_multiplos.empty
     
@@ -951,14 +872,12 @@ if st.session_state.resultado_busca is not None:
                 st.session_state.modo_visualizacao = 'multiplas'
                 st.rerun()
 
-    # Verifica se a tabela selecionada está vazia
     if resultado.empty:
         if st.session_state.get('modo_visualizacao') == 'unicas':
             st.error(T['no_unique_pumps'])
         else:
             st.error(T['no_systems_found'])
     else:
-        # Restante do código de exibição da tabela (mantido igual)
         resultado_exibicao = resultado.copy()
 
         def traduzir_tipo_sistema(row):
@@ -981,20 +900,16 @@ if st.session_state.resultado_busca is not None:
         
         resultado_exibicao.insert(0, "Ranking", [f"{i+1}º" for i in range(len(resultado_exibicao))])
         
-        # ... (o restante do código de exibição permanece igual)
         opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
         selecao_ranking = st.radio("Selecione a bomba:", options=opcoes_ranking, index=0, horizontal=True, label_visibility="collapsed", key=f'radio_selecao_{st.session_state.modo_visualizacao}')
         for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
             if col in resultado_exibicao.columns:
                 resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
         
-        # 1. EXIBE A TABELA DE RESULTADOS
         st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
         
         st.divider()
 
-
-        # Pega a bomba selecionada na tabela ATUAL para mostrar os documentos corretos
         indice_selecionado = opcoes_ranking.index(selecao_ranking)
         melhor_bomba = resultado.iloc[indice_selecionado]
         modelo_selecionado = melhor_bomba['MODELO']
@@ -1005,11 +920,8 @@ if st.session_state.resultado_busca is not None:
             
         st.divider()
             
-        # ===================================================================
-        # SEÇÃO DE EXIBIÇÃO DO GRÁFICO (O código abaixo permanece o mesmo)
-        # ===================================================================
         st.header(T['graph_header'])
-        frequencia_str = st.session_state.get('last_used_freq', '60Hz') # Usa a última frequência da busca
+        frequencia_str = st.session_state.get('last_used_freq', '60Hz')
         caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
         
         if st.button(
@@ -1029,12 +941,9 @@ if st.session_state.resultado_busca is not None:
                     st.rerun()
         st.divider()
 
-        # ===================================================================
-        # SEÇÃO DE DOWNLOAD DO DESENHO DIMENSIONAL (O código abaixo permanece o mesmo)
-        # ===================================================================
         st.header(T['drawing_header'])
         
-        if st.button(T['dimensional_drawing_button'], use_container_width=True):
+        if st.button(T['dimensional_drawing_button'], use_container_width=True, type="primary"):
             st.session_state.mostrar_desenho = not st.session_state.get('mostrar_desenho', False)
 
         if st.session_state.get('mostrar_desenho', False):
@@ -1073,7 +982,7 @@ if st.session_state.resultado_busca is not None:
 
                     if st.session_state.get('mostrar_desenho_visualizacao', False):
                         mostrar_pdf(caminho_desenho_final, legenda="Desenho Dimensional")
-                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho'):
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_desenho', type="secondary"):
                             st.session_state.mostrar_desenho_visualizacao = False
                             st.rerun()
                     
@@ -1089,31 +998,12 @@ if st.session_state.resultado_busca is not None:
                     st.warning(T['drawing_unavailable'])
                 
                 link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
-                st.markdown(f'''
-                <a href="{link_contato}" target="_blank" style="
-                    display: block;
-                    padding: 0.5rem 1rem;
-                    background-color: {COR_PRIMARIA};
-                    color: white;
-                    font-weight: bold;
-                    text-align: center;
-                    text-decoration: none;
-                    border-radius: 8px;
-                    border: 2px solid {COR_PRIMARIA};
-                    box-sizing: border-box;
-                    margin-top: 10px;
-                ">
-                    {T['contact_button']}
-                </a>
-                ''', unsafe_allow_html=True)
+                st.link_button(T['contact_button'], link_contato, use_container_width=True)
         st.divider()
 
-        # ===================================================================
-        # SEÇÃO LISTA DE PEÇAS (O código abaixo permanece o mesmo)
-        # ===================================================================
         st.header(T['parts_list_header'])
         
-        if st.button(T['parts_list_button'], use_container_width=True):
+        if st.button(T['parts_list_button'], use_container_width=True, type="primary"):
             st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
 
         if st.session_state.get('mostrar_lista_pecas', False):
@@ -1121,23 +1011,6 @@ if st.session_state.resultado_busca is not None:
                 caminho_lista_pecas = Path(f"Lista/{modelo_selecionado}.pdf")
                 
                 link_contato_pecas = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20uma%20lista%20de%C3%A7as%20para%20uma%20bomba%20Higra%20Mining."
-                botao_contato_html = f'''
-                <a href="{link_contato_pecas}" target="_blank" style="
-                    display: block;
-                    padding: 0.5rem 1rem;
-                    background-color: {COR_PRIMARIA};
-                    color: white;
-                    font-weight: bold;
-                    text-align: center;
-                    text-decoration: none;
-                    border-radius: 8px;
-                    border: 2px solid {COR_PRIMARIA};
-                    box-sizing: border-box;
-                    margin-top: 10px;
-                ">
-                    {T['contact_button']}
-                </a>
-                '''
 
                 if caminho_lista_pecas.exists():
                     st.info(T['parts_list_warning'])
@@ -1146,7 +1019,7 @@ if st.session_state.resultado_busca is not None:
 
                     if st.session_state.get('mostrar_lista_visualizacao', False):
                         mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
-                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista'):
+                        if st.button(T['close_view_button'], use_container_width=True, key='fechar_lista', type="secondary"):
                             st.session_state.mostrar_lista_visualizacao = False
                             st.rerun()
 
@@ -1159,7 +1032,7 @@ if st.session_state.resultado_busca is not None:
                             use_container_width=True
                         )
                     
-                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                    st.link_button(T['contact_button'], link_contato_pecas, use_container_width=True)
                 else:
                     st.warning(T['parts_list_unavailable'])
-                    st.markdown(botao_contato_html, unsafe_allow_html=True)
+                    st.link_button(T['contact_button'], link_contato_pecas, use_container_width=True)
