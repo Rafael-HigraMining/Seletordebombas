@@ -1026,7 +1026,7 @@ with col_bandeiras:
 # Centraliza o Logo
 col1, col_logo_centro, col3 = st.columns([2, 3, 2])
 with col_logo_centro:
-    st.image("logo.png", width=500)
+    st.image("logo.png", width=700)
 
 T = TRADUCOES[st.session_state.lang]
 
@@ -1270,3 +1270,4 @@ with st.container(border=True):
              exibir_resultados_busca(T, key_prefix='calculadora')
              
             
+
