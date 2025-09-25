@@ -1036,6 +1036,7 @@ if st.session_state.resultado_busca is not None:
                     st.warning(T['drawing_unavailable'])
                 
                 link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
+st.link_button(T['contact_button'], link_contato, use_container_width=True, type="secondary")
                
         st.divider()
 
@@ -1077,6 +1078,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
