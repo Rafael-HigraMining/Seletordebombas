@@ -753,7 +753,8 @@ tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_labe
 
 # --- Aba 1: Seletor por Ponto de Trabalho ---
 with tab_seletor:
-    st.markdown(f"#### {T['eletric_freq_title']}")
+    with st.container(border=True):
+        st.markdown(f"#### {T['eletric_freq_title']}")
 
     col_freq, col_vazio = st.columns([1, 3])
     with col_freq:
@@ -817,6 +818,8 @@ with tab_seletor:
         st.rerun()
 # --- Aba 2: Buscador por Modelo ---
 with tab_buscador:
+    with st.container(border=True):
+        st.markdown(f"#### {T['finder_header']}")
     col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
     
     with col_freq_busca:
@@ -1141,6 +1144,7 @@ if st.session_state.resultado_busca is not None:
                 else:
                     st.warning(T['parts_list_unavailable'])
                     st.markdown(botao_contato_html, unsafe_allow_html=True)
+
 
 
 
