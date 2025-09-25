@@ -7,7 +7,7 @@ import base64
 from pathlib import Path
 
 # ===================================================================
-# FUNÇÃO AUXILIAR PARA IMAGENS
+# FUNÇÕES AUXILIARES - LÓGICA E DADOS (ORIGINAL DO SEU CÓDIGO)
 # ===================================================================
 if 'mostrar_lista_pecas' not in st.session_state: st.session_state.mostrar_lista_pecas = False
 if 'mostrar_desenho' not in st.session_state: st.session_state.mostrar_desenho = False
@@ -26,13 +26,12 @@ def image_to_base64(img_path):
         with path.open("rb") as f:
             return base64.b64encode(f.read()).decode()
     except FileNotFoundError:
-        # Retorna um pixel transparente se a imagem não for encontrada
         return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
 def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
     """Exibe a primeira página de um PDF como imagem diretamente no Streamlit."""
     try:
-        import fitz  # PyMuPDF
+        import fitz
         from PIL import Image
         import io
         
@@ -51,15 +50,7 @@ def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
     except Exception as e:
         st.error(f"Não foi possível exibir o PDF: {e}")
 
-# ===================================================================
-# DICIONÁRIO DE TRADUÇÕES E VARIÁVEIS DE COR (COMBINADOS E LIMPOS)
-# ===================================================================
 ATIVAR_ORCAMENTO = False
-
-COR_PRIMARIA = "#134883"
-COR_SECUNDARIA = "#F8AC2E"
-COR_FUNDO = "#F0F5FF"
-COR_TEXTO = "#333333"
 
 TRADUCOES = {
     'pt': {
@@ -176,7 +167,7 @@ TRADUCOES = {
         'spinner_text': "Calculating the best options for {freq}...",
         'results_header': "Search Results",
         'dimensional_drawing_button': "Dimensional Drawing",
-        'dimensional_drawing_warning': "Attention: The Dimensional Drawing is a reference document and may contain variations. If in doubt or for more detailed confirmation, please contact us.",
+        'dimensional_drawing_warning': "Attention: The Dimensional Drawing is um documento de referencia y puede contener variaciones. En caso de duda o para una confirmación más detallada, por favor, póngase en contacto.",
         'solution_unique': "✅ Solution found with a **SINGLE PUMP**:",
         'solution_parallel': "⚠️ No single pump with good efficiency. Alternative: **TWO PUMPS IN PARALLEL**:",
         'solution_parallel_info': "Flow and power below are PER PUMP. Total flow = 2x.",
@@ -204,6 +195,8 @@ TRADUCOES = {
         'view_mode_systems': "Viewing mode: Multiple Systems",
         'no_unique_pumps': "❌ No single pump found for these parameters.",
         'no_systems_found': "❌ No multiple pump system found for these parameters.",
+        'pressure_error_header': "Pressure Error",
+        'relative_error_header': "Relative Error",
         'system_type_parallel': "{} in Parallel",
         'system_type_series': "2 in Series",
         'system_type_combined': "{} Pumps ({}x2)",
@@ -213,7 +206,7 @@ TRADUCOES = {
         'quote_form_success': "Request ready to be sent!",
         'quote_form_click_here': "Click here to open and send the email",
         'email_subject': "Quote Request via Pump Selector - {nome}",
-        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Nome: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
+        'email_body': """Hello,\n\nA new quote request has been generated through the Pump Selector.\n\nCUSTOMER DATA:\n- Name: {nome}\n- Email: {email}\n\nMESSAGE:\n{mensagem}\n\n---------------------------------\nSEARCH PARAMETERS:\n- Frequency: {freq}\n- Flow: {vazao} m³/h\n- Head: {pressao} mca\n\n---------------------------------\nRESULTS FOUND:\n{tabela_resultados}"""
     },
     'es': {
         'page_title': "Selector Higra Mining",
@@ -294,7 +287,7 @@ TRADUCOES = {
 }
 
 # ===================================================================
-# FUNÇÕES GLOBAIS E CONSTANTES (DO SEU CÓDIGO ORIGINAL)
+# FUNÇÕES GLOBAIS E CONSTANTES (ORIGINAL DO SEU CÓDIGO)
 # ===================================================================
 MOTORES_PADRAO = np.array([
     15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200, 250, 300,
@@ -565,8 +558,10 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     return df_unicas_final, df_multiplas_final
 
 # ===================================================================
-# INTERFACE STREAMLIT (VERSÃO ESTÁVEL COM NOVO DESIGN)
+# INTERFACE STREAMLIT - VERSÃO COMPLETA E PROFISSIONAL
 # ===================================================================
+
+# --- CONFIGURAÇÕES E ESTILOS INICIAIS (COMBINADOS E LIMPOS) ---
 st.set_page_config(layout="wide", page_title="Seletor Higra Mining")
 
 COR_PRIMARIA = "#134883"
@@ -589,16 +584,16 @@ st.markdown(f"""
     
     /* Estilos de Botões */
     .stButton>button {{
-        border: 2px solid {COR_PRIMARIA} !important;
-        background-color: {COR_PRIMARIA} !important;
-        color: white !important;
-        font-weight: bold !important;
-        transition: all 0.3s ease !important;
-        border-radius: 8px !important;
+        border: 2px solid {COR_PRIMARIA};
+        background-color: {COR_PRIMARIA};
+        color: white;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border-radius: 8px;
     }}
     .stButton>button:hover {{
-        background-color: white !important;
-        color: {COR_PRIMARIA} !important;
+        background-color: white;
+        color: {COR_PRIMARIA};
     }}
     
     /* Estilos de Alertas */
@@ -643,7 +638,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# --- CONFIGURAÇÕES INICIAIS ---
+# --- INICIALIZAÇÃO DE ESTADOS ---
 query_params = st.query_params
 if 'lang' in query_params:
     lang_from_url = query_params['lang']
@@ -658,10 +653,9 @@ if 'opcionais_selecionados' not in st.session_state: st.session_state.opcionais_
 T = TRADUCOES[st.session_state.lang]
 
 # ===================================================================
-# CABEÇALHO COM LOGO E SELEÇÃO DE IDIOMA
+# CABEÇALHO (LOGO E SELEÇÃO DE IDIOMA)
 # ===================================================================
 col_logo, col_vazia, col_bandeiras = st.columns([4, 4, 2])
-
 with col_logo:
     try:
         st.image("logo.png", width=900)
@@ -696,22 +690,13 @@ st.info(T['performance_note'])
 st.divider()
 
 # ===================================================================
-# RESTANTE DO SCRIPT ORIGINAL (IDÊNTICO)
-# ===================================================================
-
-EMAIL_DESTINO = "seu.email@higra.com.br"
-ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
-FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
-FATORES_PRESSAO = { "mca": 1.0, "ftH₂O": 0.3048, "bar": 10.197, "kgf/cm²": 10.0 }
-
-# ===================================================================
-# SEÇÃO DE ENTRADAS (REESTRUTURADA COM LAYOUT EM BLOCOS)
+# SEÇÃO DE ENTRADAS (REESTRUTURADA COM BLOCOS VISUAIS)
 # ===================================================================
 
 tab_seletor, tab_buscador = st.tabs([T['selector_tab_label'], T['finder_tab_label']])
 
 with tab_seletor:
-    with st.container(border=True): # NOVO BLOCO VISUAL
+    with st.container(border=True):
         st.markdown(f"#### {T['eletric_freq_title']}")
         col_freq, col_vazio = st.columns([1, 3])
         with col_freq:
@@ -767,7 +752,7 @@ with tab_seletor:
             st.rerun()
 
 with tab_buscador:
-    with st.container(border=True): # NOVO BLOCO VISUAL
+    with st.container(border=True):
         st.markdown(f"#### {T['finder_header']}")
         col_freq_busca, col_modelo_busca, col_motor_busca = st.columns(3)
         
@@ -832,9 +817,9 @@ with tab_buscador:
                         st.error(T['no_solution_error'])
                     
                     st.rerun()
-
+                
 if st.session_state.resultado_busca is not None:
-    with st.container(border=True): # NOVO BLOCO VISUAL para resultados
+    with st.container(border=True): # NOVO: Container para agrupar resultados e botões
         if st.session_state.get('modo_visualizacao') == 'multiplas':
             resultado = st.session_state.get('resultado_sistemas_multiplos', pd.DataFrame())
         else:
@@ -904,7 +889,17 @@ if st.session_state.resultado_busca is not None:
             
             st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
             
-    with st.container(border=True): # NOVO BLOCO VISUAL
+            st.divider()
+
+            indice_selecionado = opcoes_ranking.index(selecao_ranking)
+            melhor_bomba = resultado.iloc[indice_selecionado]
+            modelo_selecionado = melhor_bomba['MODELO']
+            try:
+                motor_alvo = int(melhor_bomba['MOTOR FINAL (CV)'])
+            except (ValueError, TypeError):
+                motor_alvo = 0
+            
+    with st.container(border=True):
         st.header(T['graph_header'])
         frequencia_str = st.session_state.get('last_used_freq', '60Hz')
         caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
@@ -925,7 +920,7 @@ if st.session_state.resultado_busca is not None:
                     st.session_state.mostrar_grafico = False
                     st.rerun()
 
-    with st.container(border=True): # NOVO BLOCO VISUAL
+    with st.container(border=True):
         st.header(T['drawing_header'])
         
         if st.button(T['dimensional_drawing_button'], use_container_width=True, type="primary"):
@@ -984,8 +979,8 @@ if st.session_state.resultado_busca is not None:
                 
                 link_contato = "https://wa.me/5551991808303?text=Ol%C3%A1!%20Preciso%20do%20desenho%20dimensional%20de%20uma%20bomba%20Higra%20Mining."
                 st.link_button(T['contact_button'], link_contato, use_container_width=True)
-    
-    with st.container(border=True): # NOVO BLOCO VISUAL
+
+    with st.container(border=True):
         st.header(T['parts_list_header'])
         
         if st.button(T['parts_list_button'], use_container_width=True, type="primary"):
