@@ -653,21 +653,48 @@ st.markdown(f"""
         border-radius: 2px;
     }}
     
-    /* ========================================================================= */
-    /* MODIFICADO: Estilização aplicada APENAS aos campos de ENTRADA NUMÉRICA    */
-    /* ========================================================================= */
-    /* Alvo exclusivo para st.number_input */
+    /* Estilização para campos de ENTRADA NUMÉRICA */
     div[data-testid="stNumberInput"] > div > div {{
-        border: 2px solid {COR_PRIMARIA} !important; /* Borda azul permanente */
+        border: 2px solid {COR_PRIMARIA} !important;
         background-color: white !important;
         border-radius: 8px !important;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }}
-
-    /* Remove a borda padrão do input numérico interno para não haver borda dupla */
     div[data-testid="stNumberInput"] input {{
         border: none !important;
         background-color: transparent !important;
+    }}
+
+    /* ========================================================================= */
+    /* NOVO: Estilização para o seletor de Frequência (st.radio)               */
+    /* ========================================================================= */
+    /* Container geral do st.radio para criar um "card" */
+    div[data-testid="stRadio"] {{
+        padding: 12px;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        background-color: #fcfdff;
+    }}
+
+    /* Círculo externo de todas as opções */
+    div[data-testid="stRadio"] div[data-baseweb="radio"] > div:first-child {{
+        width: 22px !important;
+        height: 22px !important;
+        border-width: 3px !important;
+    }}
+
+    /* Cor do círculo externo da opção SELECIONADA */
+    div[data-testid="stRadio"] div[data-baseweb="radio"] input:checked + div {{
+        border-color: {COR_PRIMARIA} !important; /* Borda AZUL */
+    }}
+
+    /* Círculo interno (ponto) da opção SELECIONADA */
+    div[data-testid="stRadio"] div[data-baseweb="radio"] input:checked + div::after {{
+        background-color: {COR_SECUNDARIA} !important; /* Ponto AMARELO */
+        width: 10px !important;
+        height: 10px !important;
+        left: 3px;
+        top: 3px;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -937,6 +964,7 @@ if st.session_state.resultado_busca is not None:
                     mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
                 else:
                     st.warning(T['parts_list_unavailable'])
+
 
 
 
