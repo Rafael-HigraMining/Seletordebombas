@@ -9,7 +9,10 @@ from pathlib import Path
 # ===================================================================
 # LÓGICA DO SELETOR (INTOCADA, CONFORME SOLICITADO)
 # ===================================================================
-
+# ===================================================================
+# CONFIGURAÇÕES GERAIS
+# ===================================================================
+MOSTRAR_CALCULADORA = False # Mude para True para exibir a aba da calculadora
 # -------------------------------------------------------------------
 # Funções Auxiliares (Imagens, PDF)
 # -------------------------------------------------------------------
@@ -85,6 +88,7 @@ TRADUCOES = {
         'model_select_label': "1. Selecione o Modelo",
         'motor_select_label': "2. Selecione o Motor (CV)",
         'find_pump_button': "Buscar Bomba",
+        'download_graph_button': "Baixar Gráfico",
         'pressure_unit_label': "Unidade Pressão",
         'converted_values_info': "Valores convertidos para a busca: **Vazão: {vazao} m³/h** | **Pressão: {pressao} mca**",
         'search_button': "Buscar Melhor Opção",
@@ -213,6 +217,7 @@ TRADUCOES = {
         'pipe_material_di': "Ductile Iron",
         'pipe_material_ci': "Cast Iron",
         'pipe_material_pvc': "PVC",
+        'download_graph_button': "Download Chart",
         'footer_copyright': "© 2025 Higra Mining. All rights reserved.",
         'footer_more_info': "For more information, visit ",
         'footer_our_website': "our website",
@@ -310,6 +315,7 @@ TRADUCOES = {
         'model_select_label': "1. Seleccione el Modelo",
         'motor_select_label': "2. Seleccione el Motor (CV)",
         'find_pump_button': "Buscar Bomba",
+        'download_graph_button': "Descargar Gráfico",
         'search_with_data_button': "Buscar Bombas con Estos Datos",
         'search_done_message': "¡Búsqueda completa! Los resultados están en la pestaña 'Selector por Punto de Trabajo'.",
         'calculator_tab_label': "Calculadora de Sistema",
@@ -761,7 +767,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     return df_unicas_final, df_multiplas_final
 
 # ===================================================================
-# NOVA FUNÇÃO PARA EXIBIR RESULTADOS DE BUSCA (EVITA REPETIÇÃO)
+# FUNÇÃO PARA EXIBIR RESULTADOS DE BUSCA (COM BOTÃO DE DOWNLOAD DO GRÁFICO)
 # ===================================================================
 def exibir_resultados_busca(T, key_prefix):
     """Função dedicada a exibir a tabela de resultados e documentos da busca de bombas."""
@@ -790,6 +796,7 @@ def exibir_resultados_busca(T, key_prefix):
             if st.session_state.get('modo_visualizacao') == 'unicas': st.error(T['no_unique_pumps'])
             else: st.error(T['no_systems_found'])
         else:
+            # ... (O CÓDIGO DA TABELA CONTINUA IGUAL, NÃO PRECISA MUDAR) ...
             resultado_exibicao = resultado.copy()
             def traduzir_tipo_sistema(row):
                 code = row.get('TIPO_SISTEMA_CODE', 'single')
@@ -834,15 +841,31 @@ def exibir_resultados_busca(T, key_prefix):
             with st.container(border=True):
                 st.header(T['graph_header'])
                 frequencia_str = st.session_state.get('last_used_freq', '60Hz')
-                caminho_pdf = f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf"
+                caminho_pdf_grafico = Path(f"pdfs/{frequencia_str}/{modelo_selecionado}.pdf")
                 
+                # --- INÍCIO DA MUDANÇA ---
                 if st.button(T['view_graph_button'], key=f"btn_grafico_{key_prefix}", use_container_width=True):
                     st.session_state.mostrar_grafico = not st.session_state.get('mostrar_grafico', False)
                 
                 if st.session_state.get('mostrar_grafico', False):
-                    mostrar_pdf(caminho_pdf, legenda="Gráfico de Performance")
+                    if caminho_pdf_grafico.exists():
+                        # Adiciona o botão de download
+                        with open(caminho_pdf_grafico, "rb") as pdf_file:
+                            st.download_button(
+                                label=T['download_graph_button'], 
+                                data=pdf_file,
+                                file_name=caminho_pdf_grafico.name,
+                                mime="application/pdf",
+                                use_container_width=True
+                            )
+                        # Mostra a pré-visualização
+                        mostrar_pdf(caminho_pdf_grafico, legenda="Gráfico de Performance")
+                    else:
+                        st.warning("Gráfico de performance indisponível para este modelo.")
+                # --- FIM DA MUDANÇA ---
         
         with col_desenho:
+            # ... (O CÓDIGO DO DESENHO DIMENSIONAL CONTINUA IGUAL, NÃO PRECISA MUDAR) ...
             with st.container(border=True):
                 st.header(T['drawing_header'])
                 
@@ -870,6 +893,7 @@ def exibir_resultados_busca(T, key_prefix):
                         st.warning(T['drawing_unavailable'])
         
         with st.container(border=True):
+             # ... (O CÓDIGO DA LISTA DE PEÇAS CONTINUA IGUAL, NÃO PRECISA MUDAR) ...
             st.header(T['parts_list_header'])
             if st.button(T['parts_list_button'], key=f"btn_lista_{key_prefix}", use_container_width=True):
                 st.session_state.mostrar_lista_pecas = not st.session_state.get('mostrar_lista_pecas', False)
@@ -883,7 +907,6 @@ def exibir_resultados_busca(T, key_prefix):
                     mostrar_pdf(caminho_lista_pecas, legenda="Lista de Peças")
                 else:
                     st.warning(T['parts_list_unavailable'])
-
 # ===================================================================
 # INTERFACE STREAMLIT (COM DESIGN E LAYOUT REESTRUTURADOS)
 # ===================================================================
@@ -1052,9 +1075,15 @@ st.divider()
 
 # --- 3. Bloco de Entradas do Usuário ---
 with st.container(border=True):
-    tab_seletor, tab_buscador, tab_calculadora = st.tabs([
-        T['selector_tab_label'], T['finder_tab_label'], T['calculator_tab_label']
-    ])
+    # Cria as abas com base na configuração MOSTRAR_CALCULADORA
+    if MOSTRAR_CALCULADORA:
+        tab_seletor, tab_buscador, tab_calculadora = st.tabs([
+            T['selector_tab_label'], T['finder_tab_label'], T['calculator_tab_label']
+        ])
+    else:
+        tab_seletor, tab_buscador = st.tabs([
+            T['selector_tab_label'], T['finder_tab_label']
+        ])
 
     ARQUIVOS_DADOS = { "60Hz": "60Hz.xlsx", "50Hz": "50Hz.xlsx" }
     FATORES_VAZAO = { "m³/h": 1.0, "gpm (US)": 0.2271247, "l/s": 3.6 }
@@ -1150,7 +1179,8 @@ with st.container(border=True):
             exibir_resultados_busca(T, key_prefix='buscador')
 
     # Aba 3: Calculadora de Sistema
-    with tab_calculadora:
+    if MOSTRAR_CALCULADORA:
+     with tab_calculadora:
         st.subheader(T['calculator_header'])
         st.write(T['calculator_intro'])
         st.write("---")
