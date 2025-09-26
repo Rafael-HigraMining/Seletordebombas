@@ -112,6 +112,9 @@ TRADUCOES = {
         'pipe_material_di': "Ferro Dúctil",
         'pipe_material_ci': "Ferro Fundido",
         'pipe_material_pvc': "PVC",
+        'footer_copyright': "© 2025 Higra Mining. Todos os direitos reservados.",
+        'footer_more_info': "Para mais informações, visite ",
+        'footer_our_website': "nosso site ",
         'search_with_data_button': "Buscar Bombas com Estes Dados",
         'search_done_message': "Busca concluída! Os resultados estão na aba 'Seletor por Ponto de Trabalho'.",
         'pipe_material_hdpe': "HDPE (PEAD)",
@@ -210,6 +213,9 @@ TRADUCOES = {
         'pipe_material_di': "Ductile Iron",
         'pipe_material_ci': "Cast Iron",
         'pipe_material_pvc': "PVC",
+        'footer_copyright': "© 2025 Higra Mining. All rights reserved.",
+        'footer_more_info': "For more information, visit ",
+        'footer_our_website': "our website",
         'search_with_data_button': "Find Pumps with This Data",
         'search_done_message': "Search complete! The results are on the 'Selector by Duty Point' tab.",
         'pipe_material_hdpe': "HDPE",
@@ -323,6 +329,9 @@ TRADUCOES = {
         'section_fittings': "Accesorios y Pérdidas Menores",
         'elbow_90': "Codo 90°",
         'elbow_45': "Codo 45°",
+        'footer_copyright': "© 2025 Higra Mining. Todos los derechos reservados.",
+        'footer_more_info': "Para más información, visite ",
+        'footer_our_website': "nuestro sitio web",
         'pipe_material_cs': "Acero al Carbono",
         'pipe_material_ss': "Acero Inoxidable",
         'pipe_material_di': "Hierro Dúctil",
@@ -884,7 +893,11 @@ if 'lang' not in st.session_state: st.session_state.lang = 'pt'
 if 'resultado_busca' not in st.session_state: st.session_state.resultado_busca = None
 if 'search_source' not in st.session_state: st.session_state.search_source = None # Para controlar a origem da busca
 
-st.set_page_config(layout="wide", page_title="Seletor Higra Mining")
+st.set_page_config(
+    layout="wide",
+    page_title="Seletor Higra Mining",
+    page_icon="iconhigra.png" 
+)
 
 COR_PRIMARIA = "#134883"
 COR_SECUNDARIA = "#F8AC2E"
@@ -1269,5 +1282,13 @@ with st.container(border=True):
         if st.session_state.search_source == 'calculadora' and st.session_state.get('resultado_busca'):
              exibir_resultados_busca(T, key_prefix='calculadora')
              
-            
-
+st.divider()
+st.markdown(
+    f"""
+    <p style='text-align: center; color: grey;'>
+        {T['footer_copyright']}<br>
+        {T['footer_more_info']}<a href='https://www.higramining.com.br' target='_blank'>{T['footer_our_website']}</a>.
+    </p>
+    """,
+    unsafe_allow_html=True
+)           
