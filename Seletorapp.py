@@ -22,6 +22,18 @@ if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.most
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
 if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
 if 'mostrar_grafico' not in st.session_state: st.session_state.mostrar_grafico = False
+    
+# Adicione este bloco para esconder o menu de navegação
+st.markdown(
+    """
+<style>
+    [data-testid="stSidebar"] {
+        display: none;
+    }
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
 @st.cache_data
 def image_to_base64(img_path):
@@ -1322,3 +1334,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
