@@ -599,16 +599,20 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     if df is None or df.empty: 
         return pd.DataFrame()
 
+    # 1. Filtro inicial por vazão (mais eficiente)
     mask_vazao = df["VAZÃO (M³/H)"] == vazao
     if not mask_vazao.any():
         return pd.DataFrame()
+
     df_vazao = df.loc[mask_vazao].copy()
     
+    # 2. Calcular pressões min/max por modelo sem múltiplos merges
     min_max = df_vazao.groupby('MODELO')['PRESSÃO (MCA)'].agg(['min', 'max']).reset_index()
     min_max.columns = ['MODELO', 'PRESSAO_DO_ROTOR_MIN', 'PRESSAO_DO_ROTOR_MAX']
     
     df_vazao = df_vazao.merge(min_max, on='MODELO', how='left')
     
+    # 3. Calcular limites e filtrar de forma vetorizada
     limite_inferior = df_vazao['PRESSAO_DO_ROTOR_MIN'] * 0.99
     limite_superior = df_vazao['PRESSAO_DO_ROTOR_MAX'] * 1.01
     
@@ -618,13 +622,26 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     if df_filtrado.empty:
         return pd.DataFrame()
 
+    # Restante do seu código (preservado)
+    df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
+    df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
+    df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
+    
+
+    # ===================================================================
+    # A PARTIR DAQUI, O SEU CÓDIGO ORIGINAL É PRESERVADO
+    # ===================================================================
+
+    # ETAPA 2: CÁLCULOS BÁSICOS
     df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
     df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
     df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
     
     if df_filtrado.empty: return pd.DataFrame()
     
+    # ETAPA 3: LÓGICA DE ORDENAÇÃO
     df_grupo_controle = df_filtrado.loc[df_filtrado.groupby('MODELO')['ERRO_PRESSAO_ABS'].idxmin()].copy()
+
     if df_grupo_controle.empty: return pd.DataFrame()
 
     min_erro_rel = df_grupo_controle["ABS_ERRO_RELATIVO"].min()
@@ -652,13 +669,17 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     df_resultado = df_resultado.head(top_n)
     df_resultado = df_resultado.drop(columns=["DIF_ERRO_REL", "DIF_REND"], errors="ignore")
     
+    # Substitua pela nova lista:
     colunas_finais = [
         'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
         'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO'
-    ]   
+    ]    
+    # CORREÇÃO: Para evitar o erro de coluna duplicada, removemos a coluna 'ROTOR' original (texto)
+    # antes de renomear a coluna numérica 'ROTORNUM' para 'ROTOR'.
     if 'ROTOR' in df_resultado.columns:
         df_resultado = df_resultado.drop(columns=['ROTOR'])
         
+    # Renomeando ROTORNUM para ROTOR para corresponder à sua saída desejada
     df_resultado = df_resultado.rename(columns={'ROTORNUM': 'ROTOR'})
     
     colunas_presentes = [col for col in colunas_finais if col in df_resultado.columns]
@@ -669,11 +690,14 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     if df is None or df.empty:
         return pd.DataFrame(), pd.DataFrame()
     
+    # NOVAS VARIÁVEIS PARA CONTROLAR O NÚMERO DE RESULTADOS
     top_n_unicas = 3
-    top_n_multiplas = 5
+    top_n_multiplas = 5 # Ou o número que você preferir
     
+    # === ETAPA 1: Buscar todas as opções possíveis ===
     todas_opcoes = []
     
+    # 1.1 Bombas únicas
     resultado_unico = filtrar_e_classificar(df, vazao_desejada, pressao_desejada, top_n=10)
     if not resultado_unico.empty:
         resultado_unico["TIPO_SISTEMA_CODE"] = "single"
@@ -681,10 +705,13 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         resultado_unico["PRIORIDADE_TIPO"] = 1
         todas_opcoes.append(resultado_unico)
     
+    # 1.2 Sistemas com múltiplas bombas
     sistemas_multiplos = []
     
+    # Paralelo (2 a 10 bombas)
     for num_paralelo in range(2, 16):
         vazao_paralelo = vazao_desejada / num_paralelo
+        # Usa o novo valor top_n_multiplas
         resultado_paralelo = filtrar_e_classificar(df, vazao_paralelo, pressao_desejada, top_n=top_n_multiplas)
         if not resultado_paralelo.empty:
             resultado_paralelo["TIPO_SISTEMA_CODE"] = "parallel"
@@ -692,7 +719,9 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             resultado_paralelo["PRIORIDADE_TIPO"] = 2
             sistemas_multiplos.append(resultado_paralelo)
     
+    # Série (2 bombas)
     pressao_serie = pressao_desejada / 2
+    # Usa o novo valor top_n_multiplas
     resultado_serie = filtrar_e_classificar(df, vazao_desejada, pressao_serie, top_n=top_n_multiplas)
     if not resultado_serie.empty:
         resultado_serie["TIPO_SISTEMA_CODE"] = "series"
@@ -700,9 +729,11 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         resultado_serie["PRIORIDADE_TIPO"] = 3
         sistemas_multiplos.append(resultado_serie)
     
+    # Misto (série em paralelo)
     for num_conjuntos in range(2, 6):
         vazao_misto = vazao_desejada / num_conjuntos
         pressao_misto = pressao_desejada / 2
+        # Usa o novo valor top_n_multiplas
         resultado_misto = filtrar_e_classificar(df, vazao_misto, pressao_misto, top_n=top_n_multiplas)
         if not resultado_misto.empty:
             total_bombas = num_conjuntos * 2
@@ -712,6 +743,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             resultado_misto["PRIORIDADE_TIPO"] = 4
             sistemas_multiplos.append(resultado_misto)
     
+    # Combinar todas as opções em suas respectivas categorias
     if todas_opcoes:
         df_unicas = pd.concat(todas_opcoes, ignore_index=True)
     else:
@@ -719,6 +751,7 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         
     if sistemas_multiplos:
         df_multiplas = pd.concat(sistemas_multiplos, ignore_index=True)
+        # Garantir apenas uma opção por modelo (a com menos bombas)
         df_multiplas = df_multiplas.sort_values(
             by=["MODELO", "N_TOTAL_BOMBAS", "RENDIMENTO (%)"], 
             ascending=[True, True, False]
@@ -726,11 +759,14 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     else:
         df_multiplas = pd.DataFrame()
     
+    # === ETAPA 2: Seleção em cascata para CADA CATEGORIA ===
+    
+    # 2.1 Processar bombas únicas
     resultados_unicas_finais = []
     if not df_unicas.empty:
         candidatas_unicas = df_unicas.copy()
         
-        for _ in range(top_n_unicas):
+        for _ in range(top_n_unicas): # Usa a nova variável
             if candidatas_unicas.empty:
                 break
             
@@ -745,17 +781,30 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             modelo_remover = melhor_unica["MODELO"].iloc[0]
             candidatas_unicas = candidatas_unicas[candidatas_unicas["MODELO"] != modelo_remover]
     
+    # 2.2 Processar sistemas múltiplos
     resultados_multiplos_finais = []
     if not df_multiplas.empty:
         candidatas_multiplas = df_multiplas.copy()
         
-        for _ in range(top_n_multiplas):
+        for _ in range(top_n_multiplas): # Usa a nova variável
             if candidatas_multiplas.empty:
                 break
             
+            # INSIRA ESTE BLOCO NO LUGAR DA LINHA APAGADA
+
+            # Primeiro, calcula o menor erro relativo para cada grupo de 'N_TOTAL_BOMBAS'
+            min_erro_por_grupo = candidatas_multiplas.groupby('N_TOTAL_BOMBAS')['ABS_ERRO_RELATIVO'].transform('min')
+
+            # Depois, cria uma coluna com a diferença de cada bomba para o mínimo do seu grupo
+            candidatas_multiplas['DIF_ERRO_REL'] = candidatas_multiplas['ABS_ERRO_RELATIVO'] - min_erro_por_grupo
+
+            # Cria uma coluna de ordenação: 0 para grupo bom (dif <= 10), 1 para grupo ruim (dif > 10)
+            candidatas_multiplas['GRUPO_ORDEM'] = (candidatas_multiplas['DIF_ERRO_REL'] > 10).astype(int)
+
+            # Finalmente, ordena com a nova lógica de prioridade
             candidatas_multiplas = candidatas_multiplas.sort_values(
-                by=["N_TOTAL_BOMBAS", "PRIORIDADE_TIPO", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
-                ascending=[True, True, False, True, True]
+                by=["N_TOTAL_BOMBAS", "GRUPO_ORDEM", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS"],
+                ascending=[True, True, False, True]
             )
             
             melhor_multipla = candidatas_multiplas.head(1)
@@ -764,12 +813,16 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             modelo_remover = melhor_multipla["MODELO"].iloc[0]
             candidatas_multiplas = candidatas_multiplas[candidatas_multiplas["MODELO"] != modelo_remover]
     
+    # === ETAPA 3: Preparar e retornar os resultados finais ===
+    
+    # Prepara o DataFrame de bombas únicas
     if resultados_unicas_finais:
         df_unicas_final = pd.concat(resultados_unicas_finais, ignore_index=True)
         df_unicas_final = df_unicas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
     else:
         df_unicas_final = pd.DataFrame()
     
+    # Prepara o DataFrame de sistemas múltiplos
     if resultados_multiplos_finais:
         df_multiplas_final = pd.concat(resultados_multiplos_finais, ignore_index=True)
         df_multiplas_final = df_multiplas_final.drop(columns=['ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO', 'PRIORIDADE_TIPO'], errors='ignore')
@@ -1334,4 +1387,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
-
