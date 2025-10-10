@@ -770,11 +770,6 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
             if candidatas_unicas.empty:
                 break
             
-            candidatas_unicas = candidatas_unicas.sort_values(
-                by=["RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "ABS_ERRO_RELATIVO"],
-                ascending=[False, True, True]
-            )
-            
             melhor_unica = candidatas_unicas.head(1)
             resultados_unicas_finais.append(melhor_unica)
             
@@ -1387,3 +1382,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
