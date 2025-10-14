@@ -627,15 +627,6 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
     df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
     
-
-    # ===================================================================
-    # A PARTIR DAQUI, O SEU CÓDIGO ORIGINAL É PRESERVADO
-    # ===================================================================
-
-    # ETAPA 2: CÁLCULOS BÁSICOS
-    df_filtrado["ERRO_PRESSAO"] = df_filtrado["PRESSÃO (MCA)"] - pressao
-    df_filtrado["MOTOR FINAL (CV)"] = df_filtrado["POTÊNCIA (HP)"].apply(encontrar_motor_final)
-    df_filtrado["ERRO_PRESSAO_ABS"] = df_filtrado["ERRO_PRESSAO"].abs()
     
     if df_filtrado.empty: return pd.DataFrame()
     
@@ -764,47 +755,42 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
     # 2.1 Processar bombas únicas
     resultados_unicas_finais = []
     if not df_unicas.empty:
+        # EM VEZ DE PEGAR DIRETAMENTE AS TOP N, VAMOS RODAR A LÓGICA EM LOOP
         candidatas_unicas = df_unicas.copy()
         
-        for _ in range(top_n_unicas): # Usa a nova variável
+        for _ in range(top_n_unicas):
             if candidatas_unicas.empty:
                 break
             
-            melhor_unica = candidatas_unicas.head(1)
+            # APLICA A LÓGICA DE CLASSIFICAÇÃO NO GRUPO ATUAL
+            candidatas_classificadas = classificar_bombas_unicas(candidatas_unicas)
+            
+            # PEGA A MELHOR DO GRUPO ATUAL
+            melhor_unica = candidatas_classificadas.head(1)
             resultados_unicas_finais.append(melhor_unica)
             
+            # REMOVE A MELHOR DO GRUPO PARA A PRÓXIMA ITERAÇÃO
             modelo_remover = melhor_unica["MODELO"].iloc[0]
             candidatas_unicas = candidatas_unicas[candidatas_unicas["MODELO"] != modelo_remover]
     
     # 2.2 Processar sistemas múltiplos
     resultados_multiplos_finais = []
     if not df_multiplas.empty:
+        # MESMA LÓGICA DE LOOP PARA SISTEMAS MÚLTIPLOS
         candidatas_multiplas = df_multiplas.copy()
         
-        for _ in range(top_n_multiplas): # Usa a nova variável
+        for _ in range(top_n_multiplas):
             if candidatas_multiplas.empty:
                 break
             
-            # INSIRA ESTE BLOCO NO LUGAR DA LINHA APAGADA
-
-            # Primeiro, calcula o menor erro relativo para cada grupo de 'N_TOTAL_BOMBAS'
-            min_erro_por_grupo = candidatas_multiplas.groupby('N_TOTAL_BOMBAS')['ABS_ERRO_RELATIVO'].transform('min')
-
-            # Depois, cria uma coluna com a diferença de cada bomba para o mínimo do seu grupo
-            candidatas_multiplas['DIF_ERRO_REL'] = candidatas_multiplas['ABS_ERRO_RELATIVO'] - min_erro_por_grupo
-
-            # Cria uma coluna de ordenação: 0 para grupo bom (dif <= 10), 1 para grupo ruim (dif > 10)
-            candidatas_multiplas['GRUPO_ORDEM'] = (candidatas_multiplas['DIF_ERRO_REL'] > 10).astype(int)
-
-            # Finalmente, ordena com a nova lógica de prioridade
-            candidatas_multiplas = candidatas_multiplas.sort_values(
-                by=["N_TOTAL_BOMBAS", "GRUPO_ORDEM", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS"],
-                ascending=[True, True, False, True]
-            )
+            # APLICA A LÓGICA DE CLASSIFICAÇÃO NO GRUPO ATUAL
+            candidatas_classificadas = classificar_bombas_multiplas(candidatas_multiplas)
             
-            melhor_multipla = candidatas_multiplas.head(1)
+            # PEGA A MELHOR DO GRUPO ATUAL
+            melhor_multipla = candidatas_classificadas.head(1)
             resultados_multiplos_finais.append(melhor_multipla)
             
+            # REMOVE A MELHOR DO GRUPO PARA A PRÓXIMA ITERAÇÃO
             modelo_remover = melhor_multipla["MODELO"].iloc[0]
             candidatas_multiplas = candidatas_multiplas[candidatas_multiplas["MODELO"] != modelo_remover]
     
@@ -825,6 +811,74 @@ def selecionar_bombas(df, vazao_desejada, pressao_desejada):
         df_multiplas_final = pd.DataFrame()
         
     return df_unicas_final, df_multiplas_final
+
+# ADICIONE ESTAS DUAS FUNÇÕES AUXILIARES (elas replicam a lógica de classificação que já existe)
+def classificar_bombas_unicas(df):
+    """Aplica a lógica de classificação para bombas únicas (REPLICA EXATA DA filtrar_e_classificar)"""
+    if df.empty:
+        return df
+    
+    # REPLICAÇÃO EXATA DA LÓGICA ORIGINAL DE CLASSIFICAÇÃO
+    df_classificado = df.copy()
+    
+    # ETAPA 1: Agrupar por modelo e encontrar o menor erro absoluto de pressão por modelo
+    df_grupo_controle = df_classificado.loc[df_classificado.groupby('MODELO')['ERRO_PRESSAO_ABS'].idxmin()].copy()
+
+    if df_grupo_controle.empty:
+        return df_classificado
+
+    # ETAPA 2: Lógica de grupos A e B baseada no erro relativo
+    min_erro_rel = df_grupo_controle["ABS_ERRO_RELATIVO"].min()
+    df_grupo_controle["DIF_ERRO_REL"] = df_grupo_controle["ABS_ERRO_RELATIVO"] - min_erro_rel
+    
+    grupo_A = df_grupo_controle[df_grupo_controle["DIF_ERRO_REL"] <= 10].copy()
+    grupo_B = df_grupo_controle[df_grupo_controle["DIF_ERRO_REL"] > 10].copy()
+    
+    # ETAPA 3: Ordenação do grupo A (prioridade: rendimento)
+    grupo_A = grupo_A.sort_values(by="RENDIMENTO (%)", ascending=False)
+    
+    if not grupo_A.empty:
+        max_rend = grupo_A["RENDIMENTO (%)"].max()
+        grupo_A["DIF_REND"] = max_rend - grupo_A["RENDIMENTO (%)"]
+        
+        subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= 3].copy()  # limite_desempate_rendimento = 3
+        subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > 3].copy()
+        
+        subgrupo_A1 = subgrupo_A1.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
+        
+        grupo_A = pd.concat([subgrupo_A1, subgrupo_A2])
+    
+    # ETAPA 4: Ordenação do grupo B (prioridade: erro relativo)
+    grupo_B = grupo_B.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
+    
+    # ETAPA 5: Combinar resultados
+    df_resultado = pd.concat([grupo_A, grupo_B])
+    
+    # ETAPA 6: Juntar com os dados completos para manter todas as colunas
+    df_final = df_classificado[df_classificado.index.isin(df_resultado.index)]
+    
+    # ETAPA 7: Ordenar conforme a ordem do resultado
+    ordem_final = df_resultado.index.tolist()
+    df_final = df_final.reindex(ordem_final)
+    
+    return df_final
+
+def classificar_bombas_multiplas(df):
+    """Aplica a lógica de classificação para sistemas múltiplos"""
+    if df.empty:
+        return df
+    
+    # Lógica simples para múltiplas (já que você disse que funciona bem)
+    min_erro_por_grupo = df.groupby('N_TOTAL_BOMBAS')['ABS_ERRO_RELATIVO'].transform('min')
+    df['DIF_ERRO_REL'] = df['ABS_ERRO_RELATIVO'] - min_erro_por_grupo
+    df['GRUPO_ORDEM'] = (df['DIF_ERRO_REL'] > 10).astype(int)
+    
+    df_classificado = df.sort_values(
+        by=["N_TOTAL_BOMBAS", "GRUPO_ORDEM", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS"],
+        ascending=[True, True, False, True]
+    )
+    
+    return df_classificado
 
 # ===================================================================
 # FUNÇÃO PARA EXIBIR RESULTADOS DE BUSCA (COM BOTÃO DE DOWNLOAD DO GRÁFICO)
@@ -1382,4 +1436,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
-
