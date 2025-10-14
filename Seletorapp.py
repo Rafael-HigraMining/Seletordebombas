@@ -844,24 +844,44 @@ def classificar_bombas_unicas(df):
         subgrupo_A1 = grupo_A[grupo_A["DIF_REND"] <= 3].copy()  # limite_desempate_rendimento = 3
         subgrupo_A2 = grupo_A[grupo_A["DIF_REND"] > 3].copy()
         
-        subgrupo_A1 = subgrupo_A1.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
+        # ADICIONE ESTE BLOCO NO LUGAR DA LINHA APAGADA
+
+    # --- INÍCIO DA NOVA LÓGICA DE DESEMPATE FINAL ---
+    if not subgrupo_A1.empty:
+        # Encontra o menor erro de pressão absoluto dentro deste subgrupo
+        min_erro_pressao = subgrupo_A1["ERRO_PRESSAO_ABS"].min()
+        subgrupo_A1["DIF_ERRO_PRESSAO"] = subgrupo_A1["ERRO_PRESSAO_ABS"] - min_erro_pressao
+
+        # Separa em dois novos subgrupos baseados na sua regra de diferença de 5
+        subgrupo_desempate_potencia = subgrupo_A1[subgrupo_A1["DIF_ERRO_PRESSAO"] <= 5].copy()
+        subgrupo_desempate_pressao = subgrupo_A1[subgrupo_A1["DIF_ERRO_PRESSAO"] > 5].copy()
+
+        # Ordena o primeiro grupo (onde o erro de pressão é próximo) pela MENOR POTÊNCIA
+        subgrupo_desempate_potencia = subgrupo_desempate_potencia.sort_values(by="POTÊNCIA (HP)", ascending=True)
+
+        # Ordena o segundo grupo (onde o erro de pressão é distante) pelo MENOR ERRO DE PRESSÃO
+        subgrupo_desempate_pressao = subgrupo_desempate_pressao.sort_values(by="ERRO_PRESSAO_ABS", ascending=True)
         
+        # Recombina os subgrupos na ordem de prioridade correta
+        subgrupo_A1 = pd.concat([subgrupo_desempate_potencia, subgrupo_desempate_pressao])
+    # --- FIM DA NOVA LÓGICA DE DESEMPATE FINAL ---
+            
         grupo_A = pd.concat([subgrupo_A1, subgrupo_A2])
-    
-    # ETAPA 4: Ordenação do grupo B (prioridade: erro relativo)
-    grupo_B = grupo_B.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
-    
-    # ETAPA 5: Combinar resultados
-    df_resultado = pd.concat([grupo_A, grupo_B])
-    
-    # ETAPA 6: Juntar com os dados completos para manter todas as colunas
-    df_final = df_classificado[df_classificado.index.isin(df_resultado.index)]
-    
-    # ETAPA 7: Ordenar conforme a ordem do resultado
-    ordem_final = df_resultado.index.tolist()
-    df_final = df_final.reindex(ordem_final)
-    
-    return df_final
+        
+        # ETAPA 4: Ordenação do grupo B (prioridade: erro relativo)
+        grupo_B = grupo_B.sort_values(by="ABS_ERRO_RELATIVO", ascending=True)
+        
+        # ETAPA 5: Combinar resultados
+        df_resultado = pd.concat([grupo_A, grupo_B])
+        
+        # ETAPA 6: Juntar com os dados completos para manter todas as colunas
+        df_final = df_classificado[df_classificado.index.isin(df_resultado.index)]
+        
+        # ETAPA 7: Ordenar conforme a ordem do resultado
+        ordem_final = df_resultado.index.tolist()
+        df_final = df_final.reindex(ordem_final)
+        
+        return df_final
 
 def classificar_bombas_multiplas(df):
     """Aplica a lógica de classificação para sistemas múltiplos"""
@@ -873,9 +893,10 @@ def classificar_bombas_multiplas(df):
     df['DIF_ERRO_REL'] = df['ABS_ERRO_RELATIVO'] - min_erro_por_grupo
     df['GRUPO_ORDEM'] = (df['DIF_ERRO_REL'] > 10).astype(int)
     
+    # LINHA ATUALIZADA
     df_classificado = df.sort_values(
-        by=["N_TOTAL_BOMBAS", "GRUPO_ORDEM", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS"],
-        ascending=[True, True, False, True]
+        by=["N_TOTAL_BOMBAS", "GRUPO_ORDEM", "RENDIMENTO (%)", "ERRO_PRESSAO_ABS", "POTÊNCIA (HP)"],
+        ascending=[True, True, False, True, True] # Adicionado 'True' para a potência
     )
     
     return df_classificado
