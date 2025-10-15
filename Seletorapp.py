@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -22,6 +23,7 @@ if 'mostrar_desenho_visualizacao' not in st.session_state: st.session_state.most
 if 'mostrar_lista_visualizacao' not in st.session_state: st.session_state.mostrar_lista_visualizacao = False
 if 'mostrar_buscador_modelo' not in st.session_state: st.session_state.mostrar_buscador_modelo = False
 if 'mostrar_grafico' not in st.session_state: st.session_state.mostrar_grafico = False
+if 'mostrar_grafico_geral' not in st.session_state: st.session_state.mostrar_grafico_geral = False
     
 # Adicione este bloco para esconder o menu de navegação
 st.markdown(
@@ -173,6 +175,9 @@ TRADUCOES = {
         'section_fittings': "Acessórios e Perdas Localizadas",
         'elbow_90': "Cotovelo 90°",
         'elbow_45': "Cotovelo 45°",
+        'email_body': """...""",
+        'view_general_graph_button': "Visualizar Gráfico Geral de Bombas",
+        'general_graph_header': "Gráfico Geral de Bombas",
         'gate_valve': "Válvula Gaveta (Aberta)",
         'check_valve': "Válvula de Retenção",
         'entry_loss': "Perda de Carga na Entrada (Sucção)",
@@ -229,6 +234,9 @@ TRADUCOES = {
         'pipe_material_di': "Ductile Iron",
         'pipe_material_ci': "Cast Iron",
         'pipe_material_pvc': "PVC",
+        'email_body': """...""",
+        'view_general_graph_button': "View General Pump Chart", 
+        'general_graph_header': "General Pump Chart",
         'download_graph_button': "Download Chart",
         'footer_copyright': "© 2025 Higra Mining. All rights reserved.",
         'footer_more_info': "For more information, visit ",
@@ -355,6 +363,9 @@ TRADUCOES = {
         'pipe_material_di': "Hierro Dúctil",
         'pipe_material_ci': "Hierro Fundido",
         'pipe_material_pvc': "PVC",
+        'email_body': """...""",
+        'view_general_graph_button': "Visualizar Gráfico General de Bombas", 
+        'general_graph_header': "Gráfico General de Bombas",
         'pipe_material_hdpe': "HDPE (PEAD)",
         'gate_valve': "Válvula de Compuerta (Abierta)",
         'check_valve': "Válvula de Retención",
@@ -958,6 +969,22 @@ def exibir_resultados_busca(T, key_prefix):
                     resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
             
             st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
+            
+    if not tem_unicas:
+        st.write("") # Adiciona um pequeno espaço
+        with st.container(border=True):
+            if st.button(T['view_general_graph_button'], key=f"btn_grafico_geral_{key_prefix}", use_container_width=True):
+                st.session_state.mostrar_grafico_geral = not st.session_state.get('mostrar_grafico_geral', False)
+
+            if st.session_state.get('mostrar_grafico_geral', False):
+                frequencia_str = st.session_state.get('last_used_freq', '60Hz')
+                nome_arquivo_grafico = f"GGB{frequencia_str}.pdf"
+                caminho_pdf_grafico_geral = Path(nome_arquivo_grafico)
+
+                if caminho_pdf_grafico_geral.exists():
+                    mostrar_pdf(caminho_pdf_grafico_geral, legenda=T['general_graph_header'])
+                else:
+                    st.warning(f"Arquivo do gráfico geral ({nome_arquivo_grafico}) não encontrado.")
     
     if not resultado.empty:
         st.subheader("Documentação Técnica")
