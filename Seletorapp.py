@@ -13,7 +13,16 @@ from pathlib import Path
 # ===================================================================
 # CONFIGURAÇÕES GERAIS
 # ===================================================================
-MOSTRAR_CALCULADORA = False # Mude para True para exibir a aba da calculadora
+query_params = st.query_params 
+
+# Verifica se existe o parâmetro "acesso" e se ele é igual à sua senha
+# Exemplo de uso: seu_app.py/?acesso=engenheiro
+codigo_acesso = query_params.get("acesso", None)
+
+if codigo_acesso == "engenheiro":
+    MOSTRAR_CALCULADORA = True
+else:
+    MOSTRAR_CALCULADORA = False
 # -------------------------------------------------------------------
 # Funções Auxiliares (Imagens, PDF)
 # -------------------------------------------------------------------
@@ -1484,3 +1493,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
