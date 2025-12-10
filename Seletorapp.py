@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,6 +5,10 @@ import re
 from urllib.parse import quote
 import base64
 from pathlib import Path
+import fitz  # PyMuPDF
+from PIL import Image
+import io
+import gc
 
 # ===================================================================
 # LÓGICA DO SELETOR (INTOCADA, CONFORME SOLICITADO)
@@ -54,32 +57,54 @@ def image_to_base64(img_path):
         with path.open("rb") as f:
             return base64.b64encode(f.read()).decode()
     except FileNotFoundError:
+        # Retorna um pixel transparente em base64 se não achar
         return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
-def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
-    """Exibe a primeira página de um PDF como imagem diretamente no Streamlit."""
+@st.cache_data(show_spinner=False)
+def obter_imagem_do_pdf(caminho_arquivo, zoom=2.0):
+    """
+    Função PESADA que converte o PDF em imagem.
+    O @st.cache_data garante que isso só rode UMA vez por arquivo.
+    """
     try:
-        import fitz  # PyMuPDF
-        from PIL import Image
-        import io
-        
+        # Abre o documento
         doc = fitz.open(caminho_arquivo)
         page = doc.load_page(0)
         
-        zoom = 3.0
+        # Define o zoom (2.0 é um bom equilíbrio entre qualidade e memória)
         mat = fitz.Matrix(zoom, zoom)
         pix = page.get_pixmap(matrix=mat)
         
+        # Converte para imagem PIL
         img_bytes = pix.tobytes("png")
         image = Image.open(io.BytesIO(img_bytes))
         
-        st.image(image, caption=legenda, use_container_width=True)
+        # Fecha o documento para liberar memória do C++ imediatamente
+        doc.close()
+        return image
         
-    except FileNotFoundError:
-        st.warning(f"Arquivo não encontrado para este modelo.")
     except Exception as e:
-        st.error(f"Não foi possível exibir o PDF: {e}")
+        print(f"Erro ao converter PDF: {e}")
+        return None
 
+def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
+    """
+    Função LEVE apenas de exibição.
+    Ela chama a função pesada (que estará em cache).
+    """
+    # Chama a função cacheada
+    image = obter_imagem_do_pdf(caminho_arquivo, zoom=2.0)
+    
+    if image:
+        st.image(image, caption=legenda, use_container_width=True)
+        # Força uma limpeza de memória extra após exibir
+        gc.collect()
+    else:
+        # Tenta mostrar aviso apenas se o arquivo realmente deveria existir
+        if Path(caminho_arquivo).exists():
+             st.error(f"Não foi possível processar o arquivo: {Path(caminho_arquivo).name}")
+        else:
+             st.warning(f"Arquivo não encontrado.")
 # -------------------------------------------------------------------
 # Dicionário de Traduções
 # -------------------------------------------------------------------
@@ -1493,4 +1518,5 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
 
