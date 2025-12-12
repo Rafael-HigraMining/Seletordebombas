@@ -579,6 +579,14 @@ def carregar_e_processar_dados(caminho_arquivo):
     try:
         df = pd.read_excel(caminho_arquivo)
         df.columns = df.columns.str.strip().str.upper()
+        # --- OTIMIZAÇÃO DE MEMÓRIA (NOVO) ---
+        # Converte números gigantes (64 bits) para menores (32 bits)
+        # Isso economiza muita memória RAM
+        floats = df.select_dtypes(include=['float64']).columns
+        df[floats] = df[floats].astype('float32')
+        
+        ints = df.select_dtypes(include=['int64']).columns
+        df[ints] = df[ints].astype('int32')
     except FileNotFoundError:
         print(f"Erro: Arquivo '{caminho_arquivo}' não encontrado.")
         return None
@@ -594,11 +602,13 @@ def carregar_e_processar_dados(caminho_arquivo):
             return base + grau / 100
         return np.nan
     df["ROTORNUM"] = df["ROTOR"].apply(extrair_rotor_num)
+    df["ROTORNUM"] = df["ROTORNUM"].astype('float32')
     df["ROTOR_MIN_MODELO"] = df.groupby("MODELO")["ROTORNUM"].transform("min")
     df["ROTOR_MAX_MODELO"] = df.groupby("MODELO")["ROTORNUM"].transform("max")
     df["PRESSAO_MAX_MODELO"] = df.groupby("MODELO")["PRESSÃO (MCA)"].transform("max")
     df['POTENCIA_MAX_FAMILIA'] = df.groupby('MODELO')['POTÊNCIA (HP)'].transform('max')
     intervalos_vazao = df.groupby(["MODELO", "ROTOR"])["VAZÃO (M³/H)"].agg(["min", "max"]).reset_index()
+    intervalos_vazao[['min', 'max']] = intervalos_vazao[['min', 'max']].astype('float32')
     df = pd.merge(df, intervalos_vazao, on=["MODELO", "ROTOR"], how="left", suffixes=("", "_range"))
     df["VAZAO_CENTRO"] = (df["min"] + df["max"]) / 2
     df["ERRO_RELATIVO"] = ((df["VAZÃO (M³/H)"] - df["VAZAO_CENTRO"]) / (df["max"] - df["min"] + 1e-9)) * 100
@@ -1311,7 +1321,10 @@ with st.container(border=True):
 
         if st.button(T['search_button'], use_container_width=True, key='btn_seletor', type="primary"):
             st.session_state.search_source = 'seletor'
-            st.session_state.resultado_calculadora = None # Limpa resultado da outra aba
+            st.session_state.resultado_bombas_unicas = None
+            st.session_state.resultado_sistemas_multiplos = None
+            st.session_state.resultado_calculadora = None 
+            gc.collect()
             df_processado = carregar_e_processar_dados(ARQUIVOS_DADOS[frequencia_selecionada])
             st.session_state.last_used_freq = frequencia_selecionada
             with st.spinner(T['spinner_text'].format(freq=frequencia_selecionada)):
@@ -1358,7 +1371,10 @@ with st.container(border=True):
             if modelo_selecionado_buscador and modelo_selecionado_buscador != "-" and motor_selecionado_buscador:
                 if st.button(T['find_pump_button'], use_container_width=True, key='btn_find_pump', type="primary"):
                     st.session_state.search_source = 'buscador'
-                    st.session_state.resultado_calculadora = None # Limpa resultado da outra aba
+                    st.session_state.resultado_bombas_unicas = None
+                    st.session_state.resultado_sistemas_multiplos = None
+                    st.session_state.resultado_calculadora = None
+                    gc.collect()
                     st.session_state.last_used_freq = frequencia_buscador
                     resultado = buscar_por_modelo_e_motor(df_buscador, modelo_selecionado_buscador, motor_selecionado_buscador)
                     if not resultado.empty:
@@ -1518,5 +1534,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
 
 
