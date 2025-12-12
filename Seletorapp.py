@@ -210,6 +210,8 @@ TRADUCOES = {
         'elbow_90': "Cotovelo 90°",
         'elbow_45': "Cotovelo 45°",
         'email_body': """...""",
+        'warning_right': "⚠️ O ponto de trabalho está à direita da curva. Consultar engenharia.",
+        'warning_left': "⚠️ O ponto de trabalho está à esquerda da curva. Consultar engenharia.",
         'view_general_graph_button': "Visualizar Gráfico Geral de Bombas",
         'general_graph_header': "Gráfico Geral de Bombas",
         'gate_valve': "Válvula Gaveta (Aberta)",
@@ -269,6 +271,8 @@ TRADUCOES = {
         'pipe_material_ci': "Cast Iron",
         'pipe_material_pvc': "PVC",
         'email_body': """...""",
+        'warning_right': "⚠️ Operating point is to the right of the curve. Consult engineering.",
+        'warning_left': "⚠️ Operating point is to the left of the curve. Consult engineering.",
         'view_general_graph_button': "View General Pump Chart", 
         'general_graph_header': "General Pump Chart",
         'download_graph_button': "Download Chart",
@@ -398,6 +402,8 @@ TRADUCOES = {
         'pipe_material_ci': "Hierro Fundido",
         'pipe_material_pvc': "PVC",
         'email_body': """...""",
+        'warning_right': "⚠️ El punto de trabajo está a la derecha de la curva. Consultar ingeniería.",
+        'warning_left': "⚠️ El punto de trabajo está a la izquierda de la curva. Consultar ingeniería.",
         'view_general_graph_button': "Visualizar Gráfico General de Bombas", 
         'general_graph_header': "Gráfico General de Bombas",
         'pipe_material_hdpe': "HDPE (PEAD)",
@@ -1036,11 +1042,19 @@ def exibir_resultados_busca(T, key_prefix):
                     st.warning(f"Arquivo do gráfico geral ({nome_arquivo_grafico}) não encontrado.")
     
     if not resultado.empty:
-        st.subheader("Documentação Técnica")
+        
         
         indice_selecionado = opcoes_ranking.index(st.session_state[f'radio_selecao_{key_prefix}_{st.session_state.modo_visualizacao}'])
         bomba_selecionada = resultado.iloc[indice_selecionado]
+        erro_relativo = bomba_selecionada.get('ERRO_RELATIVO', 0.0)
+        
+        if erro_relativo > 30:
+            # Aviso sutil (cor amarela, texto pequeno)
+            st.warning(T['warning_right'], icon="⚠️")
+        elif erro_relativo < -30:
+            st.warning(T['warning_left'], icon="⚠️")
         modelo_selecionado = bomba_selecionada['MODELO']
+        st.subheader("Documentação Técnica")
         try:
             motor_alvo = int(bomba_selecionada['MOTOR FINAL (CV)'])
         except (ValueError, TypeError):
