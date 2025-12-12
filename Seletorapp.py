@@ -566,7 +566,7 @@ def calcular_ponto_trabalho(dados):
 # -------------------------------------------------------------------
 MOTORES_PADRAO = np.array([
     15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200, 250, 300,
-    350, 400, 450, 500, 550, 600
+    350, 400, 450, 500, 550, 600, 650, 700
 ])
 
 def encontrar_motor_final(potencia_real):
@@ -635,7 +635,8 @@ def buscar_por_modelo_e_motor(df, modelo, motor):
     resultado_df["N_TOTAL_BOMBAS"] = 1
     
     colunas_finais = [
-       'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
+       'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'NPSH',
+       'ERRO_PRESSAO', 'ERRO_RELATIVO',
        'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 
        'TIPO_SISTEMA_CODE', 'N_TOTAL_BOMBAS',
        'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO' 
@@ -717,7 +718,7 @@ def filtrar_e_classificar(df, vazao, pressao, top_n=5, limite_desempate_rendimen
     
     # Substitua pela nova lista:
     colunas_finais = [
-        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
+        'MODELO', 'ROTOR', 'VAZÃO (M³/H)', 'PRESSÃO (MCA)', 'NPSH', 'ERRO_PRESSAO', 'ERRO_RELATIVO',
         'RENDIMENTO (%)', 'POTÊNCIA (HP)', 'MOTOR FINAL (CV)', 'ERRO_PRESSAO_ABS', 'ABS_ERRO_RELATIVO'
     ]    
     # CORREÇÃO: Para evitar o erro de coluna duplicada, removemos a coluna 'ROTOR' original (texto)
@@ -986,7 +987,6 @@ def exibir_resultados_busca(T, key_prefix):
             if st.session_state.get('modo_visualizacao') == 'unicas': st.error(T['no_unique_pumps'])
             else: st.error(T['no_systems_found'])
         else:
-            # ... (O CÓDIGO DA TABELA CONTINUA IGUAL, NÃO PRECISA MUDAR) ...
             resultado_exibicao = resultado.copy()
             def traduzir_tipo_sistema(row):
                 code = row.get('TIPO_SISTEMA_CODE', 'single')
@@ -1008,11 +1008,16 @@ def exibir_resultados_busca(T, key_prefix):
             opcoes_ranking = [f"{i+1}º" for i in range(len(resultado_exibicao))]
             st.radio("Selecione a bomba:", options=opcoes_ranking, index=0, horizontal=True, label_visibility="collapsed", key=f'radio_selecao_{key_prefix}_{st.session_state.modo_visualizacao}')
             
-            for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', T['pressure_error_header'], T['relative_error_header']]:
+            for col in ['RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', 'NPSH', T['pressure_error_header'], T['relative_error_header']]:
                 if col in resultado_exibicao.columns:
                     resultado_exibicao[col] = resultado_exibicao[col].map('{:,.2f}'.format)
             
-            st.dataframe(resultado_exibicao, hide_index=True, use_container_width=True, column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL'])
+            st.dataframe(
+                resultado_exibicao, 
+                hide_index=True, 
+                use_container_width=True, 
+                column_order=['Ranking', T['system_type_header'], 'MODELO', 'ROTOR', 'RENDIMENTO', 'POTÊNCIA', 'MOTOR FINAL', 'NPSH']
+            )
             
     if not tem_unicas:
         st.write("") # Adiciona um pequeno espaço
@@ -1534,6 +1539,5 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
-
 
 
