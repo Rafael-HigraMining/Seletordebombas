@@ -6,7 +6,6 @@ from urllib.parse import quote
 import base64
 from pathlib import Path
 import fitz  # PyMuPDF
-from PIL import Image
 import io
 import gc
 
@@ -61,48 +60,54 @@ def image_to_base64(img_path):
         return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 
 @st.cache_data(show_spinner=False)
-def obter_imagem_do_pdf(caminho_arquivo, zoom=2.0):
+def obter_imagem_do_pdf_em_bytes(caminho_arquivo, zoom=2.0):
     """
-    Função PESADA que converte o PDF em imagem.
-    O @st.cache_data garante que isso só rode UMA vez por arquivo.
+    Extrai a imagem do PDF e retorna APENAS os bytes do PNG.
+    NÃO cria objeto de imagem na memória RAM (elimina o Pillow).
     """
+    doc = None
     try:
-        # Abre o documento
         doc = fitz.open(caminho_arquivo)
         page = doc.load_page(0)
         
-        # Define o zoom (2.0 é um bom equilíbrio entre qualidade e memória)
+        # Gera a matriz de zoom
         mat = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=mat)
         
-        # Converte para imagem PIL
+        # Gera o pixmap (mapa de pixels)
+        pix = page.get_pixmap(matrix=mat, alpha=False) # alpha=False economiza canal de transparência
+        
+        # AQUI ESTÁ O PULO DO GATO:
+        # Retornamos os bytes do PNG direto. O PNG é comprimido.
+        # Não convertemos para Image.open()
         img_bytes = pix.tobytes("png")
-        image = Image.open(io.BytesIO(img_bytes))
         
-        # Fecha o documento para liberar memória do C++ imediatamente
-        doc.close()
-        return image
+        return img_bytes
         
     except Exception as e:
-        print(f"Erro ao converter PDF: {e}")
+        print(f"Erro no PDF: {e}")
         return None
+    finally:
+        if doc:
+            doc.close()
 
 def mostrar_pdf(caminho_arquivo, legenda="Visualização do Documento"):
     """
-    Função LEVE apenas de exibição.
-    Ela chama a função pesada (que estará em cache).
+    Exibe a imagem diretamente dos bytes.
     """
-    # Chama a função cacheada
-    image = obter_imagem_do_pdf(caminho_arquivo, zoom=2.0)
+    # Chama a função cacheada que retorna bytes leves
+    img_bytes = obter_imagem_do_pdf_em_bytes(caminho_arquivo, zoom=2.0)
     
-    if image:
-        st.image(image, caption=legenda, use_container_width=True)
-        # Força uma limpeza de memória extra após exibir
+    if img_bytes:
+        # O st.image aceita bytes diretamente! 
+        # Isso evita que o Python descompacte a imagem inteira na memória RAM.
+        st.image(img_bytes, caption=legenda, use_container_width=True)
+        
+        # Limpeza imediata
+        del img_bytes
         gc.collect()
     else:
-        # Tenta mostrar aviso apenas se o arquivo realmente deveria existir
         if Path(caminho_arquivo).exists():
-             st.error(f"Não foi possível processar o arquivo: {Path(caminho_arquivo).name}")
+             st.error(f"Erro ao processar: {Path(caminho_arquivo).name}")
         else:
              st.warning(f"Arquivo não encontrado.")
 # -------------------------------------------------------------------
@@ -1553,5 +1558,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )           
+
 
 
